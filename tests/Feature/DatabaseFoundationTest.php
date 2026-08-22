@@ -11,7 +11,7 @@ class DatabaseFoundationTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
+    /***
      * Run DatabaseSeeder before each test.
      */
     protected $seed = true;

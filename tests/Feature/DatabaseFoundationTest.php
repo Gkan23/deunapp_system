@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\DeliveryService;
 use App\Models\RouteShipment;
+use Database\Seeders\CatalogSeeder;
+use Database\Seeders\DemoDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -11,10 +13,12 @@ class DatabaseFoundationTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * Run DatabaseSeeder before each test.
-     */
-    protected $seed = true;
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(CatalogSeeder::class);
+    }
 
     public function test_expected_catalogs_are_seeded(): void
     {
@@ -52,6 +56,8 @@ class DatabaseFoundationTest extends TestCase
 
     public function test_demo_scenario_is_created_consistently(): void
     {
+        $this->seed(DemoDataSeeder::class);
+
         $this->assertDatabaseCount('customers', 1);
         $this->assertDatabaseCount('delivery_providers', 1);
         $this->assertDatabaseCount('couriers', 1);
@@ -87,6 +93,8 @@ class DatabaseFoundationTest extends TestCase
 
     public function test_demo_relationships_are_consistent(): void
     {
+        $this->seed(DemoDataSeeder::class);
+
         $service = DeliveryService::query()
             ->with([
                 'customer',
@@ -127,4 +135,3 @@ class DatabaseFoundationTest extends TestCase
         );
     }
 }
-

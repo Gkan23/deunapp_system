@@ -17,6 +17,7 @@ class AppNotification extends Model
         'title',
         'message',
         'is_read',
+        'read_at',
         'sent_at',
     ];
 
@@ -24,6 +25,7 @@ class AppNotification extends Model
     {
         return [
             'is_read' => 'boolean',
+            'read_at' => 'datetime',
             'sent_at' => 'datetime',
         ];
     }
@@ -38,4 +40,5 @@ class AppNotification extends Model
         return $this->belongsTo(NotificationType::class);
     }
 }
+
 

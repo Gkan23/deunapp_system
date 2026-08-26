@@ -13,6 +13,7 @@ class AppNotification extends Model
     protected $fillable = [
         'user_id',
         'notification_type_id',
+        'deduplication_key',
         'title',
         'message',
         'is_read',
@@ -37,3 +38,4 @@ class AppNotification extends Model
         return $this->belongsTo(NotificationType::class);
     }
 }
+

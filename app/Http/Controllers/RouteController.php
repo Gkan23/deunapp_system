@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ActivateRouteRequest;
 use App\Http\Requests\CancelRouteRequest;
+use App\Http\Requests\CompleteRouteRequest;
 use App\Http\Requests\StoreRouteRequest;
 use App\Models\Courier;
 use App\Models\Route;
@@ -11,6 +12,7 @@ use App\Models\Shipment;
 use App\Models\User;
 use App\Services\Route\ActivateRouteService;
 use App\Services\Route\CancelRouteService;
+use App\Services\Route\CompleteRouteService;
 use App\Services\Route\CreateRouteService;
 use Carbon\CarbonImmutable;
 use DomainException;
@@ -50,7 +52,7 @@ class RouteController extends Controller
 
         /*
          * Recupera los envíos y conserva el orden
-         * indicado en shipment_ids.
+         * recibido en shipment_ids.
          */
         $shipmentsById = Shipment::query()
             ->whereIn(
@@ -132,11 +134,35 @@ class RouteController extends Controller
     }
 
     /**
-     * Cancela una ruta planificada o activa.
+     * Completa una ruta activa.
      *
-     * Los envíos pendientes se cancelan dentro de esa
-     * ruta y sus servicios vuelven a ASSIGNED para
-     * poder ser programados en una nueva ruta.
+     * Todos los envíos deben haber terminado como
+     * DELIVERED o FAILED.
+     */
+    public function complete(
+        CompleteRouteRequest $request,
+        Route $route,
+        CompleteRouteService $service
+    ): JsonResponse {
+        try {
+            $completedRoute = $service->execute(
+                $route
+            );
+        } catch (DomainException $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return response()->json([
+            'message' =>
+                'Route completed successfully.',
+            'route' => $completedRoute,
+        ]);
+    }
+
+    /**
+     * Cancela una ruta planificada o activa.
      */
     public function cancel(
         CancelRouteRequest $request,

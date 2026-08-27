@@ -55,6 +55,13 @@ Route::middleware('auth')->group(function (): void {
         ->name('routes.activate');
 
     Route::patch(
+        '/routes/{route}/complete',
+        [RouteController::class, 'complete']
+    )
+        ->whereNumber('route')
+        ->name('routes.complete');
+
+    Route::patch(
         '/routes/{route}/cancel',
         [RouteController::class, 'cancel']
     )

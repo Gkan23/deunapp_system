@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DeliveryServiceController;
 use App\Http\Controllers\ShipmentController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,4 +39,11 @@ Route::middleware('auth')->group(function (): void {
     )
         ->whereNumber('shipment')
         ->name('shipments.show');
+
+    Route::patch(
+        '/delivery-services/{deliveryService}/complete',
+        [DeliveryServiceController::class, 'complete']
+    )
+        ->whereNumber('deliveryService')
+        ->name('delivery-services.complete');
 });

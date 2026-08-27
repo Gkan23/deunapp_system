@@ -8,10 +8,13 @@ use App\Models\User;
 class ShipmentPolicy
 {
     /**
-     * Bloquea cualquier acción si la cuenta no está activa.
+     * Bloquea todas las acciones si la cuenta
+     * del usuario no está activa.
      */
-    public function before(User $user, string $ability): ?bool
-    {
+    public function before(
+        User $user,
+        string $ability
+    ): ?bool {
         $isActive = $user->accountStatus()
             ->where('status_name', 'ACTIVE')
             ->exists();
@@ -34,8 +37,10 @@ class ShipmentPolicy
         ]);
     }
 
-    public function view(User $user, Shipment $shipment): bool
-    {
+    public function view(
+        User $user,
+        Shipment $shipment
+    ): bool {
         if ($this->hasAnyRole($user, [
             'SUPPORT_AGENT',
             'ADMINISTRATOR',
@@ -51,14 +56,23 @@ class ShipmentPolicy
         }
 
         if (
-            $this->hasRole($user, 'DELIVERY_PROVIDER')
-            && $this->belongsToProvider($user, $shipment)
+            $this->hasRole(
+                $user,
+                'DELIVERY_PROVIDER'
+            )
+            && $this->belongsToProvider(
+                $user,
+                $shipment
+            )
         ) {
             return true;
         }
 
         return $this->hasRole($user, 'COURIER')
-            && $this->isAssignedCourier($user, $shipment);
+            && $this->isAssignedCourier(
+                $user,
+                $shipment
+            );
     }
 
     public function create(User $user): bool
@@ -68,42 +82,73 @@ class ShipmentPolicy
     }
 
     /**
-     * Las modificaciones deben pasar por servicios específicos.
+     * Las modificaciones deben pasar por
+     * servicios específicos.
      */
-    public function update(User $user, Shipment $shipment): bool
-    {
+    public function update(
+        User $user,
+        Shipment $shipment
+    ): bool {
         return false;
     }
 
-    public function cancel(User $user, Shipment $shipment): bool
-    {
-        if ($this->hasRole($user, 'ADMINISTRATOR')) {
+    public function cancel(
+        User $user,
+        Shipment $shipment
+    ): bool {
+        if (
+            $this->hasRole(
+                $user,
+                'ADMINISTRATOR'
+            )
+        ) {
             return true;
         }
 
         return $this->hasRole($user, 'CUSTOMER')
-            && $this->ownsShipment($user, $shipment);
+            && $this->ownsShipment(
+                $user,
+                $shipment
+            );
     }
 
-    public function updateStatus(User $user, Shipment $shipment): bool
-    {
-        if ($this->hasRole($user, 'ADMINISTRATOR')) {
+    public function updateStatus(
+        User $user,
+        Shipment $shipment
+    ): bool {
+        if (
+            $this->hasRole(
+                $user,
+                'ADMINISTRATOR'
+            )
+        ) {
             return true;
         }
 
         if (
-            $this->hasRole($user, 'DELIVERY_PROVIDER')
-            && $this->belongsToProvider($user, $shipment)
+            $this->hasRole(
+                $user,
+                'DELIVERY_PROVIDER'
+            )
+            && $this->belongsToProvider(
+                $user,
+                $shipment
+            )
         ) {
             return true;
         }
 
         return $this->hasRole($user, 'COURIER')
-            && $this->isAssignedCourier($user, $shipment);
+            && $this->isAssignedCourier(
+                $user,
+                $shipment
+            );
     }
 
-    public function reportIncident(User $user, Shipment $shipment): bool
-    {
+    public function reportIncident(
+        User $user,
+        Shipment $shipment
+    ): bool {
         if ($this->hasAnyRole($user, [
             'SUPPORT_AGENT',
             'ADMINISTRATOR',
@@ -112,43 +157,84 @@ class ShipmentPolicy
         }
 
         if (
-            $this->hasRole($user, 'DELIVERY_PROVIDER')
-            && $this->belongsToProvider($user, $shipment)
+            $this->hasRole(
+                $user,
+                'DELIVERY_PROVIDER'
+            )
+            && $this->belongsToProvider(
+                $user,
+                $shipment
+            )
         ) {
             return true;
         }
 
         return $this->hasRole($user, 'COURIER')
-            && $this->isAssignedCourier($user, $shipment);
+            && $this->isAssignedCourier(
+                $user,
+                $shipment
+            );
+    }
+
+    /**
+     * Solo el repartidor asignado puede reportar
+     * un intento de entrega fallido.
+     *
+     * El servicio de dominio también comprueba esta
+     * condición dentro de la transacción.
+     */
+    public function failDeliveryAttempt(
+        User $user,
+        Shipment $shipment
+    ): bool {
+        return $this->hasRole($user, 'COURIER')
+            && $this->isAssignedCourier(
+                $user,
+                $shipment
+            );
     }
 
     public function recordDeliveryProof(
         User $user,
         Shipment $shipment
     ): bool {
-        if ($this->hasRole($user, 'ADMINISTRATOR')) {
+        if (
+            $this->hasRole(
+                $user,
+                'ADMINISTRATOR'
+            )
+        ) {
             return true;
         }
 
         return $this->hasRole($user, 'COURIER')
-            && $this->isAssignedCourier($user, $shipment);
+            && $this->isAssignedCourier(
+                $user,
+                $shipment
+            );
     }
 
     /**
-     * Los envíos mantienen trazabilidad y no se eliminan directamente.
+     * Los envíos conservan su trazabilidad.
      */
-    public function delete(User $user, Shipment $shipment): bool
-    {
+    public function delete(
+        User $user,
+        Shipment $shipment
+    ): bool {
         return false;
     }
 
-    public function restore(User $user, Shipment $shipment): bool
-    {
+    public function restore(
+        User $user,
+        Shipment $shipment
+    ): bool {
         return false;
     }
 
-    public function forceDelete(User $user, Shipment $shipment): bool
-    {
+    public function forceDelete(
+        User $user,
+        Shipment $shipment
+    ): bool {
         return false;
     }
 
@@ -168,7 +254,10 @@ class ShipmentPolicy
         return $shipment->deliveryService()
             ->whereHas(
                 'trip.deliveryProvider',
-                fn ($query) => $query->where('user_id', $user->id)
+                fn ($query) => $query->where(
+                    'user_id',
+                    $user->id
+                )
             )
             ->exists();
     }
@@ -180,13 +269,18 @@ class ShipmentPolicy
         return $shipment->routeShipments()
             ->whereHas(
                 'route.courier',
-                fn ($query) => $query->where('user_id', $user->id)
+                fn ($query) => $query->where(
+                    'user_id',
+                    $user->id
+                )
             )
             ->exists();
     }
 
-    private function hasRole(User $user, string $role): bool
-    {
+    private function hasRole(
+        User $user,
+        string $role
+    ): bool {
         return $user->role()
             ->where('role_name', $role)
             ->exists();
@@ -195,11 +289,12 @@ class ShipmentPolicy
     /**
      * @param array<int, string> $roles
      */
-    private function hasAnyRole(User $user, array $roles): bool
-    {
+    private function hasAnyRole(
+        User $user,
+        array $roles
+    ): bool {
         return $user->role()
             ->whereIn('role_name', $roles)
             ->exists();
     }
 }
-

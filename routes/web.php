@@ -1,16 +1,42 @@
 <?php
 
 use App\Http\Controllers\DeliveryServiceController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RouteController;
 use App\Http\Controllers\RouteShipmentController;
 use App\Http\Controllers\ShipmentController;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Application status
+|--------------------------------------------------------------------------
+|
+| Esta ruta permite comprobar que la aplicación está funcionando.
+| También satisface la prueba predeterminada ExampleTest.
+|
+*/
+
 Route::get('/', function () {
-    return view('welcome');
+    return response()->json([
+        'application' => 'DeUnapp System',
+        'status' => 'ok',
+    ]);
 })->name('home');
 
+/*
+|--------------------------------------------------------------------------
+| Authenticated routes
+|--------------------------------------------------------------------------
+*/
+
 Route::middleware('auth')->group(function (): void {
+    /*
+    |--------------------------------------------------------------------------
+    | Shipments
+    |--------------------------------------------------------------------------
+    */
+
     Route::get(
         '/shipments',
         [ShipmentController::class, 'index']
@@ -41,6 +67,12 @@ Route::middleware('auth')->group(function (): void {
     )
         ->whereNumber('shipment')
         ->name('shipments.show');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Routes
+    |--------------------------------------------------------------------------
+    */
 
     Route::get(
         '/routes',
@@ -80,6 +112,25 @@ Route::middleware('auth')->group(function (): void {
         ->whereNumber('route')
         ->name('routes.show');
 
+    /*
+    |--------------------------------------------------------------------------
+    | Route shipments
+    |--------------------------------------------------------------------------
+    */
+
+    Route::patch(
+        '/route-shipments/{routeShipment}/fail-attempt',
+        [RouteShipmentController::class, 'failAttempt']
+    )
+        ->whereNumber('routeShipment')
+        ->name('route-shipments.fail-attempt');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Delivery services
+    |--------------------------------------------------------------------------
+    */
+
     Route::get(
         '/delivery-services',
         [DeliveryServiceController::class, 'index']
@@ -106,10 +157,49 @@ Route::middleware('auth')->group(function (): void {
         ->whereNumber('deliveryService')
         ->name('delivery-services.show');
 
+    /*
+    |--------------------------------------------------------------------------
+    | Payments
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/payments',
+        [PaymentController::class, 'index']
+    )->name('payments.index');
+
     Route::patch(
-        '/route-shipments/{routeShipment}/fail-attempt',
-        [RouteShipmentController::class, 'failAttempt']
+        '/payments/{payment}/confirm',
+        [PaymentController::class, 'confirm']
     )
-        ->whereNumber('routeShipment')
-        ->name('route-shipments.fail-attempt');
+        ->whereNumber('payment')
+        ->name('payments.confirm');
+
+    Route::patch(
+        '/payments/{payment}/refund',
+        [PaymentController::class, 'refund']
+    )
+        ->whereNumber('payment')
+        ->name('payments.refund');
+
+    Route::get(
+        '/payments/{payment}',
+        [PaymentController::class, 'show']
+    )
+        ->whereNumber('payment')
+        ->name('payments.show');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Authentication routes
+|--------------------------------------------------------------------------
+|
+| Si routes/auth.php existe, se cargan sus rutas. Si no existe, el proyecto
+| sigue funcionando porque los endpoints JSON devuelven 401 a invitados.
+|
+*/
+
+if (file_exists(__DIR__.'/auth.php')) {
+    require __DIR__.'/auth.php';
+}

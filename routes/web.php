@@ -55,6 +55,13 @@ Route::middleware('auth')->group(function (): void {
         ->name('routes.activate');
 
     Route::patch(
+        '/routes/{route}/cancel',
+        [RouteController::class, 'cancel']
+    )
+        ->whereNumber('route')
+        ->name('routes.cancel');
+
+    Route::patch(
         '/delivery-services/{deliveryService}/assign',
         [DeliveryServiceController::class, 'assign']
     )

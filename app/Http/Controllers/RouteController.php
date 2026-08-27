@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ActivateRouteRequest;
+use App\Http\Requests\CancelRouteRequest;
 use App\Http\Requests\StoreRouteRequest;
 use App\Models\Courier;
 use App\Models\Route;
 use App\Models\Shipment;
 use App\Models\User;
 use App\Services\Route\ActivateRouteService;
+use App\Services\Route\CancelRouteService;
 use App\Services\Route\CreateRouteService;
 use Carbon\CarbonImmutable;
 use DomainException;
@@ -34,10 +36,6 @@ class RouteController extends Controller
                 $validated['courier_id']
             );
 
-        /*
-         * Un proveedor solamente puede crear rutas
-         * utilizando repartidores de su empresa.
-         */
         if (
             ! $this->canUseCourier(
                 $user,
@@ -121,11 +119,6 @@ class RouteController extends Controller
                 $route
             );
         } catch (DomainException $exception) {
-            /*
-             * Las condiciones operativas inválidas,
-             * como activar una ruta de otro día,
-             * producen una respuesta 422.
-             */
             return response()->json([
                 'message' => $exception->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
@@ -135,6 +128,39 @@ class RouteController extends Controller
             'message' =>
                 'Route activated successfully.',
             'route' => $activatedRoute,
+        ]);
+    }
+
+    /**
+     * Cancela una ruta planificada o activa.
+     *
+     * Los envíos pendientes se cancelan dentro de esa
+     * ruta y sus servicios vuelven a ASSIGNED para
+     * poder ser programados en una nueva ruta.
+     */
+    public function cancel(
+        CancelRouteRequest $request,
+        Route $route,
+        CancelRouteService $service
+    ): JsonResponse {
+        $validated = $request->validated();
+
+        try {
+            $cancelledRoute = $service->execute(
+                $route,
+                $request->user(),
+                $validated['reason']
+            );
+        } catch (DomainException $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return response()->json([
+            'message' =>
+                'Route cancelled successfully.',
+            'route' => $cancelledRoute,
         ]);
     }
 

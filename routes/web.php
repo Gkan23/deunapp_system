@@ -80,6 +80,11 @@ Route::middleware('auth')->group(function (): void {
         ->whereNumber('route')
         ->name('routes.show');
 
+    Route::get(
+        '/delivery-services',
+        [DeliveryServiceController::class, 'index']
+    )->name('delivery-services.index');
+
     Route::patch(
         '/delivery-services/{deliveryService}/assign',
         [DeliveryServiceController::class, 'assign']
@@ -93,6 +98,13 @@ Route::middleware('auth')->group(function (): void {
     )
         ->whereNumber('deliveryService')
         ->name('delivery-services.complete');
+
+    Route::get(
+        '/delivery-services/{deliveryService}',
+        [DeliveryServiceController::class, 'show']
+    )
+        ->whereNumber('deliveryService')
+        ->name('delivery-services.show');
 
     Route::patch(
         '/route-shipments/{routeShipment}/fail-attempt',

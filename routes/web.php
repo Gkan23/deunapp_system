@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DeliveryServiceController;
+use App\Http\Controllers\RouteShipmentController;
 use App\Http\Controllers\ShipmentController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,9 +42,23 @@ Route::middleware('auth')->group(function (): void {
         ->name('shipments.show');
 
     Route::patch(
+        '/delivery-services/{deliveryService}/assign',
+        [DeliveryServiceController::class, 'assign']
+    )
+        ->whereNumber('deliveryService')
+        ->name('delivery-services.assign');
+
+    Route::patch(
         '/delivery-services/{deliveryService}/complete',
         [DeliveryServiceController::class, 'complete']
     )
         ->whereNumber('deliveryService')
         ->name('delivery-services.complete');
+
+    Route::patch(
+        '/route-shipments/{routeShipment}/fail-attempt',
+        [RouteShipmentController::class, 'failAttempt']
+    )
+        ->whereNumber('routeShipment')
+        ->name('route-shipments.fail-attempt');
 });

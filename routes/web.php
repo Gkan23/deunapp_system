@@ -2,20 +2,11 @@
 
 use App\Http\Controllers\DeliveryServiceController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\RatingController;
 use App\Http\Controllers\RouteController;
 use App\Http\Controllers\RouteShipmentController;
 use App\Http\Controllers\ShipmentController;
 use Illuminate\Support\Facades\Route;
-
-/*
-|--------------------------------------------------------------------------
-| Application status
-|--------------------------------------------------------------------------
-|
-| Esta ruta permite comprobar que la aplicación está funcionando.
-| También satisface la prueba predeterminada ExampleTest.
-|
-*/
 
 Route::get('/', function () {
     return response()->json([
@@ -23,12 +14,6 @@ Route::get('/', function () {
         'status' => 'ok',
     ]);
 })->name('home');
-
-/*
-|--------------------------------------------------------------------------
-| Authenticated routes
-|--------------------------------------------------------------------------
-*/
 
 Route::middleware('auth')->group(function (): void {
     /*
@@ -150,6 +135,13 @@ Route::middleware('auth')->group(function (): void {
         ->whereNumber('deliveryService')
         ->name('delivery-services.complete');
 
+    Route::post(
+        '/delivery-services/{deliveryService}/ratings',
+        [RatingController::class, 'store']
+    )
+        ->whereNumber('deliveryService')
+        ->name('delivery-services.ratings.store');
+
     Route::get(
         '/delivery-services/{deliveryService}',
         [DeliveryServiceController::class, 'show']
@@ -188,17 +180,25 @@ Route::middleware('auth')->group(function (): void {
     )
         ->whereNumber('payment')
         ->name('payments.show');
-});
 
-/*
-|--------------------------------------------------------------------------
-| Authentication routes
-|--------------------------------------------------------------------------
-|
-| Si routes/auth.php existe, se cargan sus rutas. Si no existe, el proyecto
-| sigue funcionando porque los endpoints JSON devuelven 401 a invitados.
-|
-*/
+    /*
+    |--------------------------------------------------------------------------
+    | Ratings
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/ratings',
+        [RatingController::class, 'index']
+    )->name('ratings.index');
+
+    Route::get(
+        '/ratings/{rating}',
+        [RatingController::class, 'show']
+    )
+        ->whereNumber('rating')
+        ->name('ratings.show');
+});
 
 if (file_exists(__DIR__.'/auth.php')) {
     require __DIR__.'/auth.php';

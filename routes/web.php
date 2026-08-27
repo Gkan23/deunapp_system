@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DeliveryServiceController;
+use App\Http\Controllers\RouteController;
 use App\Http\Controllers\RouteShipmentController;
 use App\Http\Controllers\ShipmentController;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +41,11 @@ Route::middleware('auth')->group(function (): void {
     )
         ->whereNumber('shipment')
         ->name('shipments.show');
+
+    Route::post(
+        '/routes',
+        [RouteController::class, 'store']
+    )->name('routes.store');
 
     Route::patch(
         '/delivery-services/{deliveryService}/assign',

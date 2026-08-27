@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AppNotificationController;
 use App\Http\Controllers\DeliveryServiceController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RatingController;
@@ -198,6 +199,36 @@ Route::middleware('auth')->group(function (): void {
     )
         ->whereNumber('rating')
         ->name('ratings.show');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application notifications
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/notifications',
+        [AppNotificationController::class, 'index']
+    )->name('notifications.index');
+
+    Route::patch(
+        '/notifications/read-all',
+        [AppNotificationController::class, 'markAllAsRead']
+    )->name('notifications.read-all');
+
+    Route::patch(
+        '/notifications/{appNotification}/read',
+        [AppNotificationController::class, 'markAsRead']
+    )
+        ->whereNumber('appNotification')
+        ->name('notifications.read');
+
+    Route::get(
+        '/notifications/{appNotification}',
+        [AppNotificationController::class, 'show']
+    )
+        ->whereNumber('appNotification')
+        ->name('notifications.show');
 });
 
 if (file_exists(__DIR__.'/auth.php')) {

@@ -16,11 +16,41 @@ use App\Services\Route\CompleteRouteService;
 use App\Services\Route\CreateRouteService;
 use Carbon\CarbonImmutable;
 use DomainException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
 class RouteController extends Controller
 {
+    /**
+     * Muestra las rutas visibles para el usuario.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        Gate::forUser($user)->authorize(
+            'viewAny',
+            Route::class
+        );
+
+        $routes = $this->visibleRoutesFor($user)
+            ->with([
+                'courier.deliveryProvider',
+                'routeStatus',
+                'routeShipments.shipment.shipmentStatus',
+            ])
+            ->latest('id')
+            ->get();
+
+        return response()->json([
+            'data' => $routes,
+        ]);
+    }
+
     /**
      * Crea una ruta planificada con sus envíos.
      */
@@ -50,10 +80,6 @@ class RouteController extends Controller
             );
         }
 
-        /*
-         * Recupera los envíos y conserva el orden
-         * recibido en shipment_ids.
-         */
         $shipmentsById = Shipment::query()
             ->whereIn(
                 'id',
@@ -62,6 +88,10 @@ class RouteController extends Controller
             ->get()
             ->keyBy('id');
 
+        /*
+         * Reconstruye la colección para conservar
+         * exactamente el orden de shipment_ids.
+         */
         $shipments = collect(
             $validated['shipment_ids']
         )
@@ -109,6 +139,32 @@ class RouteController extends Controller
     }
 
     /**
+     * Muestra una ruta específica.
+     */
+    public function show(
+        Request $request,
+        Route $route
+    ): JsonResponse {
+        /** @var User $user */
+        $user = $request->user();
+
+        Gate::forUser($user)->authorize(
+            'view',
+            $route
+        );
+
+        $route->load([
+            'courier.deliveryProvider',
+            'routeStatus',
+            'routeShipments.shipment.shipmentStatus',
+        ]);
+
+        return response()->json([
+            'route' => $route,
+        ]);
+    }
+
+    /**
      * Activa una ruta planificada.
      */
     public function activate(
@@ -135,9 +191,6 @@ class RouteController extends Controller
 
     /**
      * Completa una ruta activa.
-     *
-     * Todos los envíos deben haber terminado como
-     * DELIVERED o FAILED.
      */
     public function complete(
         CompleteRouteRequest $request,
@@ -188,6 +241,55 @@ class RouteController extends Controller
                 'Route cancelled successfully.',
             'route' => $cancelledRoute,
         ]);
+    }
+
+    /**
+     * Limita el listado de rutas según el rol.
+     */
+    private function visibleRoutesFor(
+        User $user
+    ): Builder {
+        $query = Route::query();
+
+        $roleName = $user->role()
+            ->value('role_name');
+
+        return match ($roleName) {
+            /*
+             * Soporte y administración pueden consultar
+             * todas las rutas.
+             */
+            'SUPPORT_AGENT',
+            'ADMINISTRATOR' => $query,
+
+            /*
+             * Un proveedor solamente consulta las rutas
+             * de sus propios repartidores.
+             */
+            'DELIVERY_PROVIDER' => $query->whereHas(
+                'courier.deliveryProvider',
+                fn (Builder $providerQuery): Builder =>
+                    $providerQuery->where(
+                        'user_id',
+                        $user->id
+                    )
+            ),
+
+            /*
+             * Un repartidor solamente consulta
+             * las rutas asignadas directamente a él.
+             */
+            'COURIER' => $query->whereHas(
+                'courier',
+                fn (Builder $courierQuery): Builder =>
+                    $courierQuery->where(
+                        'user_id',
+                        $user->id
+                    )
+            ),
+
+            default => $query->whereRaw('1 = 0'),
+        };
     }
 
     /**

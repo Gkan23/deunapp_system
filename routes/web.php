@@ -42,6 +42,11 @@ Route::middleware('auth')->group(function (): void {
         ->whereNumber('shipment')
         ->name('shipments.show');
 
+    Route::get(
+        '/routes',
+        [RouteController::class, 'index']
+    )->name('routes.index');
+
     Route::post(
         '/routes',
         [RouteController::class, 'store']
@@ -67,6 +72,13 @@ Route::middleware('auth')->group(function (): void {
     )
         ->whereNumber('route')
         ->name('routes.cancel');
+
+    Route::get(
+        '/routes/{route}',
+        [RouteController::class, 'show']
+    )
+        ->whereNumber('route')
+        ->name('routes.show');
 
     Route::patch(
         '/delivery-services/{deliveryService}/assign',

@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ActivateRouteRequest;
 use App\Http\Requests\StoreRouteRequest;
 use App\Models\Courier;
+use App\Models\Route;
 use App\Models\Shipment;
 use App\Models\User;
+use App\Services\Route\ActivateRouteService;
 use App\Services\Route\CreateRouteService;
 use Carbon\CarbonImmutable;
 use DomainException;
@@ -32,11 +35,8 @@ class RouteController extends Controller
             );
 
         /*
-         * Un administrador puede seleccionar cualquier
-         * repartidor válido.
-         *
-         * Un proveedor solamente puede seleccionar un
-         * repartidor perteneciente a su empresa.
+         * Un proveedor solamente puede crear rutas
+         * utilizando repartidores de su empresa.
          */
         if (
             ! $this->canUseCourier(
@@ -51,9 +51,8 @@ class RouteController extends Controller
         }
 
         /*
-         * whereIn() no conserva necesariamente el orden
-         * recibido. Por eso indexamos los modelos y luego
-         * reconstruimos el arreglo usando shipment_ids.
+         * Recupera los envíos y conserva el orden
+         * indicado en shipment_ids.
          */
         $shipmentsById = Shipment::query()
             ->whereIn(
@@ -107,6 +106,36 @@ class RouteController extends Controller
                 'Route created successfully.',
             'route' => $createdRoute,
         ], Response::HTTP_CREATED);
+    }
+
+    /**
+     * Activa una ruta planificada.
+     */
+    public function activate(
+        ActivateRouteRequest $request,
+        Route $route,
+        ActivateRouteService $service
+    ): JsonResponse {
+        try {
+            $activatedRoute = $service->handle(
+                $route
+            );
+        } catch (DomainException $exception) {
+            /*
+             * Las condiciones operativas inválidas,
+             * como activar una ruta de otro día,
+             * producen una respuesta 422.
+             */
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return response()->json([
+            'message' =>
+                'Route activated successfully.',
+            'route' => $activatedRoute,
+        ]);
     }
 
     /**

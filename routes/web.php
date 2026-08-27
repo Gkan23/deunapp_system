@@ -48,6 +48,13 @@ Route::middleware('auth')->group(function (): void {
     )->name('routes.store');
 
     Route::patch(
+        '/routes/{route}/activate',
+        [RouteController::class, 'activate']
+    )
+        ->whereNumber('route')
+        ->name('routes.activate');
+
+    Route::patch(
         '/delivery-services/{deliveryService}/assign',
         [DeliveryServiceController::class, 'assign']
     )

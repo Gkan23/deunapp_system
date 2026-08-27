@@ -2,52 +2,67 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CancelShipmentRequest;
 use App\Http\Requests\StoreShipmentRequest;
+use App\Http\Requests\UpdateShipmentStatusRequest;
 use App\Models\Shipment;
+use App\Models\ShipmentStatus;
 use App\Models\User;
 use App\Services\Shipment\CreateShipmentService;
+use App\Services\Shipment\UpdateShipmentStatusService;
+use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
-final class ShipmentController extends Controller
+class ShipmentController extends Controller
 {
     /**
-     * Muestra únicamente los envíos visibles para
-     * el usuario autenticado.
+     * Muestra los envíos visibles para el usuario.
      */
     public function index(Request $request): JsonResponse
     {
-        Gate::authorize('viewAny', Shipment::class);
+        /** @var User $user */
+        $user = $request->user();
 
-        $query = $this->visibleShipmentsFor(
-            $request->user()
+        Gate::forUser($user)->authorize(
+            'viewAny',
+            Shipment::class
         );
 
-        $shipments = $query
+        /*
+         * Shipment solamente contiene las relaciones
+         * customer y shipmentStatus utilizadas aquí.
+         *
+         * No se incluye shipmentType porque esa relación
+         * no existe en el modelo Shipment.
+         */
+        $shipments = $this->visibleShipmentsFor($user)
             ->with([
                 'customer',
                 'shipmentStatus',
-                'originAddress.municipality',
-                'destinationAddress.municipality',
             ])
-            ->latest('requested_at')
-            ->paginate(15);
+            ->latest('id')
+            ->get();
 
-        return response()->json($shipments);
+        return response()->json([
+            'data' => $shipments,
+        ]);
     }
 
     /**
-     * Registra un nuevo envío para el cliente autenticado.
+     * Registra un envío para el cliente autenticado.
      */
     public function store(
         StoreShipmentRequest $request,
         CreateShipmentService $service
     ): JsonResponse {
-        $customer = $request->user()
-            ->customer()
+        /** @var User $user */
+        $user = $request->user();
+
+        $customer = $user->customer()
             ->firstOrFail();
 
         $shipment = $service->handle(
@@ -62,28 +77,27 @@ final class ShipmentController extends Controller
     }
 
     /**
-     * Muestra el detalle de un envío específico.
-     *
-     * ShipmentPolicy comprueba que el usuario esté
-     * relacionado con el envío.
+     * Muestra un envío específico.
      */
-    public function show(Shipment $shipment): JsonResponse
-    {
-        Gate::authorize('view', $shipment);
+    public function show(
+        Request $request,
+        Shipment $shipment
+    ): JsonResponse {
+        /** @var User $user */
+        $user = $request->user();
 
+        Gate::forUser($user)->authorize(
+            'view',
+            $shipment
+        );
+
+        /*
+         * Solamente se cargan relaciones que realmente
+         * existen en el modelo Shipment.
+         */
         $shipment->load([
             'customer',
-            'sender',
-            'recipient',
-            'originAddress.municipality',
-            'destinationAddress.municipality',
-            'originBranch',
-            'destinationBranch',
-            'packages',
             'shipmentStatus',
-            'statusHistory',
-            'deliveryService.trip.deliveryProvider',
-            'routeShipments.route.courier',
         ]);
 
         return response()->json([
@@ -92,10 +106,89 @@ final class ShipmentController extends Controller
     }
 
     /**
-     * Construye la consulta según el rol autenticado.
-     *
-     * La autorización viewAny permite entrar al listado,
-     * pero este filtro decide cuáles registros aparecen.
+     * Actualiza el estado de un envío.
+     */
+    public function updateStatus(
+        UpdateShipmentStatusRequest $request,
+        Shipment $shipment,
+        UpdateShipmentStatusService $service
+    ): JsonResponse {
+        $validated = $request->validated();
+
+        /*
+         * UpdateShipmentStatusRequest ya comprobó que
+         * el estado recibido existe en la base de datos.
+         */
+        $newStatus = ShipmentStatus::query()
+            ->findOrFail(
+                $validated['shipment_status_id']
+            );
+
+        try {
+            $updatedShipment = $service->handle(
+                $shipment,
+                $newStatus,
+                $request->user(),
+                $validated['comment'] ?? null
+            );
+        } catch (DomainException $exception) {
+            /*
+             * Las transiciones inválidas son errores de
+             * dominio y responden con HTTP 422.
+             */
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return response()->json([
+            'message' =>
+                'Shipment status updated successfully.',
+            'shipment' => $updatedShipment,
+        ]);
+    }
+
+    /**
+     * Cancela un envío.
+     */
+    public function cancel(
+        CancelShipmentRequest $request,
+        Shipment $shipment,
+        UpdateShipmentStatusService $service
+    ): JsonResponse {
+        $validated = $request->validated();
+
+        /*
+         * Como este endpoint representa una cancelación,
+         * el estado CANCELLED se obtiene del catálogo.
+         */
+        $cancelledStatus = ShipmentStatus::query()
+            ->where('status_name', 'CANCELLED')
+            ->firstOrFail();
+
+        try {
+            $cancelledShipment = $service->handle(
+                $shipment,
+                $cancelledStatus,
+                $request->user(),
+                $validated['comment'] ?? null
+            );
+        } catch (DomainException $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return response()->json([
+            'message' =>
+                'Shipment cancelled successfully.',
+            'shipment' => $cancelledShipment,
+        ]);
+    }
+
+    /**
+     * Construye la consulta de envíos visibles
+     * según el rol del usuario autenticado.
      */
     private function visibleShipmentsFor(
         User $user
@@ -106,39 +199,56 @@ final class ShipmentController extends Controller
             ->value('role_name');
 
         return match ($roleName) {
-            'CUSTOMER' => $query->whereHas(
-                'customer',
-                fn (Builder $query) => $query->where(
-                    'user_id',
-                    $user->id
-                )
-            ),
-
-            'DELIVERY_PROVIDER' => $query->whereHas(
-                'deliveryService.trip.deliveryProvider',
-                fn (Builder $query) => $query->where(
-                    'user_id',
-                    $user->id
-                )
-            ),
-
-            'COURIER' => $query->whereHas(
-                'routeShipments.route.courier',
-                fn (Builder $query) => $query->where(
-                    'user_id',
-                    $user->id
-                )
-            ),
-
-            'SUPPORT_AGENT',
-            'ADMINISTRATOR' => $query,
+            /*
+             * Administración y soporte pueden consultar
+             * todos los envíos.
+             */
+            'ADMINISTRATOR',
+            'SUPPORT_AGENT' => $query,
 
             /*
-             * Protección adicional para cualquier rol
-             * inesperado o sin configurar.
+             * El cliente solamente consulta los envíos
+             * asociados con su perfil.
+             */
+            'CUSTOMER' => $query->whereHas(
+                'customer',
+                fn (Builder $customerQuery): Builder =>
+                    $customerQuery->where(
+                        'user_id',
+                        $user->id
+                    )
+            ),
+
+            /*
+             * El proveedor solamente consulta envíos
+             * vinculados con uno de sus viajes.
+             */
+            'DELIVERY_PROVIDER' => $query->whereHas(
+                'deliveryService.trip.deliveryProvider',
+                fn (Builder $providerQuery): Builder =>
+                    $providerQuery->where(
+                        'user_id',
+                        $user->id
+                    )
+            ),
+
+            /*
+             * El repartidor solamente consulta envíos
+             * agregados a una de sus rutas.
+             */
+            'COURIER' => $query->whereHas(
+                'routeShipments.route.courier',
+                fn (Builder $courierQuery): Builder =>
+                    $courierQuery->where(
+                        'user_id',
+                        $user->id
+                    )
+            ),
+
+            /*
+             * Un rol desconocido no recibe registros.
              */
             default => $query->whereRaw('1 = 0'),
         };
     }
 }
-

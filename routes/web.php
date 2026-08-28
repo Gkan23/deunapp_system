@@ -9,12 +9,16 @@ use App\Http\Controllers\RouteController;
 use App\Http\Controllers\RouteShipmentController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\SupportTicketController;
+use App\Http\Controllers\SupportTicketMessageReadController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | Application status
 |--------------------------------------------------------------------------
+|
+| Ruta pública utilizada para comprobar que la aplicación está funcionando.
+|
 */
 
 Route::get('/', function () {
@@ -28,6 +32,9 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 | Authenticated routes
 |--------------------------------------------------------------------------
+|
+| Todos los endpoints principales necesitan un usuario autenticado.
+|
 */
 
 Route::middleware('auth')->group(function (): void {
@@ -225,6 +232,10 @@ Route::middleware('auth')->group(function (): void {
         [AppNotificationController::class, 'index']
     )->name('notifications.index');
 
+    /*
+     * Esta ruta fija debe aparecer antes de las rutas
+     * que contienen el parámetro {appNotification}.
+     */
     Route::patch(
         '/notifications/read-all',
         [AppNotificationController::class, 'markAllAsRead']
@@ -294,10 +305,17 @@ Route::middleware('auth')->group(function (): void {
 
     Route::post(
         '/support-tickets/{supportTicket}/messages',
-        [SupportTicketController::class, 'reply']
+        [SupportTicketController::class, 'addMessage']
     )
         ->whereNumber('supportTicket')
         ->name('support-tickets.messages.store');
+
+    Route::patch(
+        '/support-tickets/{supportTicket}/messages/read',
+        SupportTicketMessageReadController::class
+    )
+        ->whereNumber('supportTicket')
+        ->name('support-tickets.messages.read');
 
     Route::patch(
         '/support-tickets/{supportTicket}/status',
@@ -318,6 +336,9 @@ Route::middleware('auth')->group(function (): void {
 |--------------------------------------------------------------------------
 | Authentication routes
 |--------------------------------------------------------------------------
+|
+| Si routes/auth.php existe, se registran sus rutas.
+|
 */
 
 if (file_exists(__DIR__.'/auth.php')) {

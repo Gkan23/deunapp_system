@@ -8,10 +8,13 @@ use App\Models\User;
 class SupportTicketPolicy
 {
     /**
-     * Bloquea todas las acciones si la cuenta no está activa.
+     * Bloquea cualquier acción cuando la cuenta
+     * del usuario no está activa.
      */
-    public function before(User $user, string $ability): ?bool
-    {
+    public function before(
+        User $user,
+        string $ability
+    ): ?bool {
         $isActive = $user->accountStatus()
             ->where('status_name', 'ACTIVE')
             ->exists();
@@ -23,10 +26,6 @@ class SupportTicketPolicy
         return null;
     }
 
-    /**
-     * Clientes, agentes de soporte y administradores pueden
-     * acceder al listado correspondiente a su contexto.
-     */
     public function viewAny(User $user): bool
     {
         return $this->hasAnyRole($user, [
@@ -36,12 +35,10 @@ class SupportTicketPolicy
         ]);
     }
 
-    /**
-     * El cliente puede consultar sus propios tickets.
-     * Soporte y administración pueden consultar cualquier ticket.
-     */
-    public function view(User $user, SupportTicket $supportTicket): bool
-    {
+    public function view(
+        User $user,
+        SupportTicket $supportTicket
+    ): bool {
         if ($this->hasAnyRole($user, [
             'SUPPORT_AGENT',
             'ADMINISTRATOR',
@@ -49,12 +46,13 @@ class SupportTicketPolicy
             return true;
         }
 
-        return $this->ownsTicket($user, $supportTicket);
+        return $this->hasRole($user, 'CUSTOMER')
+            && $this->ownsTicket(
+                $user,
+                $supportTicket
+            );
     }
 
-    /**
-     * Solo un cliente con perfil asociado puede crear tickets.
-     */
     public function create(User $user): bool
     {
         return $this->hasRole($user, 'CUSTOMER')
@@ -62,19 +60,26 @@ class SupportTicketPolicy
     }
 
     /**
-     * La modificación genérica queda deshabilitada.
-     * Deben utilizarse las acciones específicas.
+     * Las modificaciones generales están deshabilitadas.
      */
-    public function update(User $user, SupportTicket $supportTicket): bool
-    {
+    public function update(
+        User $user,
+        SupportTicket $supportTicket
+    ): bool {
         return false;
     }
 
     /**
-     * Un agente de soporte o administrador puede asignar tickets.
+     * Soporte y administración pueden solicitar
+     * la asignación de tickets.
+     *
+     * El servicio aplica las reglas específicas
+     * de asignación y reasignación.
      */
-    public function assign(User $user, SupportTicket $supportTicket): bool
-    {
+    public function assign(
+        User $user,
+        SupportTicket $supportTicket
+    ): bool {
         return $this->hasAnyRole($user, [
             'SUPPORT_AGENT',
             'ADMINISTRATOR',
@@ -83,54 +88,110 @@ class SupportTicketPolicy
 
     /**
      * El cliente propietario puede responder.
-     *
-     * Un agente de soporte solo puede responder si tiene
-     * asignado el ticket. El administrador siempre puede hacerlo.
+     * El agente debe estar asignado al ticket.
+     * Administración puede responder cualquier ticket.
      */
-    public function reply(User $user, SupportTicket $supportTicket): bool
-    {
-        if ($this->hasRole($user, 'ADMINISTRATOR')) {
+    public function reply(
+        User $user,
+        SupportTicket $supportTicket
+    ): bool {
+        if ($this->hasRole(
+            $user,
+            'ADMINISTRATOR'
+        )) {
             return true;
         }
 
-        if ($this->ownsTicket($user, $supportTicket)) {
+        if (
+            $this->hasRole($user, 'CUSTOMER')
+            && $this->ownsTicket(
+                $user,
+                $supportTicket
+            )
+        ) {
             return true;
         }
 
-        return $this->hasRole($user, 'SUPPORT_AGENT')
-            && $supportTicket->assigned_to_user_id === $user->id;
+        return $this->hasRole(
+            $user,
+            'SUPPORT_AGENT'
+        ) && (int) $supportTicket->assigned_to_user_id
+            === (int) $user->id;
     }
 
     /**
-     * El agente asignado o un administrador puede cambiar el estado.
+     * El cliente propietario puede marcar como leídos
+     * los mensajes enviados por soporte.
+     *
+     * Un agente o administrador solamente puede hacerlo
+     * cuando está asignado directamente al ticket.
+     */
+    public function readMessages(
+        User $user,
+        SupportTicket $supportTicket
+    ): bool {
+        if (
+            $this->hasRole($user, 'CUSTOMER')
+            && $this->ownsTicket(
+                $user,
+                $supportTicket
+            )
+        ) {
+            return true;
+        }
+
+        return $this->hasAnyRole($user, [
+            'SUPPORT_AGENT',
+            'ADMINISTRATOR',
+        ]) && (int) $supportTicket->assigned_to_user_id
+            === (int) $user->id;
+    }
+
+    /**
+     * Administración puede cambiar el estado de cualquier
+     * ticket. Un agente solamente puede cambiar el estado
+     * del ticket que tiene asignado.
      */
     public function changeStatus(
         User $user,
         SupportTicket $supportTicket
     ): bool {
-        if ($this->hasRole($user, 'ADMINISTRATOR')) {
+        if ($this->hasRole(
+            $user,
+            'ADMINISTRATOR'
+        )) {
             return true;
         }
 
-        return $this->hasRole($user, 'SUPPORT_AGENT')
-            && $supportTicket->assigned_to_user_id === $user->id;
+        return $this->hasRole(
+            $user,
+            'SUPPORT_AGENT'
+        ) && (int) $supportTicket->assigned_to_user_id
+            === (int) $user->id;
     }
 
     /**
-     * Los tickets conservan su trazabilidad y no se eliminan directamente.
+     * Los tickets deben conservarse para mantener
+     * la trazabilidad del soporte.
      */
-    public function delete(User $user, SupportTicket $supportTicket): bool
-    {
+    public function delete(
+        User $user,
+        SupportTicket $supportTicket
+    ): bool {
         return false;
     }
 
-    public function restore(User $user, SupportTicket $supportTicket): bool
-    {
+    public function restore(
+        User $user,
+        SupportTicket $supportTicket
+    ): bool {
         return false;
     }
 
-    public function forceDelete(User $user, SupportTicket $supportTicket): bool
-    {
+    public function forceDelete(
+        User $user,
+        SupportTicket $supportTicket
+    ): bool {
         return false;
     }
 
@@ -143,8 +204,10 @@ class SupportTicketPolicy
             ->exists();
     }
 
-    private function hasRole(User $user, string $role): bool
-    {
+    private function hasRole(
+        User $user,
+        string $role
+    ): bool {
         return $user->role()
             ->where('role_name', $role)
             ->exists();
@@ -153,8 +216,10 @@ class SupportTicketPolicy
     /**
      * @param array<int, string> $roles
      */
-    private function hasAnyRole(User $user, array $roles): bool
-    {
+    private function hasAnyRole(
+        User $user,
+        array $roles
+    ): bool {
         return $user->role()
             ->whereIn('role_name', $roles)
             ->exists();

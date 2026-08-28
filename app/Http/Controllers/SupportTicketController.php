@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\AddSupportMessageRequest;
 use App\Http\Requests\AssignSupportTicketRequest;
+use App\Http\Requests\StoreSupportMessageRequest;
 use App\Http\Requests\StoreSupportTicketRequest;
 use App\Http\Requests\UpdateSupportTicketStatusRequest;
 use App\Models\Shipment;
@@ -165,7 +165,7 @@ class SupportTicketController extends Controller
     }
 
     public function addMessage(
-        AddSupportMessageRequest $request,
+        StoreSupportMessageRequest $request,
         SupportTicket $supportTicket,
         AddSupportMessageService $service
     ): JsonResponse {

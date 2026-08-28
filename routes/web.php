@@ -15,9 +15,6 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | Application status
 |--------------------------------------------------------------------------
-|
-| Ruta pública utilizada para comprobar que la aplicación está funcionando.
-|
 */
 
 Route::get('/', function () {
@@ -31,9 +28,6 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 | Authenticated routes
 |--------------------------------------------------------------------------
-|
-| Todos los endpoints principales necesitan un usuario autenticado.
-|
 */
 
 Route::middleware('auth')->group(function (): void {
@@ -298,6 +292,13 @@ Route::middleware('auth')->group(function (): void {
         ->whereNumber('supportTicket')
         ->name('support-tickets.assign');
 
+    Route::post(
+        '/support-tickets/{supportTicket}/messages',
+        [SupportTicketController::class, 'reply']
+    )
+        ->whereNumber('supportTicket')
+        ->name('support-tickets.messages.store');
+
     Route::get(
         '/support-tickets/{supportTicket}',
         [SupportTicketController::class, 'show']
@@ -310,9 +311,6 @@ Route::middleware('auth')->group(function (): void {
 |--------------------------------------------------------------------------
 | Authentication routes
 |--------------------------------------------------------------------------
-|
-| Si routes/auth.php existe, se registran sus rutas.
-|
 */
 
 if (file_exists(__DIR__.'/auth.php')) {

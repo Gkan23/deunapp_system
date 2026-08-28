@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AssignSupportTicketRequest;
+use App\Http\Requests\StoreSupportMessageRequest;
 use App\Http\Requests\StoreSupportTicketRequest;
 use App\Models\Shipment;
 use App\Models\SupportTicket;
 use App\Models\User;
+use App\Services\Support\AddSupportMessageService;
 use App\Services\Support\AssignSupportTicketService;
 use App\Services\Support\CreateSupportTicketService;
 use DomainException;
@@ -108,13 +110,6 @@ class SupportTicketController extends Controller
 
     /**
      * Asigna o reasigna un ticket.
-     *
-     * AssignSupportTicketService aplica las reglas específicas:
-     *
-     * - administración puede asignar y reasignar;
-     * - soporte solo puede tomar tickets para sí mismo;
-     * - el usuario asignado debe estar activo;
-     * - el ticket debe encontrarse en un estado asignable.
      */
     public function assign(
         AssignSupportTicketRequest $request,
@@ -147,7 +142,41 @@ class SupportTicketController extends Controller
     }
 
     /**
-     * Muestra un ticket específico junto con sus relaciones.
+     * Agrega una respuesta a un ticket.
+     *
+     * AddSupportMessageService comprueba que el usuario
+     * pueda participar y actualiza automáticamente el estado.
+     */
+    public function reply(
+        StoreSupportMessageRequest $request,
+        SupportTicket $supportTicket,
+        AddSupportMessageService $service
+    ): JsonResponse {
+        $validated = $request->validated();
+
+        try {
+            $supportMessage = $service->execute(
+                ticket: $supportTicket,
+                sender: $request->user(),
+                message: $validated['message'],
+                attachmentUrl: $validated[
+                    'attachment_url'
+                ] ?? null
+            );
+        } catch (DomainException $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 422);
+        }
+
+        return response()->json([
+            'message' => 'Support message sent successfully.',
+            'data' => $supportMessage,
+        ], 201);
+    }
+
+    /**
+     * Muestra un ticket específico y sus relaciones.
      */
     public function show(
         SupportTicket $supportTicket

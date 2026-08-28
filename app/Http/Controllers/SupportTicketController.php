@@ -2,28 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AddSupportMessageRequest;
 use App\Http\Requests\AssignSupportTicketRequest;
-use App\Http\Requests\StoreSupportMessageRequest;
 use App\Http\Requests\StoreSupportTicketRequest;
+use App\Http\Requests\UpdateSupportTicketStatusRequest;
 use App\Models\Shipment;
 use App\Models\SupportTicket;
 use App\Models\User;
 use App\Services\Support\AddSupportMessageService;
 use App\Services\Support\AssignSupportTicketService;
 use App\Services\Support\CreateSupportTicketService;
+use App\Services\Support\UpdateSupportTicketStatusService;
 use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Symfony\Component\HttpFoundation\Response;
 
 class SupportTicketController extends Controller
 {
-    /**
-     * Lista los tickets visibles para el usuario autenticado.
-     *
-     * Los clientes solamente reciben sus propios tickets.
-     * Soporte y administración reciben todos los tickets.
-     */
     public function index(Request $request): JsonResponse
     {
         Gate::authorize(
@@ -43,19 +40,28 @@ class SupportTicketController extends Controller
                 'category',
                 'status',
                 'priority',
-                'assignedTo',
-                'messages.user',
+                'assignedTo.role',
             ])
             ->orderByDesc('id');
 
         if ($roleName === 'CUSTOMER') {
             $query->whereHas(
                 'customer',
-                fn ($query) => $query->where(
-                    'user_id',
-                    $user->id
-                )
+                fn ($customerQuery) => $customerQuery
+                    ->where('user_id', $user->id)
             );
+        }
+
+        if (! in_array(
+            $roleName,
+            [
+                'CUSTOMER',
+                'SUPPORT_AGENT',
+                'ADMINISTRATOR',
+            ],
+            true
+        )) {
+            abort(Response::HTTP_FORBIDDEN);
         }
 
         return response()->json([
@@ -63,121 +69,51 @@ class SupportTicketController extends Controller
         ]);
     }
 
-    /**
-     * Crea un ticket con su mensaje inicial.
-     */
     public function store(
         StoreSupportTicketRequest $request,
         CreateSupportTicketService $service
     ): JsonResponse {
-        $validated = $request->validated();
-
         $customer = $request->user()
             ->customer()
             ->firstOrFail();
 
         $shipment = null;
 
-        if (isset($validated['shipment_id'])) {
-            $shipment = Shipment::query()
-                ->findOrFail(
-                    $validated['shipment_id']
-                );
+        if ($request->validated('shipment_id') !== null) {
+            $shipment = Shipment::query()->findOrFail(
+                $request->integer('shipment_id')
+            );
         }
 
         try {
             $ticket = $service->execute(
                 customer: $customer,
-                categoryName: $validated['category'],
-                subject: $validated['subject'],
-                message: $validated['message'],
+                categoryName: $request->string(
+                    'category'
+                )->toString(),
+                subject: $request->string(
+                    'subject'
+                )->toString(),
+                message: $request->string(
+                    'message'
+                )->toString(),
                 shipment: $shipment,
-                attachmentUrl: $validated[
+                attachmentUrl: $request->validated(
                     'attachment_url'
-                ] ?? null
+                )
             );
         } catch (DomainException $exception) {
             return response()->json([
                 'message' => $exception->getMessage(),
-            ], 422);
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         return response()->json([
             'message' => 'Support ticket created successfully.',
             'data' => $ticket,
-        ], 201);
+        ], Response::HTTP_CREATED);
     }
 
-    /**
-     * Asigna o reasigna un ticket.
-     */
-    public function assign(
-        AssignSupportTicketRequest $request,
-        SupportTicket $supportTicket,
-        AssignSupportTicketService $service
-    ): JsonResponse {
-        $validated = $request->validated();
-
-        $assignee = User::query()
-            ->findOrFail(
-                $validated['assigned_to_user_id']
-            );
-
-        try {
-            $assignedTicket = $service->execute(
-                ticket: $supportTicket,
-                assignee: $assignee,
-                performedBy: $request->user()
-            );
-        } catch (DomainException $exception) {
-            return response()->json([
-                'message' => $exception->getMessage(),
-            ], 422);
-        }
-
-        return response()->json([
-            'message' => 'Support ticket assigned successfully.',
-            'data' => $assignedTicket,
-        ]);
-    }
-
-    /**
-     * Agrega una respuesta a un ticket.
-     *
-     * AddSupportMessageService comprueba que el usuario
-     * pueda participar y actualiza automáticamente el estado.
-     */
-    public function reply(
-        StoreSupportMessageRequest $request,
-        SupportTicket $supportTicket,
-        AddSupportMessageService $service
-    ): JsonResponse {
-        $validated = $request->validated();
-
-        try {
-            $supportMessage = $service->execute(
-                ticket: $supportTicket,
-                sender: $request->user(),
-                message: $validated['message'],
-                attachmentUrl: $validated[
-                    'attachment_url'
-                ] ?? null
-            );
-        } catch (DomainException $exception) {
-            return response()->json([
-                'message' => $exception->getMessage(),
-            ], 422);
-        }
-
-        return response()->json([
-            'message' => 'Support message sent successfully.',
-            'data' => $supportMessage,
-        ], 201);
-    }
-
-    /**
-     * Muestra un ticket específico y sus relaciones.
-     */
     public function show(
         SupportTicket $supportTicket
     ): JsonResponse {
@@ -198,6 +134,87 @@ class SupportTicketController extends Controller
 
         return response()->json([
             'data' => $supportTicket,
+        ]);
+    }
+
+    public function assign(
+        AssignSupportTicketRequest $request,
+        SupportTicket $supportTicket,
+        AssignSupportTicketService $service
+    ): JsonResponse {
+        $assignee = User::query()->findOrFail(
+            $request->integer('assigned_to_user_id')
+        );
+
+        try {
+            $ticket = $service->execute(
+                ticket: $supportTicket,
+                assignee: $assignee,
+                performedBy: $request->user()
+            );
+        } catch (DomainException $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return response()->json([
+            'message' => 'Support ticket assigned successfully.',
+            'data' => $ticket,
+        ]);
+    }
+
+    public function addMessage(
+        AddSupportMessageRequest $request,
+        SupportTicket $supportTicket,
+        AddSupportMessageService $service
+    ): JsonResponse {
+        try {
+            $supportMessage = $service->execute(
+                ticket: $supportTicket,
+                sender: $request->user(),
+                message: $request->string(
+                    'message'
+                )->toString(),
+                attachmentUrl: $request->validated(
+                    'attachment_url'
+                )
+            );
+        } catch (DomainException $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return response()->json([
+            'message' => 'Support message sent successfully.',
+            'data' => $supportMessage,
+        ], Response::HTTP_CREATED);
+    }
+
+    public function updateStatus(
+        UpdateSupportTicketStatusRequest $request,
+        SupportTicket $supportTicket,
+        UpdateSupportTicketStatusService $service
+    ): JsonResponse {
+        try {
+            $ticket = $service->execute(
+                ticket: $supportTicket,
+                targetStatusName: $request->string(
+                    'status'
+                )->toString(),
+                performedBy: $request->user(),
+                comment: $request->validated('comment')
+            );
+        } catch (DomainException $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return response()->json([
+            'message' => 'Support ticket status updated successfully.',
+            'data' => $ticket,
         ]);
     }
 }

@@ -299,6 +299,13 @@ Route::middleware('auth')->group(function (): void {
         ->whereNumber('supportTicket')
         ->name('support-tickets.messages.store');
 
+    Route::patch(
+        '/support-tickets/{supportTicket}/status',
+        [SupportTicketController::class, 'updateStatus']
+    )
+        ->whereNumber('supportTicket')
+        ->name('support-tickets.status.update');
+
     Route::get(
         '/support-tickets/{supportTicket}',
         [SupportTicketController::class, 'show']

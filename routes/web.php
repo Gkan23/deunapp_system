@@ -8,6 +8,7 @@ use App\Http\Controllers\RatingController;
 use App\Http\Controllers\RouteController;
 use App\Http\Controllers\RouteShipmentController;
 use App\Http\Controllers\ShipmentController;
+use App\Http\Controllers\SupportTicketController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -230,10 +231,6 @@ Route::middleware('auth')->group(function (): void {
         [AppNotificationController::class, 'index']
     )->name('notifications.index');
 
-    /*
-     * Esta ruta fija debe aparecer antes de las rutas
-     * que contienen el parámetro {appNotification}.
-     */
     Route::patch(
         '/notifications/read-all',
         [AppNotificationController::class, 'markAllAsRead']
@@ -277,6 +274,29 @@ Route::middleware('auth')->group(function (): void {
     )
         ->whereNumber('incident')
         ->name('incidents.show');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Support tickets
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/support-tickets',
+        [SupportTicketController::class, 'index']
+    )->name('support-tickets.index');
+
+    Route::post(
+        '/support-tickets',
+        [SupportTicketController::class, 'store']
+    )->name('support-tickets.store');
+
+    Route::get(
+        '/support-tickets/{supportTicket}',
+        [SupportTicketController::class, 'show']
+    )
+        ->whereNumber('supportTicket')
+        ->name('support-tickets.show');
 });
 
 /*

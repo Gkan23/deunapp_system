@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AssignSupportTicketRequest;
 use App\Http\Requests\StoreSupportTicketRequest;
 use App\Models\Shipment;
 use App\Models\SupportTicket;
+use App\Models\User;
+use App\Services\Support\AssignSupportTicketService;
 use App\Services\Support\CreateSupportTicketService;
 use DomainException;
 use Illuminate\Http\JsonResponse;
@@ -104,6 +107,46 @@ class SupportTicketController extends Controller
     }
 
     /**
+     * Asigna o reasigna un ticket.
+     *
+     * AssignSupportTicketService aplica las reglas específicas:
+     *
+     * - administración puede asignar y reasignar;
+     * - soporte solo puede tomar tickets para sí mismo;
+     * - el usuario asignado debe estar activo;
+     * - el ticket debe encontrarse en un estado asignable.
+     */
+    public function assign(
+        AssignSupportTicketRequest $request,
+        SupportTicket $supportTicket,
+        AssignSupportTicketService $service
+    ): JsonResponse {
+        $validated = $request->validated();
+
+        $assignee = User::query()
+            ->findOrFail(
+                $validated['assigned_to_user_id']
+            );
+
+        try {
+            $assignedTicket = $service->execute(
+                ticket: $supportTicket,
+                assignee: $assignee,
+                performedBy: $request->user()
+            );
+        } catch (DomainException $exception) {
+            return response()->json([
+                'message' => $exception->getMessage(),
+            ], 422);
+        }
+
+        return response()->json([
+            'message' => 'Support ticket assigned successfully.',
+            'data' => $assignedTicket,
+        ]);
+    }
+
+    /**
      * Muestra un ticket específico junto con sus relaciones.
      */
     public function show(
@@ -120,7 +163,7 @@ class SupportTicketController extends Controller
             'category',
             'status',
             'priority',
-            'assignedTo',
+            'assignedTo.role',
             'messages.user',
         ]);
 

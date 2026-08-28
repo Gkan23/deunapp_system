@@ -291,6 +291,13 @@ Route::middleware('auth')->group(function (): void {
         [SupportTicketController::class, 'store']
     )->name('support-tickets.store');
 
+    Route::patch(
+        '/support-tickets/{supportTicket}/assign',
+        [SupportTicketController::class, 'assign']
+    )
+        ->whereNumber('supportTicket')
+        ->name('support-tickets.assign');
+
     Route::get(
         '/support-tickets/{supportTicket}',
         [SupportTicketController::class, 'show']

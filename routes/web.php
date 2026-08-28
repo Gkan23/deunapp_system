@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AppNotificationController;
 use App\Http\Controllers\DeliveryServiceController;
+use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\RouteController;
@@ -9,12 +10,30 @@ use App\Http\Controllers\RouteShipmentController;
 use App\Http\Controllers\ShipmentController;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Application status
+|--------------------------------------------------------------------------
+|
+| Ruta pública utilizada para comprobar que la aplicación está funcionando.
+|
+*/
+
 Route::get('/', function () {
     return response()->json([
         'application' => 'DeUnapp System',
         'status' => 'ok',
     ]);
 })->name('home');
+
+/*
+|--------------------------------------------------------------------------
+| Authenticated routes
+|--------------------------------------------------------------------------
+|
+| Todos los endpoints principales necesitan un usuario autenticado.
+|
+*/
 
 Route::middleware('auth')->group(function (): void {
     /*
@@ -211,6 +230,10 @@ Route::middleware('auth')->group(function (): void {
         [AppNotificationController::class, 'index']
     )->name('notifications.index');
 
+    /*
+     * Esta ruta fija debe aparecer antes de las rutas
+     * que contienen el parámetro {appNotification}.
+     */
     Route::patch(
         '/notifications/read-all',
         [AppNotificationController::class, 'markAllAsRead']
@@ -229,7 +252,41 @@ Route::middleware('auth')->group(function (): void {
     )
         ->whereNumber('appNotification')
         ->name('notifications.show');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Incidents
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/incidents',
+        [IncidentController::class, 'index']
+    )->name('incidents.index');
+
+    Route::patch(
+        '/incidents/{incident}/status',
+        [IncidentController::class, 'updateStatus']
+    )
+        ->whereNumber('incident')
+        ->name('incidents.status.update');
+
+    Route::get(
+        '/incidents/{incident}',
+        [IncidentController::class, 'show']
+    )
+        ->whereNumber('incident')
+        ->name('incidents.show');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Authentication routes
+|--------------------------------------------------------------------------
+|
+| Si routes/auth.php existe, se registran sus rutas.
+|
+*/
 
 if (file_exists(__DIR__.'/auth.php')) {
     require __DIR__.'/auth.php';

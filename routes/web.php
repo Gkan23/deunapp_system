@@ -11,6 +11,7 @@ use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\SupportTicketMessageReadController;
 use App\Http\Controllers\RechargeController;
+use App\Http\Controllers\RechargePackageController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -354,6 +355,24 @@ Route::middleware('auth')->group(function (): void {
     )
         ->whereNumber('recharge')
         ->name('recharges.show');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Recharge packages
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/recharge-packages',
+        [RechargePackageController::class, 'index']
+    )->name('recharge-packages.index');
+
+    Route::get(
+        '/recharge-packages/{rechargePackage}',
+        [RechargePackageController::class, 'show']
+    )
+        ->whereNumber('rechargePackage')
+        ->name('recharge-packages.show');
 
 });
 

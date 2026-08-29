@@ -1,21 +1,22 @@
 <?php
 
 use App\Http\Controllers\AppNotificationController;
+use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\CurrentUserController;
 use App\Http\Controllers\DeliveryServiceController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\RatingController;
+use App\Http\Controllers\RechargeController;
+use App\Http\Controllers\RechargePackageController;
 use App\Http\Controllers\RouteController;
 use App\Http\Controllers\RouteShipmentController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\SupportTicketMessageReadController;
-use App\Http\Controllers\RechargeController;
-use App\Http\Controllers\RechargePackageController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\TripTransactionController;
-use App\Http\Controllers\AuditLogController;
-use App\Http\Controllers\CurrentUserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,6 +37,23 @@ Route::get('/', function () {
 
 /*
 |--------------------------------------------------------------------------
+| Guest authentication routes
+|--------------------------------------------------------------------------
+|
+| El inicio de sesión solamente está disponible para usuarios invitados.
+| Esta ruta debe permanecer fuera del grupo protegido con middleware auth.
+|
+*/
+
+Route::post(
+    '/login',
+    [AuthenticatedSessionController::class, 'store']
+)
+    ->middleware('guest')
+    ->name('login');
+
+/*
+|--------------------------------------------------------------------------
 | Authenticated routes
 |--------------------------------------------------------------------------
 |
@@ -44,6 +62,28 @@ Route::get('/', function () {
 */
 
 Route::middleware('auth')->group(function (): void {
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post(
+        '/logout',
+        [AuthenticatedSessionController::class, 'destroy']
+    )->name('logout');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Current authenticated user
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/me',
+        CurrentUserController::class
+    )->name('current-user.show');
+
     /*
     |--------------------------------------------------------------------------
     | Shipments
@@ -414,8 +454,7 @@ Route::middleware('auth')->group(function (): void {
         ->whereNumber('tripTransaction')
         ->name('trip-transactions.show');
 
-   
-        /*
+    /*
     |--------------------------------------------------------------------------
     | Audit logs
     |--------------------------------------------------------------------------
@@ -432,27 +471,14 @@ Route::middleware('auth')->group(function (): void {
     )
         ->whereNumber('auditLog')
         ->name('audit-logs.show');
-
-    /*
-    |--------------------------------------------------------------------------
-    | Current authenticated user
-    |--------------------------------------------------------------------------
-    */
-
-    Route::get(
-        '/me',
-        CurrentUserController::class
-    )->name('current-user.show');
-
 });
-
 
 /*
 |--------------------------------------------------------------------------
-| Authentication routes
+| Additional authentication routes
 |--------------------------------------------------------------------------
 |
-| Si routes/auth.php existe, se registran sus rutas.
+| Si routes/auth.php existe, se registran sus rutas adicionales.
 |
 */
 

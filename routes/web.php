@@ -12,6 +12,8 @@ use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\SupportTicketMessageReadController;
 use App\Http\Controllers\RechargeController;
 use App\Http\Controllers\RechargePackageController;
+use App\Http\Controllers\TripController;
+use App\Http\Controllers\TripTransactionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -373,6 +375,42 @@ Route::middleware('auth')->group(function (): void {
     )
         ->whereNumber('rechargePackage')
         ->name('recharge-packages.show');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Trip inventory
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/trips',
+        [TripController::class, 'index']
+    )->name('trips.index');
+
+    Route::get(
+        '/trips/{trip}',
+        [TripController::class, 'show']
+    )
+        ->whereNumber('trip')
+        ->name('trips.show');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Trip transactions
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/trip-transactions',
+        [TripTransactionController::class, 'index']
+    )->name('trip-transactions.index');
+
+    Route::get(
+        '/trip-transactions/{tripTransaction}',
+        [TripTransactionController::class, 'show']
+    )
+        ->whereNumber('tripTransaction')
+        ->name('trip-transactions.show');
 
 });
 

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AppNotificationController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\CurrentUserPasswordController;
 use App\Http\Controllers\CurrentUserController;
 use App\Http\Controllers\DeliveryServiceController;
 use App\Http\Controllers\IncidentController;
@@ -41,7 +42,6 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 |
 | El inicio de sesión solamente está disponible para usuarios invitados.
-| Esta ruta debe permanecer fuera del grupo protegido con middleware auth.
 |
 */
 
@@ -83,6 +83,11 @@ Route::middleware('auth')->group(function (): void {
         '/me',
         CurrentUserController::class
     )->name('current-user.show');
+
+    Route::put(
+        '/me/password',
+        [CurrentUserPasswordController::class, 'update']
+    )->name('current-user.password.update');
 
     /*
     |--------------------------------------------------------------------------

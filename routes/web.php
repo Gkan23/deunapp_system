@@ -5,6 +5,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\CurrentUserPasswordController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\CurrentCustomerProfileController;
 use App\Http\Controllers\CurrentUserController;
 use App\Http\Controllers\DeliveryServiceController;
 use App\Http\Controllers\IncidentController;
@@ -92,6 +93,11 @@ Route::middleware('auth')->group(function (): void {
         '/me',
         CurrentUserController::class
     )->name('current-user.show');
+
+    Route::patch(
+        '/me/profile',
+        [CurrentCustomerProfileController::class, 'update']
+    )->name('current-user.profile.update');
 
     Route::put(
         '/me/password',

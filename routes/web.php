@@ -5,6 +5,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\CurrentUserPasswordController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\CurrentCourierProfileController;
 use App\Http\Controllers\CurrentCustomerProfileController;
 use App\Http\Controllers\CurrentDeliveryProviderProfileController;
 use App\Http\Controllers\CurrentUserController;
@@ -107,6 +108,11 @@ Route::middleware('auth')->group(function (): void {
             'update',
         ]
     )->name('current-user.provider-profile.update');
+
+    Route::patch(
+        '/me/courier-profile',
+        [CurrentCourierProfileController::class, 'update']
+    )->name('current-user.courier-profile.update');
 
     Route::put(
         '/me/password',

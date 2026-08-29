@@ -10,6 +10,7 @@ use App\Http\Controllers\RouteShipmentController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\SupportTicketMessageReadController;
+use App\Http\Controllers\RechargeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -330,7 +331,32 @@ Route::middleware('auth')->group(function (): void {
     )
         ->whereNumber('supportTicket')
         ->name('support-tickets.show');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Recharges
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/recharges',
+        [RechargeController::class, 'index']
+    )->name('recharges.index');
+
+    Route::post(
+        '/recharges',
+        [RechargeController::class, 'store']
+    )->name('recharges.store');
+
+    Route::get(
+        '/recharges/{recharge}',
+        [RechargeController::class, 'show']
+    )
+        ->whereNumber('recharge')
+        ->name('recharges.show');
+
 });
+
 
 /*
 |--------------------------------------------------------------------------

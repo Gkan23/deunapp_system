@@ -15,6 +15,7 @@ use App\Http\Controllers\RechargePackageController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\TripTransactionController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\CurrentUserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -431,6 +432,17 @@ Route::middleware('auth')->group(function (): void {
     )
         ->whereNumber('auditLog')
         ->name('audit-logs.show');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Current authenticated user
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/me',
+        CurrentUserController::class
+    )->name('current-user.show');
 
 });
 

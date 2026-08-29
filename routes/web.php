@@ -4,6 +4,8 @@ use App\Http\Controllers\AppNotificationController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\CurrentUserPasswordController;
+use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CurrentCourierProfileController;
 use App\Http\Controllers\CurrentCustomerProfileController;
@@ -45,10 +47,31 @@ Route::get('/', function () {
 | Guest authentication routes
 |--------------------------------------------------------------------------
 |
-| El registro y el inicio de sesión solamente están disponibles
-| para usuarios que todavía no se encuentran autenticados.
+| Estas rutas están disponibles solamente para usuarios
+| que todavía no se encuentran autenticados.
 |
 */
+
+Route::post(
+    '/forgot-password',
+    [PasswordResetLinkController::class, 'store']
+)
+    ->middleware('guest')
+    ->name('password.email');
+
+Route::get(
+    '/reset-password/{token}',
+    [NewPasswordController::class, 'create']
+)
+    ->middleware('guest')
+    ->name('password.reset');
+
+Route::post(
+    '/reset-password',
+    [NewPasswordController::class, 'store']
+)
+    ->middleware('guest')
+    ->name('password.store');
 
 Route::post(
     '/register',

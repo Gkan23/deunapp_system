@@ -4,6 +4,7 @@ use App\Http\Controllers\AppNotificationController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\CurrentUserPasswordController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\CurrentUserController;
 use App\Http\Controllers\DeliveryServiceController;
 use App\Http\Controllers\IncidentController;
@@ -41,9 +42,17 @@ Route::get('/', function () {
 | Guest authentication routes
 |--------------------------------------------------------------------------
 |
-| El inicio de sesión solamente está disponible para usuarios invitados.
+| El registro y el inicio de sesión solamente están disponibles
+| para usuarios que todavía no se encuentran autenticados.
 |
 */
+
+Route::post(
+    '/register',
+    [RegisteredUserController::class, 'store']
+)
+    ->middleware('guest')
+    ->name('register');
 
 Route::post(
     '/login',

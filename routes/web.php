@@ -14,6 +14,7 @@ use App\Http\Controllers\RechargeController;
 use App\Http\Controllers\RechargePackageController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\TripTransactionController;
+use App\Http\Controllers\AuditLogController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -411,6 +412,25 @@ Route::middleware('auth')->group(function (): void {
     )
         ->whereNumber('tripTransaction')
         ->name('trip-transactions.show');
+
+   
+        /*
+    |--------------------------------------------------------------------------
+    | Audit logs
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/audit-logs',
+        [AuditLogController::class, 'index']
+    )->name('audit-logs.index');
+
+    Route::get(
+        '/audit-logs/{auditLog}',
+        [AuditLogController::class, 'show']
+    )
+        ->whereNumber('auditLog')
+        ->name('audit-logs.show');
 
 });
 

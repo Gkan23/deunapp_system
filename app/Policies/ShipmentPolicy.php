@@ -50,7 +50,10 @@ class ShipmentPolicy
 
         if (
             $this->hasRole($user, 'CUSTOMER')
-            && $this->ownsShipment($user, $shipment)
+            && $this->ownsShipment(
+                $user,
+                $shipment
+            )
         ) {
             return true;
         }
@@ -73,6 +76,23 @@ class ShipmentPolicy
                 $user,
                 $shipment
             );
+    }
+
+    /**
+     * El acceso al seguimiento utiliza exactamente
+     * el mismo alcance que la consulta del envío.
+     *
+     * El servicio decide si existe una ubicación
+     * que pueda mostrarse.
+     */
+    public function track(
+        User $user,
+        Shipment $shipment
+    ): bool {
+        return $this->view(
+            $user,
+            $shipment
+        );
     }
 
     public function create(User $user): bool
@@ -179,9 +199,6 @@ class ShipmentPolicy
     /**
      * Solo el repartidor asignado puede reportar
      * un intento de entrega fallido.
-     *
-     * El servicio de dominio también comprueba esta
-     * condición dentro de la transacción.
      */
     public function failDeliveryAttempt(
         User $user,
@@ -243,7 +260,10 @@ class ShipmentPolicy
         Shipment $shipment
     ): bool {
         return $shipment->customer()
-            ->where('user_id', $user->id)
+            ->where(
+                'user_id',
+                $user->id
+            )
             ->exists();
     }
 
@@ -282,7 +302,10 @@ class ShipmentPolicy
         string $role
     ): bool {
         return $user->role()
-            ->where('role_name', $role)
+            ->where(
+                'role_name',
+                $role
+            )
             ->exists();
     }
 
@@ -294,7 +317,10 @@ class ShipmentPolicy
         array $roles
     ): bool {
         return $user->role()
-            ->whereIn('role_name', $roles)
+            ->whereIn(
+                'role_name',
+                $roles
+            )
             ->exists();
     }
 }

@@ -29,6 +29,7 @@ use App\Http\Controllers\RechargePackageController;
 use App\Http\Controllers\RouteController;
 use App\Http\Controllers\RouteShipmentController;
 use App\Http\Controllers\ShipmentController;
+use App\Http\Controllers\ShipmentTrackingController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\SupportTicketMessageReadController;
 use App\Http\Controllers\TripController;
@@ -304,10 +305,7 @@ Route::middleware('auth')->group(function (): void {
 
         Route::get(
             '/couriers/{courier}/locations/latest',
-            [
-                CourierLocationController::class,
-                'latest',
-            ]
+            [CourierLocationController::class, 'latest']
         )
             ->whereNumber('courier')
             ->name('couriers.locations.latest');
@@ -351,6 +349,13 @@ Route::middleware('auth')->group(function (): void {
         )
             ->whereNumber('shipment')
             ->name('shipments.cancel');
+
+        Route::get(
+            '/shipments/{shipment}/tracking',
+            [ShipmentTrackingController::class, 'show']
+        )
+            ->whereNumber('shipment')
+            ->name('shipments.tracking');
 
         Route::get(
             '/shipments/{shipment}',

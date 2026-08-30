@@ -28,6 +28,7 @@ use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\SupportTicketMessageReadController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\TripTransactionController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -195,6 +196,24 @@ Route::middleware('auth')->group(function (): void {
     */
 
     Route::middleware('verified')->group(function (): void {
+        /*
+        |--------------------------------------------------------------------------
+        | User administration
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/users',
+            [UserController::class, 'index']
+        )->name('users.index');
+
+        Route::get(
+            '/users/{user}',
+            [UserController::class, 'show']
+        )
+            ->whereNumber('user')
+            ->name('users.show');
+
         /*
         |--------------------------------------------------------------------------
         | Shipments

@@ -14,6 +14,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\CourierController;
 use App\Http\Controllers\CurrentCourierAvailabilityController;
+use App\Http\Controllers\CurrentCourierLocationController;
 use App\Http\Controllers\CurrentCourierProfileController;
 use App\Http\Controllers\CurrentCustomerProfileController;
 use App\Http\Controllers\CurrentDeliveryProviderProfileController;
@@ -213,6 +214,21 @@ Route::middleware('auth')->group(function (): void {
         ->middleware('verified')
         ->name(
             'current-user.courier-availability.update'
+        );
+
+    Route::post(
+        '/me/courier-locations',
+        [
+            CurrentCourierLocationController::class,
+            'store',
+        ]
+    )
+        ->middleware([
+            'verified',
+            'throttle:30,1',
+        ])
+        ->name(
+            'current-user.courier-locations.store'
         );
 
     /*

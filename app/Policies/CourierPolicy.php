@@ -110,31 +110,24 @@ class CourierPolicy
         User $user,
         Courier $courier
     ): bool {
-        if (! $user->hasVerifiedEmail()) {
-            return false;
-        }
-
-        if (! $this->hasRole(
+        return $this->canOperateCourier(
             $user,
-            'COURIER'
-        )) {
-            return false;
-        }
+            $courier
+        );
+    }
 
-        if (
-            (int) $courier->user_id
-            !== (int) $user->id
-        ) {
-            return false;
-        }
-
-        if (! $courier->is_active) {
-            return false;
-        }
-
-        return $courier->deliveryProvider()
-            ->where('is_active', true)
-            ->exists();
+    /**
+     * Solamente el repartidor propietario puede
+     * registrar su propia ubicación.
+     */
+    public function recordLocation(
+        User $user,
+        Courier $courier
+    ): bool {
+        return $this->canOperateCourier(
+            $user,
+            $courier
+        );
     }
 
     /**
@@ -170,6 +163,41 @@ class CourierPolicy
         Courier $courier
     ): bool {
         return false;
+    }
+
+    /**
+     * Comprueba que el usuario pueda realizar
+     * operaciones sobre su propio perfil de repartidor.
+     */
+    private function canOperateCourier(
+        User $user,
+        Courier $courier
+    ): bool {
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        if (! $this->hasRole(
+            $user,
+            'COURIER'
+        )) {
+            return false;
+        }
+
+        if (
+            (int) $courier->user_id
+            !== (int) $user->id
+        ) {
+            return false;
+        }
+
+        if (! $courier->is_active) {
+            return false;
+        }
+
+        return $courier->deliveryProvider()
+            ->where('is_active', true)
+            ->exists();
     }
 
     private function ownsCourier(

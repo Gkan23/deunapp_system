@@ -35,9 +35,6 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | Application status
 |--------------------------------------------------------------------------
-|
-| Ruta pública utilizada para comprobar que la aplicación funciona.
-|
 */
 
 Route::get('/', function () {
@@ -51,9 +48,6 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 | Guest authentication routes
 |--------------------------------------------------------------------------
-|
-| Estas rutas solamente están disponibles para usuarios invitados.
-|
 */
 
 Route::middleware('guest')->group(function (): void {
@@ -87,9 +81,6 @@ Route::middleware('guest')->group(function (): void {
 |--------------------------------------------------------------------------
 | Authenticated routes
 |--------------------------------------------------------------------------
-|
-| Estas rutas necesitan un usuario autenticado.
-|
 */
 
 Route::middleware('auth')->group(function (): void {
@@ -194,6 +185,15 @@ Route::middleware('auth')->group(function (): void {
             '/users',
             [UserController::class, 'index']
         )->name('users.index');
+
+        /*
+         * La ruta fija /users/staff debe aparecer antes
+         * de la ruta que contiene el parámetro {user}.
+         */
+        Route::post(
+            '/users/staff',
+            [UserController::class, 'storeStaff']
+        )->name('users.staff.store');
 
         Route::patch(
             '/users/{user}/account-status',
@@ -638,9 +638,6 @@ Route::middleware('auth')->group(function (): void {
 |--------------------------------------------------------------------------
 | Optional authentication routes
 |--------------------------------------------------------------------------
-|
-| Si routes/auth.php existe, se registran sus rutas adicionales.
-|
 */
 
 if (file_exists(__DIR__.'/auth.php')) {

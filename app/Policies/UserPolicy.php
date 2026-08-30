@@ -25,10 +25,6 @@ class UserPolicy
         return null;
     }
 
-    /**
-     * Administración y soporte pueden acceder
-     * al listado de cuentas.
-     */
     public function viewAny(User $user): bool
     {
         return $this->hasAnyRole($user, [
@@ -37,10 +33,6 @@ class UserPolicy
         ]);
     }
 
-    /**
-     * Administración y soporte pueden consultar
-     * los datos no confidenciales de una cuenta.
-     */
     public function view(
         User $user,
         User $targetUser
@@ -52,8 +44,7 @@ class UserPolicy
     }
 
     /**
-     * Las cuentas públicas se crean mediante
-     * el flujo específico de registro.
+     * El registro público utiliza su propio flujo.
      */
     public function create(User $user): bool
     {
@@ -61,8 +52,17 @@ class UserPolicy
     }
 
     /**
-     * No se permiten modificaciones genéricas.
+     * Solamente un administrador activo puede
+     * crear cuentas internas.
      */
+    public function createStaff(User $user): bool
+    {
+        return $this->hasRole(
+            $user,
+            'ADMINISTRATOR'
+        );
+    }
+
     public function update(
         User $user,
         User $targetUser
@@ -70,10 +70,6 @@ class UserPolicy
         return false;
     }
 
-    /**
-     * Solamente administración puede cambiar
-     * el estado de otra cuenta.
-     */
     public function changeAccountStatus(
         User $user,
         User $targetUser
@@ -85,10 +81,6 @@ class UserPolicy
             !== (int) $targetUser->getKey();
     }
 
-    /**
-     * Solamente administración puede cambiar
-     * el rol de otra cuenta.
-     */
     public function changeRole(
         User $user,
         User $targetUser
@@ -100,10 +92,6 @@ class UserPolicy
             !== (int) $targetUser->getKey();
     }
 
-    /**
-     * Las cuentas conservan su trazabilidad
-     * y no se eliminan directamente.
-     */
     public function delete(
         User $user,
         User $targetUser

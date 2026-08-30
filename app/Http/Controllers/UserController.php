@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateStaffUserRequest;
 use App\Http\Requests\ListUsersRequest;
 use App\Http\Requests\UpdateUserAccountStatusRequest;
 use App\Http\Requests\UpdateUserRoleRequest;
 use App\Models\User;
+use App\Services\User\CreateStaffUserService;
 use App\Services\User\UpdateUserAccountStatusService;
 use App\Services\User\UpdateUserRoleService;
 use DomainException;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Password;
 
 class UserController extends Controller
 {
@@ -96,6 +100,59 @@ class UserController extends Controller
                     $users->total(),
             ],
         ]);
+    }
+
+    /**
+     * Crea una cuenta interna.
+     */
+    public function storeStaff(
+        CreateStaffUserRequest $request,
+        CreateStaffUserService $service
+    ): JsonResponse {
+        $validated = $request->validated();
+
+        try {
+            $staffUser = $service->execute(
+                performedBy: $request->user(),
+                name: $validated['name'],
+                email: $validated['email'],
+                roleName: $validated['role'],
+                comment: $validated['comment']
+            );
+        } catch (DomainException $exception) {
+            return response()->json([
+                'message' =>
+                    $exception->getMessage(),
+            ], 422);
+        }
+
+        /*
+         * Envía el correo de verificación.
+         */
+        event(new Registered($staffUser));
+
+        /*
+         * Envía un enlace para que el usuario
+         * establezca su propia contraseña.
+         */
+        $passwordResetStatus = Password::broker()
+            ->sendResetLink([
+                'email' => $staffUser->email,
+            ]);
+
+        return response()->json([
+            'message' =>
+                'Staff user created successfully.',
+            'data' => $this->userData(
+                $staffUser
+            ),
+            'invitation' => [
+                'verification_email_sent' => true,
+                'password_setup_email_sent' =>
+                    $passwordResetStatus
+                    === Password::RESET_LINK_SENT,
+            ],
+        ], 201);
     }
 
     public function show(

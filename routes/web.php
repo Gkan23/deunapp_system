@@ -36,7 +36,7 @@ use Illuminate\Support\Facades\Route;
 | Application status
 |--------------------------------------------------------------------------
 |
-| Ruta pública utilizada para comprobar que la aplicación está funcionando.
+| Ruta pública utilizada para comprobar que la aplicación funciona.
 |
 */
 
@@ -52,53 +52,44 @@ Route::get('/', function () {
 | Guest authentication routes
 |--------------------------------------------------------------------------
 |
-| Estas rutas están disponibles solamente para usuarios
-| que todavía no se encuentran autenticados.
+| Estas rutas solamente están disponibles para usuarios invitados.
 |
 */
 
-Route::post(
-    '/forgot-password',
-    [PasswordResetLinkController::class, 'store']
-)
-    ->middleware('guest')
-    ->name('password.email');
+Route::middleware('guest')->group(function (): void {
+    Route::post(
+        '/register',
+        [RegisteredUserController::class, 'store']
+    )->name('register');
 
-Route::get(
-    '/reset-password/{token}',
-    [NewPasswordController::class, 'create']
-)
-    ->middleware('guest')
-    ->name('password.reset');
+    Route::post(
+        '/login',
+        [AuthenticatedSessionController::class, 'store']
+    )->name('login');
 
-Route::post(
-    '/reset-password',
-    [NewPasswordController::class, 'store']
-)
-    ->middleware('guest')
-    ->name('password.store');
+    Route::post(
+        '/forgot-password',
+        [PasswordResetLinkController::class, 'store']
+    )->name('password.email');
 
-Route::post(
-    '/register',
-    [RegisteredUserController::class, 'store']
-)
-    ->middleware('guest')
-    ->name('register');
+    Route::get(
+        '/reset-password/{token}',
+        [NewPasswordController::class, 'create']
+    )->name('password.reset');
 
-Route::post(
-    '/login',
-    [AuthenticatedSessionController::class, 'store']
-)
-    ->middleware('guest')
-    ->name('login');
+    Route::post(
+        '/reset-password',
+        [NewPasswordController::class, 'store']
+    )->name('password.store');
+});
 
 /*
 |--------------------------------------------------------------------------
 | Authenticated routes
 |--------------------------------------------------------------------------
 |
-| Estas rutas necesitan un usuario autenticado, pero algunas
-| pueden utilizarse antes de verificar el correo.
+| Estas rutas necesitan un usuario autenticado, pero algunas pueden
+| utilizarse antes de verificar el correo electrónico.
 |
 */
 
@@ -143,7 +134,6 @@ Route::middleware('auth')->group(function (): void {
             'signed',
             'throttle:6,1',
         ])
-        ->whereNumber('id')
         ->name('verification.verify');
 
     /*
@@ -162,6 +152,11 @@ Route::middleware('auth')->group(function (): void {
         [CurrentUserEmailController::class, 'update']
     )->name('current-user.email.update');
 
+    Route::put(
+        '/me/password',
+        [CurrentUserPasswordController::class, 'update']
+    )->name('current-user.password.update');
+
     Route::patch(
         '/me/profile',
         [CurrentCustomerProfileController::class, 'update']
@@ -177,21 +172,19 @@ Route::middleware('auth')->group(function (): void {
 
     Route::patch(
         '/me/courier-profile',
-        [CurrentCourierProfileController::class, 'update']
+        [
+            CurrentCourierProfileController::class,
+            'update',
+        ]
     )->name('current-user.courier-profile.update');
-
-    Route::put(
-        '/me/password',
-        [CurrentUserPasswordController::class, 'update']
-    )->name('current-user.password.update');
 
     /*
     |--------------------------------------------------------------------------
     | Verified operational routes
     |--------------------------------------------------------------------------
     |
-    | Todos los endpoints del dominio necesitan que el usuario
-    | haya confirmado previamente su dirección de correo.
+    | Los módulos principales solamente pueden utilizarse después
+    | de verificar el correo electrónico.
     |
     */
 
@@ -206,6 +199,16 @@ Route::middleware('auth')->group(function (): void {
             '/users',
             [UserController::class, 'index']
         )->name('users.index');
+
+        Route::patch(
+            '/users/{user}/account-status',
+            [
+                UserController::class,
+                'updateAccountStatus',
+            ]
+        )
+            ->whereNumber('user')
+            ->name('users.account-status.update');
 
         Route::get(
             '/users/{user}',
@@ -232,7 +235,10 @@ Route::middleware('auth')->group(function (): void {
 
         Route::patch(
             '/shipments/{shipment}/status',
-            [ShipmentController::class, 'updateStatus']
+            [
+                ShipmentController::class,
+                'updateStatus',
+            ]
         )
             ->whereNumber('shipment')
             ->name('shipments.status.update');
@@ -303,7 +309,10 @@ Route::middleware('auth')->group(function (): void {
 
         Route::patch(
             '/route-shipments/{routeShipment}/fail-attempt',
-            [RouteShipmentController::class, 'failAttempt']
+            [
+                RouteShipmentController::class,
+                'failAttempt',
+            ]
         )
             ->whereNumber('routeShipment')
             ->name('route-shipments.fail-attempt');
@@ -321,14 +330,20 @@ Route::middleware('auth')->group(function (): void {
 
         Route::patch(
             '/delivery-services/{deliveryService}/assign',
-            [DeliveryServiceController::class, 'assign']
+            [
+                DeliveryServiceController::class,
+                'assign',
+            ]
         )
             ->whereNumber('deliveryService')
             ->name('delivery-services.assign');
 
         Route::patch(
             '/delivery-services/{deliveryService}/complete',
-            [DeliveryServiceController::class, 'complete']
+            [
+                DeliveryServiceController::class,
+                'complete',
+            ]
         )
             ->whereNumber('deliveryService')
             ->name('delivery-services.complete');
@@ -338,7 +353,9 @@ Route::middleware('auth')->group(function (): void {
             [RatingController::class, 'store']
         )
             ->whereNumber('deliveryService')
-            ->name('delivery-services.ratings.store');
+            ->name(
+                'delivery-services.ratings.store'
+            );
 
         Route::get(
             '/delivery-services/{deliveryService}',
@@ -409,8 +426,8 @@ Route::middleware('auth')->group(function (): void {
         )->name('notifications.index');
 
         /*
-         * Esta ruta fija debe aparecer antes de las rutas
-         * que contienen el parámetro {appNotification}.
+         * Esta ruta fija debe aparecer antes de las
+         * rutas con el parámetro {appNotification}.
          */
         Route::patch(
             '/notifications/read-all',
@@ -487,7 +504,10 @@ Route::middleware('auth')->group(function (): void {
 
         Route::post(
             '/support-tickets/{supportTicket}/messages',
-            [SupportTicketController::class, 'addMessage']
+            [
+                SupportTicketController::class,
+                'addMessage',
+            ]
         )
             ->whereNumber('supportTicket')
             ->name('support-tickets.messages.store');
@@ -501,7 +521,10 @@ Route::middleware('auth')->group(function (): void {
 
         Route::patch(
             '/support-tickets/{supportTicket}/status',
-            [SupportTicketController::class, 'updateStatus']
+            [
+                SupportTicketController::class,
+                'updateStatus',
+            ]
         )
             ->whereNumber('supportTicket')
             ->name('support-tickets.status.update');
@@ -585,7 +608,10 @@ Route::middleware('auth')->group(function (): void {
 
         Route::get(
             '/trip-transactions/{tripTransaction}',
-            [TripTransactionController::class, 'show']
+            [
+                TripTransactionController::class,
+                'show',
+            ]
         )
             ->whereNumber('tripTransaction')
             ->name('trip-transactions.show');
@@ -612,7 +638,7 @@ Route::middleware('auth')->group(function (): void {
 
 /*
 |--------------------------------------------------------------------------
-| Additional authentication routes
+| Optional authentication routes
 |--------------------------------------------------------------------------
 |
 | Si routes/auth.php existe, se registran sus rutas adicionales.

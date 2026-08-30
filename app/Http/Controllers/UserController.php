@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ListUsersRequest;
+use App\Http\Requests\UpdateUserAccountStatusRequest;
 use App\Models\User;
+use App\Services\User\UpdateUserAccountStatusService;
+use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -112,6 +115,41 @@ class UserController extends Controller
 
         return response()->json([
             'data' => $this->userData($user),
+        ]);
+    }
+
+    /**
+     * Cambia el estado de una cuenta.
+     */
+    public function updateAccountStatus(
+        UpdateUserAccountStatusRequest $request,
+        User $user,
+        UpdateUserAccountStatusService $service
+    ): JsonResponse {
+        $validated = $request->validated();
+
+        try {
+            $updatedUser = $service->execute(
+                targetUser: $user,
+                performedBy: $request->user(),
+                targetStatusName:
+                    $validated['status'],
+                comment:
+                    $validated['comment'] ?? null
+            );
+        } catch (DomainException $exception) {
+            return response()->json([
+                'message' =>
+                    $exception->getMessage(),
+            ], 422);
+        }
+
+        return response()->json([
+            'message' =>
+                'User account status updated successfully.',
+            'data' => $this->userData(
+                $updatedUser
+            ),
         ]);
     }
 

@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateCourierRequest;
 use App\Http\Requests\ListCouriersRequest;
+use App\Http\Requests\UpdateCourierStatusRequest;
 use App\Models\Courier;
 use App\Services\Courier\CreateCourierService;
+use App\Services\Courier\UpdateCourierStatusService;
 use DomainException;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
@@ -91,7 +93,9 @@ class CourierController extends Controller
         ) {
             $query->where(
                 'is_active',
-                (bool) $validated['is_active']
+                (bool) $validated[
+                    'is_active'
+                ]
             );
         }
 
@@ -222,6 +226,41 @@ class CourierController extends Controller
                     === Password::RESET_LINK_SENT,
             ],
         ], 201);
+    }
+
+    /**
+     * Activa o desactiva un repartidor.
+     */
+    public function updateStatus(
+        UpdateCourierStatusRequest $request,
+        Courier $courier,
+        UpdateCourierStatusService $service
+    ): JsonResponse {
+        $validated = $request->validated();
+
+        try {
+            $updatedCourier = $service->execute(
+                courier: $courier,
+                performedBy: $request->user(),
+                isActive: (bool) $validated[
+                    'is_active'
+                ],
+                comment: $validated['comment']
+            );
+        } catch (DomainException $exception) {
+            return response()->json([
+                'message' =>
+                    $exception->getMessage(),
+            ], 422);
+        }
+
+        return response()->json([
+            'message' =>
+                'Courier status updated successfully.',
+            'data' => $this->courierData(
+                $updatedCourier
+            ),
+        ]);
     }
 
     /**

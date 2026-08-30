@@ -265,6 +265,13 @@ Route::middleware('auth')->group(function (): void {
             [CourierController::class, 'store']
         )->name('couriers.store');
 
+        Route::patch(
+            '/couriers/{courier}/status',
+            [CourierController::class, 'updateStatus']
+        )
+            ->whereNumber('courier')
+            ->name('couriers.status.update');
+
         Route::get(
             '/couriers/{courier}',
             [CourierController::class, 'show']

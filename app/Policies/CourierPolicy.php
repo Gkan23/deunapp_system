@@ -71,18 +71,10 @@ class CourierPolicy
             return true;
         }
 
-        if (! $this->isActiveProvider($user)) {
-            return false;
-        }
-
-        $providerId = $user
-            ->deliveryProvider()
-            ->value('id');
-
-        return $providerId !== null
-            && (int) $courier
-                ->delivery_provider_id
-                === (int) $providerId;
+        return $this->ownsCourier(
+            $user,
+            $courier
+        );
     }
 
     /**
@@ -96,9 +88,23 @@ class CourierPolicy
     }
 
     /**
-     * Las actualizaciones generales están
-     * deshabilitadas. Deben utilizarse acciones
-     * específicas del dominio.
+     * Solamente el proveedor propietario puede
+     * activar o desactivar al repartidor.
+     */
+    public function changeStatus(
+        User $user,
+        Courier $courier
+    ): bool {
+        return $user->hasVerifiedEmail()
+            && $this->ownsCourier(
+                $user,
+                $courier
+            );
+    }
+
+    /**
+     * Las actualizaciones generales deben utilizar
+     * acciones específicas del dominio.
      */
     public function update(
         User $user,
@@ -108,8 +114,7 @@ class CourierPolicy
     }
 
     /**
-     * Los repartidores conservan su trazabilidad
-     * y no deben eliminarse directamente.
+     * Los repartidores conservan su trazabilidad.
      */
     public function delete(
         User $user,
@@ -130,6 +135,24 @@ class CourierPolicy
         Courier $courier
     ): bool {
         return false;
+    }
+
+    private function ownsCourier(
+        User $user,
+        Courier $courier
+    ): bool {
+        if (! $this->isActiveProvider($user)) {
+            return false;
+        }
+
+        $providerId = $user
+            ->deliveryProvider()
+            ->value('id');
+
+        return $providerId !== null
+            && (int) $courier
+                ->delivery_provider_id
+                === (int) $providerId;
     }
 
     private function isActiveProvider(

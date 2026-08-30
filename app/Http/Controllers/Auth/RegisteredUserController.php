@@ -6,13 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Services\Auth\RegisterCustomerService;
 use DomainException;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class RegisteredUserController extends Controller
 {
     /**
-     * Registra un cliente e inicia su sesión.
+     * Registra un cliente, envía la verificación
+     * e inicia su sesión.
      */
     public function store(
         RegisterRequest $request,
@@ -28,6 +30,13 @@ class RegisteredUserController extends Controller
             ], 422);
         }
 
+        /*
+         * El evento Registered envía automáticamente
+         * la notificación cuando User implementa
+         * MustVerifyEmail.
+         */
+        event(new Registered($user));
+
         Auth::login($user);
 
         $request->session()->regenerate();
@@ -42,9 +51,16 @@ class RegisteredUserController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'role' => $user->role->role_name,
+                    'email_verified_at' =>
+                        $user->email_verified_at,
+                    'email_verified' =>
+                        $user->hasVerifiedEmail(),
+                    'role' =>
+                        $user->role->role_name,
                     'account_status' =>
-                        $user->accountStatus->status_name,
+                        $user
+                            ->accountStatus
+                            ->status_name,
                 ],
                 'customer' => [
                     'id' => $customer->id,

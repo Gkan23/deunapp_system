@@ -2,23 +2,21 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
-     *
      * @var list<string>
      */
     protected $fillable = [
@@ -30,8 +28,6 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
      * @var list<string>
      */
     protected $hidden = [
@@ -40,8 +36,6 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
      * @return array<string, string>
      */
     protected function casts(): array
@@ -59,7 +53,9 @@ class User extends Authenticatable
 
     public function accountStatus(): BelongsTo
     {
-        return $this->belongsTo(AccountStatus::class);
+        return $this->belongsTo(
+            AccountStatus::class
+        );
     }
 
     public function customer(): HasOne
@@ -69,7 +65,9 @@ class User extends Authenticatable
 
     public function deliveryProvider(): HasOne
     {
-        return $this->hasOne(DeliveryProvider::class);
+        return $this->hasOne(
+            DeliveryProvider::class
+        );
     }
 
     public function courier(): HasOne
@@ -95,7 +93,9 @@ class User extends Authenticatable
 
     public function appNotifications(): HasMany
     {
-        return $this->hasMany(AppNotification::class);
+        return $this->hasMany(
+            AppNotification::class
+        );
     }
 
     public function assignedSupportTickets(): HasMany
@@ -108,7 +108,9 @@ class User extends Authenticatable
 
     public function supportMessages(): HasMany
     {
-        return $this->hasMany(SupportMessage::class);
+        return $this->hasMany(
+            SupportMessage::class
+        );
     }
 
     public function auditLogs(): HasMany

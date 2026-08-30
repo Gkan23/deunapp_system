@@ -13,6 +13,7 @@ use App\Http\Controllers\Auth\RegisteredDeliveryProviderController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\CourierController;
+use App\Http\Controllers\CurrentCourierAvailabilityController;
 use App\Http\Controllers\CurrentCourierProfileController;
 use App\Http\Controllers\CurrentCustomerProfileController;
 use App\Http\Controllers\CurrentDeliveryProviderProfileController;
@@ -201,6 +202,18 @@ Route::middleware('auth')->group(function (): void {
             'update',
         ]
     )->name('current-user.courier-profile.update');
+
+    Route::patch(
+        '/me/courier-availability',
+        [
+            CurrentCourierAvailabilityController::class,
+            'update',
+        ]
+    )
+        ->middleware('verified')
+        ->name(
+            'current-user.courier-availability.update'
+        );
 
     /*
     |--------------------------------------------------------------------------

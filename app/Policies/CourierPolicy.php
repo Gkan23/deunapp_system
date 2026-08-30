@@ -103,6 +103,41 @@ class CourierPolicy
     }
 
     /**
+     * Solamente el repartidor propietario puede
+     * cambiar su propia disponibilidad.
+     */
+    public function changeAvailability(
+        User $user,
+        Courier $courier
+    ): bool {
+        if (! $user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        if (! $this->hasRole(
+            $user,
+            'COURIER'
+        )) {
+            return false;
+        }
+
+        if (
+            (int) $courier->user_id
+            !== (int) $user->id
+        ) {
+            return false;
+        }
+
+        if (! $courier->is_active) {
+            return false;
+        }
+
+        return $courier->deliveryProvider()
+            ->where('is_active', true)
+            ->exists();
+    }
+
+    /**
      * Las actualizaciones generales deben utilizar
      * acciones específicas del dominio.
      */

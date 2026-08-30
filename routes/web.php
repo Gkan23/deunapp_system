@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\RegisteredDeliveryProviderController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\CurrentCourierProfileController;
@@ -51,15 +52,47 @@ Route::get('/', function () {
 */
 
 Route::middleware('guest')->group(function (): void {
+    /*
+    |--------------------------------------------------------------------------
+    | Customer registration
+    |--------------------------------------------------------------------------
+    */
+
     Route::post(
         '/register',
         [RegisteredUserController::class, 'store']
     )->name('register');
 
+    /*
+    |--------------------------------------------------------------------------
+    | Delivery provider registration
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post(
+        '/register/provider',
+        [
+            RegisteredDeliveryProviderController::class,
+            'store',
+        ]
+    )->name('provider.register');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Login
+    |--------------------------------------------------------------------------
+    */
+
     Route::post(
         '/login',
         [AuthenticatedSessionController::class, 'store']
     )->name('login');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Password recovery
+    |--------------------------------------------------------------------------
+    */
 
     Route::post(
         '/forgot-password',
@@ -186,10 +219,6 @@ Route::middleware('auth')->group(function (): void {
             [UserController::class, 'index']
         )->name('users.index');
 
-        /*
-         * La ruta fija /users/staff debe aparecer antes
-         * de la ruta que contiene el parámetro {user}.
-         */
         Route::post(
             '/users/staff',
             [UserController::class, 'storeStaff']

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AppNotificationController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\CurrentUserEmailController;
 use App\Http\Controllers\Auth\CurrentUserPasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
@@ -154,6 +155,11 @@ Route::middleware('auth')->group(function (): void {
         '/me',
         CurrentUserController::class
     )->name('current-user.show');
+
+    Route::put(
+        '/me/email',
+        [CurrentUserEmailController::class, 'update']
+    )->name('current-user.email.update');
 
     Route::patch(
         '/me/profile',

@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredDeliveryProviderController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\CourierController;
 use App\Http\Controllers\CurrentCourierProfileController;
 use App\Http\Controllers\CurrentCustomerProfileController;
 use App\Http\Controllers\CurrentDeliveryProviderProfileController;
@@ -247,6 +248,17 @@ Route::middleware('auth')->group(function (): void {
         )
             ->whereNumber('user')
             ->name('users.show');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Couriers
+        |--------------------------------------------------------------------------
+        */
+
+        Route::post(
+            '/couriers',
+            [CourierController::class, 'store']
+        )->name('couriers.store');
 
         /*
         |--------------------------------------------------------------------------

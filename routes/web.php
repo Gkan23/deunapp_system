@@ -255,10 +255,22 @@ Route::middleware('auth')->group(function (): void {
         |--------------------------------------------------------------------------
         */
 
+        Route::get(
+            '/couriers',
+            [CourierController::class, 'index']
+        )->name('couriers.index');
+
         Route::post(
             '/couriers',
             [CourierController::class, 'store']
         )->name('couriers.store');
+
+        Route::get(
+            '/couriers/{courier}',
+            [CourierController::class, 'show']
+        )
+            ->whereNumber('courier')
+            ->name('couriers.show');
 
         /*
         |--------------------------------------------------------------------------

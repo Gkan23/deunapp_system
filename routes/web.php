@@ -88,8 +88,7 @@ Route::middleware('guest')->group(function (): void {
 | Authenticated routes
 |--------------------------------------------------------------------------
 |
-| Estas rutas necesitan un usuario autenticado, pero algunas pueden
-| utilizarse antes de verificar el correo electrónico.
+| Estas rutas necesitan un usuario autenticado.
 |
 */
 
@@ -182,10 +181,6 @@ Route::middleware('auth')->group(function (): void {
     |--------------------------------------------------------------------------
     | Verified operational routes
     |--------------------------------------------------------------------------
-    |
-    | Los módulos principales solamente pueden utilizarse después
-    | de verificar el correo electrónico.
-    |
     */
 
     Route::middleware('verified')->group(function (): void {
@@ -209,6 +204,13 @@ Route::middleware('auth')->group(function (): void {
         )
             ->whereNumber('user')
             ->name('users.account-status.update');
+
+        Route::patch(
+            '/users/{user}/role',
+            [UserController::class, 'updateRole']
+        )
+            ->whereNumber('user')
+            ->name('users.role.update');
 
         Route::get(
             '/users/{user}',
@@ -425,10 +427,6 @@ Route::middleware('auth')->group(function (): void {
             [AppNotificationController::class, 'index']
         )->name('notifications.index');
 
-        /*
-         * Esta ruta fija debe aparecer antes de las
-         * rutas con el parámetro {appNotification}.
-         */
         Route::patch(
             '/notifications/read-all',
             [

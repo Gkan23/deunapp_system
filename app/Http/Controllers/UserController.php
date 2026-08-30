@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ListUsersRequest;
 use App\Http\Requests\UpdateUserAccountStatusRequest;
+use App\Http\Requests\UpdateUserRoleRequest;
 use App\Models\User;
 use App\Services\User\UpdateUserAccountStatusService;
+use App\Services\User\UpdateUserRoleService;
 use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,9 +15,6 @@ use Illuminate\Support\Facades\Gate;
 
 class UserController extends Controller
 {
-    /**
-     * Lista las cuentas autorizadas.
-     */
     public function index(
         ListUsersRequest $request
     ): JsonResponse {
@@ -99,9 +98,6 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Muestra una cuenta específica.
-     */
     public function show(
         Request $request,
         User $user
@@ -118,9 +114,6 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Cambia el estado de una cuenta.
-     */
     public function updateAccountStatus(
         UpdateUserAccountStatusRequest $request,
         User $user,
@@ -153,6 +146,38 @@ class UserController extends Controller
         ]);
     }
 
+    public function updateRole(
+        UpdateUserRoleRequest $request,
+        User $user,
+        UpdateUserRoleService $service
+    ): JsonResponse {
+        $validated = $request->validated();
+
+        try {
+            $updatedUser = $service->execute(
+                targetUser: $user,
+                performedBy: $request->user(),
+                targetRoleName:
+                    $validated['role'],
+                comment:
+                    $validated['comment']
+            );
+        } catch (DomainException $exception) {
+            return response()->json([
+                'message' =>
+                    $exception->getMessage(),
+            ], 422);
+        }
+
+        return response()->json([
+            'message' =>
+                'User role updated successfully.',
+            'data' => $this->userData(
+                $updatedUser
+            ),
+        ]);
+    }
+
     /**
      * @return array<int, string>
      */
@@ -168,8 +193,6 @@ class UserController extends Controller
     }
 
     /**
-     * Convierte el usuario en una respuesta segura.
-     *
      * @return array<string, mixed>
      */
     private function userData(User $user): array

@@ -7,8 +7,8 @@ use App\Models\User;
 class UserPolicy
 {
     /**
-     * Impide cualquier operación administrativa
-     * cuando la cuenta del actor no está activa.
+     * Impide operaciones administrativas cuando
+     * la cuenta del actor no está activa.
      */
     public function before(
         User $user,
@@ -62,9 +62,6 @@ class UserPolicy
 
     /**
      * No se permiten modificaciones genéricas.
-     *
-     * El estado debe cambiarse mediante
-     * changeAccountStatus.
      */
     public function update(
         User $user,
@@ -76,11 +73,23 @@ class UserPolicy
     /**
      * Solamente administración puede cambiar
      * el estado de otra cuenta.
-     *
-     * Un administrador no puede modificar su
-     * propia cuenta desde este endpoint.
      */
     public function changeAccountStatus(
+        User $user,
+        User $targetUser
+    ): bool {
+        return $this->hasRole(
+            $user,
+            'ADMINISTRATOR'
+        ) && (int) $user->getKey()
+            !== (int) $targetUser->getKey();
+    }
+
+    /**
+     * Solamente administración puede cambiar
+     * el rol de otra cuenta.
+     */
+    public function changeRole(
         User $user,
         User $targetUser
     ): bool {

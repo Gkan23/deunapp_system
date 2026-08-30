@@ -13,6 +13,7 @@ use App\Http\Controllers\Auth\RegisteredDeliveryProviderController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\CourierController;
+use App\Http\Controllers\CourierLocationController;
 use App\Http\Controllers\CurrentCourierAvailabilityController;
 use App\Http\Controllers\CurrentCourierLocationController;
 use App\Http\Controllers\CurrentCourierProfileController;
@@ -300,6 +301,16 @@ Route::middleware('auth')->group(function (): void {
         )
             ->whereNumber('courier')
             ->name('couriers.status.update');
+
+        Route::get(
+            '/couriers/{courier}/locations/latest',
+            [
+                CourierLocationController::class,
+                'latest',
+            ]
+        )
+            ->whereNumber('courier')
+            ->name('couriers.locations.latest');
 
         Route::get(
             '/couriers/{courier}',

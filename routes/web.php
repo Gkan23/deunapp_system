@@ -20,6 +20,7 @@ use App\Http\Controllers\CurrentCourierProfileController;
 use App\Http\Controllers\CurrentCustomerProfileController;
 use App\Http\Controllers\CurrentDeliveryProviderProfileController;
 use App\Http\Controllers\CurrentUserController;
+use App\Http\Controllers\DeliveryProofController;
 use App\Http\Controllers\DeliveryServiceController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\PaymentController;
@@ -356,6 +357,13 @@ Route::middleware('auth')->group(function (): void {
         )
             ->whereNumber('shipment')
             ->name('shipments.tracking');
+
+        Route::get(
+            '/shipments/{shipment}/delivery-proof',
+            [DeliveryProofController::class, 'show']
+        )
+            ->whereNumber('shipment')
+            ->name('shipments.delivery-proof.show');
 
         Route::get(
             '/shipments/{shipment}',

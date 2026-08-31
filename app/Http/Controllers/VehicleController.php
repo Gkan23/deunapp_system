@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ListVehiclesRequest;
 use App\Http\Requests\StoreVehicleRequest;
+use App\Http\Requests\UpdateVehicleStatusRequest;
 use App\Models\Courier;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\Vehicle\CreateVehicleService;
+use App\Services\Vehicle\UpdateVehicleStatusService;
 use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -18,6 +20,8 @@ use Symfony\Component\HttpFoundation\Response;
 class VehicleController extends Controller
 {
     /**
+     * Relaciones utilizadas para presentar vehículos.
+     *
      * @var array<int, string>
      */
     private const RELATIONS = [
@@ -27,6 +31,9 @@ class VehicleController extends Controller
         'vehicleStatus',
     ];
 
+    /**
+     * Lista los vehículos autorizados.
+     */
     public function index(
         ListVehiclesRequest $request
     ): JsonResponse {
@@ -165,6 +172,9 @@ class VehicleController extends Controller
         ]);
     }
 
+    /**
+     * Registra un vehículo para un repartidor.
+     */
     public function store(
         StoreVehicleRequest $request,
         CreateVehicleService $service
@@ -208,6 +218,45 @@ class VehicleController extends Controller
         ], Response::HTTP_CREATED);
     }
 
+    /**
+     * Cambia el estado de un vehículo.
+     */
+    public function updateStatus(
+        UpdateVehicleStatusRequest $request,
+        Vehicle $vehicle,
+        UpdateVehicleStatusService $service
+    ): JsonResponse {
+        $validated = $request->validated();
+
+        try {
+            $updatedVehicle = $service->execute(
+                vehicle: $vehicle,
+                performedBy: $request->user(),
+                targetStatusName:
+                    $validated['status'],
+                comment:
+                    $validated['comment']
+            );
+        } catch (DomainException $exception) {
+            return response()->json([
+                'message' =>
+                    $exception->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return response()->json([
+            'message' =>
+                'Vehicle status updated successfully.',
+            'data' =>
+                $this->vehicleData(
+                    $updatedVehicle
+                ),
+        ]);
+    }
+
+    /**
+     * Muestra un vehículo autorizado.
+     */
     public function show(
         Request $request,
         Vehicle $vehicle
@@ -229,6 +278,9 @@ class VehicleController extends Controller
         ]);
     }
 
+    /**
+     * Limita la consulta según el rol del usuario.
+     */
     private function applyUserScope(
         Builder $query,
         User $user
@@ -297,16 +349,17 @@ class VehicleController extends Controller
                     ->vehicleStatus
                     ->status_name,
             'courier' => [
-                'id' => $vehicle
-                    ->courier
-                    ->id,
-                'user_id' => $vehicle
-                    ->courier
-                    ->user_id,
-                'name' => $vehicle
-                    ->courier
-                    ->user
-                    ->name,
+                'id' =>
+                    $vehicle->courier->id,
+                'user_id' =>
+                    $vehicle
+                        ->courier
+                        ->user_id,
+                'name' =>
+                    $vehicle
+                        ->courier
+                        ->user
+                        ->name,
                 'delivery_provider_id' =>
                     $vehicle
                         ->courier

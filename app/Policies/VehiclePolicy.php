@@ -7,10 +7,6 @@ use App\Models\Vehicle;
 
 class VehiclePolicy
 {
-    /**
-     * Bloquea las operaciones si la cuenta
-     * del usuario no está activa.
-     */
     public function before(
         User $user,
         string $ability
@@ -30,10 +26,6 @@ class VehiclePolicy
         return null;
     }
 
-    /**
-     * Proveedores, repartidores, soporte y
-     * administración pueden consultar vehículos.
-     */
     public function viewAny(User $user): bool
     {
         if ($this->hasAnyRole($user, [
@@ -47,10 +39,9 @@ class VehiclePolicy
             $user,
             'DELIVERY_PROVIDER'
         )) {
-            return $user
-                ->deliveryProvider()
-                ->where('is_active', true)
-                ->exists();
+            return $this->isActiveProvider(
+                $user
+            );
         }
 
         if ($this->hasRole(
@@ -74,9 +65,6 @@ class VehiclePolicy
         return false;
     }
 
-    /**
-     * Consulta de un vehículo específico.
-     */
     public function view(
         User $user,
         Vehicle $vehicle
@@ -88,27 +76,14 @@ class VehiclePolicy
             return true;
         }
 
-        if (
-            $this->hasRole(
+        if ($this->hasRole(
+            $user,
+            'DELIVERY_PROVIDER'
+        )) {
+            return $this->ownsVehicle(
                 $user,
-                'DELIVERY_PROVIDER'
-            )
-        ) {
-            return $vehicle
-                ->courier()
-                ->whereHas(
-                    'deliveryProvider',
-                    fn ($query) => $query
-                        ->where(
-                            'user_id',
-                            $user->id
-                        )
-                        ->where(
-                            'is_active',
-                            true
-                        )
-                )
-                ->exists();
+                $vehicle
+            );
         }
 
         if ($this->hasRole(
@@ -139,10 +114,6 @@ class VehiclePolicy
         return false;
     }
 
-    /**
-     * Solo un proveedor activo y verificado
-     * puede registrar vehículos.
-     */
     public function create(User $user): bool
     {
         return $user->hasVerifiedEmail()
@@ -150,13 +121,24 @@ class VehiclePolicy
                 $user,
                 'DELIVERY_PROVIDER'
             )
-            && $user
-                ->deliveryProvider()
-                ->where(
-                    'is_active',
-                    true
-                )
-                ->exists();
+            && $this->isActiveProvider(
+                $user
+            );
+    }
+
+    /**
+     * Solo el proveedor propietario puede modificar
+     * el estado de uno de sus vehículos.
+     */
+    public function changeStatus(
+        User $user,
+        Vehicle $vehicle
+    ): bool {
+        return $user->hasVerifiedEmail()
+            && $this->ownsVehicle(
+                $user,
+                $vehicle
+            );
     }
 
     public function update(
@@ -185,6 +167,50 @@ class VehiclePolicy
         Vehicle $vehicle
     ): bool {
         return false;
+    }
+
+    private function ownsVehicle(
+        User $user,
+        Vehicle $vehicle
+    ): bool {
+        if (! $this->hasRole(
+            $user,
+            'DELIVERY_PROVIDER'
+        )) {
+            return false;
+        }
+
+        if (! $this->isActiveProvider($user)) {
+            return false;
+        }
+
+        return $vehicle
+            ->courier()
+            ->whereHas(
+                'deliveryProvider',
+                fn ($query) => $query
+                    ->where(
+                        'user_id',
+                        $user->id
+                    )
+                    ->where(
+                        'is_active',
+                        true
+                    )
+            )
+            ->exists();
+    }
+
+    private function isActiveProvider(
+        User $user
+    ): bool {
+        return $user
+            ->deliveryProvider()
+            ->where(
+                'is_active',
+                true
+            )
+            ->exists();
     }
 
     private function hasRole(

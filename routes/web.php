@@ -300,6 +300,13 @@ Route::middleware('auth')->group(function (): void {
             [VehicleController::class, 'store']
         )->name('vehicles.store');
 
+        Route::patch(
+            '/vehicles/{vehicle}/status',
+            [VehicleController::class, 'updateStatus']
+        )
+            ->whereNumber('vehicle')
+            ->name('vehicles.status.update');
+
         Route::get(
             '/vehicles/{vehicle}',
             [VehicleController::class, 'show']

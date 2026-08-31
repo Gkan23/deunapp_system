@@ -13,6 +13,7 @@ class Route extends Model
 
     protected $fillable = [
         'courier_id',
+        'vehicle_id',
         'route_status_id',
         'route_date',
         'started_at',
@@ -32,16 +33,29 @@ class Route extends Model
 
     public function courier(): BelongsTo
     {
-        return $this->belongsTo(Courier::class);
+        return $this->belongsTo(
+            Courier::class
+        );
+    }
+
+    public function vehicle(): BelongsTo
+    {
+        return $this->belongsTo(
+            Vehicle::class
+        );
     }
 
     public function routeStatus(): BelongsTo
     {
-        return $this->belongsTo(RouteStatus::class);
+        return $this->belongsTo(
+            RouteStatus::class
+        );
     }
 
     public function routeShipments(): HasMany
     {
-        return $this->hasMany(RouteShipment::class);
+        return $this->hasMany(
+            RouteShipment::class
+        );
     }
 }

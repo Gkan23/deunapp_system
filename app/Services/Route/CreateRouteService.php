@@ -7,6 +7,7 @@ use App\Models\Route;
 use App\Models\RouteShipment;
 use App\Models\RouteStatus;
 use App\Models\Shipment;
+use App\Models\Vehicle;
 use Carbon\CarbonInterface;
 use DomainException;
 use Illuminate\Support\Carbon;
@@ -15,13 +16,21 @@ use Illuminate\Support\Facades\DB;
 final class CreateRouteService
 {
     /**
-     * @param  array<int, Shipment>  $shipments
+     * Crea una ruta planificada.
+     *
+     * El vehículo es opcional temporalmente para mantener
+     * compatibilidad con las llamadas existentes.
+     *
+     * @param array<int, Shipment> $shipments
+     *
+     * @throws DomainException
      */
     public function handle(
         Courier $courier,
         array $shipments,
         CarbonInterface $routeDate,
-        ?float $estimatedDistanceKm = null
+        ?float $estimatedDistanceKm = null,
+        ?Vehicle $vehicle = null
     ): Route {
         $shipmentIds = $this->extractShipmentIds(
             $shipments
@@ -38,23 +47,60 @@ final class CreateRouteService
 
         return DB::transaction(function () use (
             $courier,
+            $vehicle,
             $shipmentIds,
             $normalizedRouteDate,
             $estimatedDistanceKm
         ): Route {
             $lockedCourier = Courier::query()
-                ->with('deliveryProvider')
+                ->with(
+                    'deliveryProvider'
+                )
+                ->whereKey(
+                    $courier->getKey()
+                )
                 ->lockForUpdate()
-                ->findOrFail($courier->getKey());
+                ->firstOrFail();
 
-            $this->validateCourier($lockedCourier);
+            $this->validateCourier(
+                $lockedCourier
+            );
+
+            $lockedVehicle = null;
+
+            if ($vehicle !== null) {
+                $lockedVehicle = Vehicle::query()
+                    ->with([
+                        'courier.deliveryProvider',
+                        'vehicleStatus',
+                        'vehicleType',
+                    ])
+                    ->whereKey(
+                        $vehicle->getKey()
+                    )
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+                $this->validateVehicle(
+                    $lockedVehicle,
+                    $lockedCourier
+                );
+
+                $this->validateVehicleRouteConflict(
+                    $lockedVehicle,
+                    $normalizedRouteDate
+                );
+            }
 
             $lockedShipments = Shipment::query()
                 ->with([
                     'shipmentStatus',
                     'deliveryService.trip',
                 ])
-                ->whereIn('id', $shipmentIds)
+                ->whereIn(
+                    'id',
+                    $shipmentIds
+                )
                 ->orderBy('id')
                 ->lockForUpdate()
                 ->get();
@@ -69,13 +115,20 @@ final class CreateRouteService
             }
 
             $shipmentMap = $lockedShipments->keyBy(
-                fn (Shipment $shipment) => $shipment->id
+                fn (Shipment $shipment): int =>
+                    $shipment->id
             );
 
             foreach ($shipmentIds as $shipmentId) {
                 $shipment = $shipmentMap->get(
                     $shipmentId
                 );
+
+                if (! $shipment instanceof Shipment) {
+                    throw new DomainException(
+                        'One or more shipments could not be found.'
+                    );
+                }
 
                 $this->validateShipment(
                     $shipment,
@@ -88,16 +141,26 @@ final class CreateRouteService
             );
 
             $plannedStatus = RouteStatus::query()
-                ->where('status_name', 'PLANNED')
+                ->where(
+                    'status_name',
+                    'PLANNED'
+                )
                 ->firstOrFail();
 
             $route = Route::query()->create([
-                'courier_id' => $lockedCourier->id,
-                'route_status_id' => $plannedStatus->id,
-                'route_date' => $normalizedRouteDate->toDateString(),
+                'courier_id' =>
+                    $lockedCourier->id,
+                'vehicle_id' =>
+                    $lockedVehicle?->id,
+                'route_status_id' =>
+                    $plannedStatus->id,
+                'route_date' =>
+                    $normalizedRouteDate
+                        ->toDateString(),
                 'started_at' => null,
                 'finished_at' => null,
-                'estimated_distance_km' => $estimatedDistanceKm,
+                'estimated_distance_km' =>
+                    $estimatedDistanceKm,
             ]);
 
             foreach (
@@ -106,13 +169,17 @@ final class CreateRouteService
                 RouteShipment::query()->create([
                     'route_id' => $route->id,
                     'shipment_id' => $shipmentId,
-                    'delivery_order' => $index + 1,
-                    'delivery_status' => 'PENDING',
+                    'delivery_order' =>
+                        $index + 1,
+                    'delivery_status' =>
+                        'PENDING',
                 ]);
             }
 
             return $route->load([
                 'courier.deliveryProvider',
+                'vehicle.vehicleType',
+                'vehicle.vehicleStatus',
                 'routeStatus',
                 'routeShipments.shipment.deliveryService.trip',
             ]);
@@ -120,7 +187,7 @@ final class CreateRouteService
     }
 
     /**
-     * @param  array<int, Shipment>  $shipments
+     * @param array<int, Shipment> $shipments
      * @return array<int, int>
      */
     private function extractShipmentIds(
@@ -144,12 +211,15 @@ final class CreateRouteService
                 );
             }
 
-            $shipmentIds[] = (int) $shipment->getKey();
+            $shipmentIds[] = (int) $shipment
+                ->getKey();
         }
 
         if (
             count($shipmentIds)
-            !== count(array_unique($shipmentIds))
+            !== count(
+                array_unique($shipmentIds)
+            )
         ) {
             throw new DomainException(
                 'A shipment cannot be repeated within the same route.'
@@ -194,9 +264,72 @@ final class CreateRouteService
             );
         }
 
-        if (! $courier->deliveryProvider->is_active) {
+        if (
+            ! $courier
+                ->deliveryProvider
+                ->is_active
+        ) {
             throw new DomainException(
                 'The courier delivery provider is inactive.'
+            );
+        }
+    }
+
+    private function validateVehicle(
+        Vehicle $vehicle,
+        Courier $courier
+    ): void {
+        if (
+            (int) $vehicle->courier_id
+            !== (int) $courier->id
+        ) {
+            throw new DomainException(
+                'The selected vehicle does not belong to the courier.'
+            );
+        }
+
+        if (
+            $vehicle
+                ->vehicleStatus
+                ->status_name
+            !== 'AVAILABLE'
+        ) {
+            throw new DomainException(
+                'Only an available vehicle can be assigned to a route.'
+            );
+        }
+    }
+
+    private function validateVehicleRouteConflict(
+        Vehicle $vehicle,
+        CarbonInterface $routeDate
+    ): void {
+        $conflictingRoute = Route::query()
+            ->where(
+                'vehicle_id',
+                $vehicle->id
+            )
+            ->whereDate(
+                'route_date',
+                $routeDate->toDateString()
+            )
+            ->whereHas(
+                'routeStatus',
+                fn ($query) => $query->whereIn(
+                    'status_name',
+                    [
+                        'PLANNED',
+                        'ACTIVE',
+                    ]
+                )
+            )
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->first();
+
+        if ($conflictingRoute !== null) {
+            throw new DomainException(
+                'The vehicle already belongs to another planned or active route on this date.'
             );
         }
     }
@@ -207,8 +340,13 @@ final class CreateRouteService
     ): void {
         if (
             in_array(
-                $shipment->shipmentStatus->status_name,
-                ['DELIVERED', 'CANCELLED'],
+                $shipment
+                    ->shipmentStatus
+                    ->status_name,
+                [
+                    'DELIVERED',
+                    'CANCELLED',
+                ],
                 true
             )
         ) {
@@ -217,7 +355,8 @@ final class CreateRouteService
             );
         }
 
-        $service = $shipment->deliveryService;
+        $service = $shipment
+            ->deliveryService;
 
         if (
             $service === null
@@ -230,8 +369,11 @@ final class CreateRouteService
         }
 
         if (
-            (int) $service->trip->delivery_provider_id
-            !== (int) $courier->delivery_provider_id
+            (int) $service
+                ->trip
+                ->delivery_provider_id
+            !== (int) $courier
+                ->delivery_provider_id
         ) {
             throw new DomainException(
                 'All shipment trips must belong to the courier provider.'
@@ -240,20 +382,27 @@ final class CreateRouteService
     }
 
     /**
-     * @param  array<int, int>  $shipmentIds
+     * @param array<int, int> $shipmentIds
      */
     private function validateRouteConflicts(
         array $shipmentIds
     ): void {
         $conflict = RouteShipment::query()
-            ->whereIn('shipment_id', $shipmentIds)
+            ->whereIn(
+                'shipment_id',
+                $shipmentIds
+            )
             ->whereHas(
                 'route.routeStatus',
                 fn ($query) => $query->whereIn(
                     'status_name',
-                    ['PLANNED', 'ACTIVE']
+                    [
+                        'PLANNED',
+                        'ACTIVE',
+                    ]
                 )
             )
+            ->orderBy('id')
             ->lockForUpdate()
             ->first();
 

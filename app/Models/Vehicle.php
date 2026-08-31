@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Vehicle extends Model
 {
@@ -22,16 +23,29 @@ class Vehicle extends Model
 
     public function courier(): BelongsTo
     {
-        return $this->belongsTo(Courier::class);
+        return $this->belongsTo(
+            Courier::class
+        );
     }
 
     public function vehicleType(): BelongsTo
     {
-        return $this->belongsTo(VehicleType::class);
+        return $this->belongsTo(
+            VehicleType::class
+        );
     }
 
     public function vehicleStatus(): BelongsTo
     {
-        return $this->belongsTo(VehicleStatus::class);
+        return $this->belongsTo(
+            VehicleStatus::class
+        );
+    }
+
+    public function routes(): HasMany
+    {
+        return $this->hasMany(
+            Route::class
+        );
     }
 }

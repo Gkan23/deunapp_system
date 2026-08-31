@@ -590,6 +590,13 @@ Route::middleware('auth')->group(function (): void {
         |--------------------------------------------------------------------------
         */
 
+        Route::post(
+            '/shipments/{shipment}/incidents',
+            [IncidentController::class, 'store']
+        )
+            ->whereNumber('shipment')
+            ->name('shipments.incidents.store');
+
         Route::get(
             '/incidents',
             [IncidentController::class, 'index']

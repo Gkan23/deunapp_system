@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreIncidentRequest;
 use App\Http\Requests\UpdateIncidentStatusRequest;
 use App\Models\Incident;
+use App\Models\Shipment;
 use App\Models\User;
+use App\Services\Incident\CreateIncidentService;
 use App\Services\Incident\UpdateIncidentStatusService;
 use DomainException;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,23 +32,18 @@ class IncidentController extends Controller
     ];
 
     /**
-     * Mostrar las incidencias visibles para el usuario autenticado.
+     * Mostrar las incidencias visibles.
      */
-    public function index(Request $request): JsonResponse
-    {
-        /*
-         * IncidentPolicy::viewAny() verifica que el rol
-         * pueda acceder al listado de incidencias.
-         */
-        Gate::forUser($request->user())->authorize(
+    public function index(
+        Request $request
+    ): JsonResponse {
+        Gate::forUser(
+            $request->user()
+        )->authorize(
             'viewAny',
             Incident::class
         );
 
-        /*
-         * visibleIncidentsFor() limita los resultados según
-         * el cliente, proveedor, repartidor o personal interno.
-         */
         $incidents = $this->visibleIncidentsFor(
             $request->user()
         )
@@ -59,17 +57,60 @@ class IncidentController extends Controller
     }
 
     /**
+     * Registra una incidencia para un envío.
+     */
+    public function store(
+        StoreIncidentRequest $request,
+        Shipment $shipment,
+        CreateIncidentService $service
+    ): JsonResponse {
+        /*
+         * El Form Request comprueba que el rol pueda
+         * crear incidencias. Esta segunda autorización
+         * comprueba que pueda consultar el envío.
+         */
+        Gate::forUser(
+            $request->user()
+        )->authorize(
+            'view',
+            $shipment
+        );
+
+        $validated = $request->validated();
+
+        try {
+            $incident = $service->execute(
+                shipment: $shipment,
+                reportedBy: $request->user(),
+                incidentTypeName:
+                    $validated['incident_type'],
+                description:
+                    $validated['description']
+            );
+        } catch (DomainException $exception) {
+            return response()->json([
+                'message' =>
+                    $exception->getMessage(),
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        return response()->json([
+            'message' =>
+                'Incident created successfully.',
+            'incident' => $incident,
+        ], Response::HTTP_CREATED);
+    }
+
+    /**
      * Mostrar una incidencia específica.
      */
     public function show(
         Request $request,
         Incident $incident
     ): JsonResponse {
-        /*
-         * IncidentPolicy::view() verifica que el usuario
-         * esté relacionado con la incidencia.
-         */
-        Gate::forUser($request->user())->authorize(
+        Gate::forUser(
+            $request->user()
+        )->authorize(
             'view',
             $incident
         );
@@ -89,80 +130,59 @@ class IncidentController extends Controller
         Incident $incident,
         UpdateIncidentStatusService $service
     ): JsonResponse {
-        /*
-         * En este punto los datos ya fueron validados por
-         * UpdateIncidentStatusRequest.
-         */
-        $targetStatus = $request->validated('status');
+        $targetStatus = $request->validated(
+            'status'
+        );
 
-        /*
-         * Cada estado utiliza una ability específica
-         * definida en IncidentPolicy.
-         */
         $ability = match ($targetStatus) {
             'IN_REVIEW' => 'review',
             'RESOLVED' => 'resolve',
             'CLOSED' => 'close',
-
-            /*
-             * OPEN existe en el catálogo, pero no representa
-             * una acción directa del controlador. El permiso
-             * mínimo será review y el servicio comprobará
-             * si la transición solicitada es válida.
-             */
             default => 'review',
         };
 
-        /*
-         * Esta autorización ocurre después de la validación.
-         *
-         * Soporte y administración pueden continuar.
-         * Cliente, proveedor y repartidor reciben 403.
-         */
-        Gate::forUser($request->user())->authorize(
+        Gate::forUser(
+            $request->user()
+        )->authorize(
             $ability,
             $incident
         );
 
         try {
-            /*
-             * El servicio valida la transición y crea
-             * el registro de auditoría dentro de una transacción.
-             */
             $updatedIncident = $service->execute(
                 incident: $incident,
-                targetStatusName: $targetStatus,
-                performedBy: $request->user(),
-                comment: $request->validated('comment')
+                targetStatusName:
+                    $targetStatus,
+                performedBy:
+                    $request->user(),
+                comment:
+                    $request->validated(
+                        'comment'
+                    )
             );
 
             return response()->json([
-                'message' => 'Incident status updated successfully.',
-                'incident' => $updatedIncident,
+                'message' =>
+                    'Incident status updated successfully.',
+                'incident' =>
+                    $updatedIncident,
             ]);
         } catch (DomainException $exception) {
-            /*
-             * Las reglas de negocio inválidas se devuelven
-             * como respuestas HTTP 422.
-             */
             return response()->json([
-                'message' => $exception->getMessage(),
+                'message' =>
+                    $exception->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
     }
 
     /**
-     * Construir la consulta según el rol y las relaciones
-     * del usuario autenticado.
+     * Construye la consulta según el usuario.
      */
-    private function visibleIncidentsFor(User $user): Builder
-    {
+    private function visibleIncidentsFor(
+        User $user
+    ): Builder {
         $query = Incident::query();
 
-        /*
-         * Soporte y administración pueden consultar
-         * todas las incidencias.
-         */
         if ($this->hasAnyRole($user, [
             'SUPPORT_AGENT',
             'ADMINISTRATOR',
@@ -170,14 +190,15 @@ class IncidentController extends Controller
             return $query;
         }
 
-        /*
-         * El cliente solamente puede consultar incidencias
-         * pertenecientes a sus envíos.
-         */
-        if ($this->hasRole($user, 'CUSTOMER')) {
+        if ($this->hasRole(
+            $user,
+            'CUSTOMER'
+        )) {
             return $query->whereHas(
                 'shipment.customer',
-                fn (Builder $customerQuery): Builder =>
+                fn (
+                    Builder $customerQuery
+                ): Builder =>
                     $customerQuery->where(
                         'user_id',
                         $user->id
@@ -185,14 +206,15 @@ class IncidentController extends Controller
             );
         }
 
-        /*
-         * El proveedor solamente puede consultar incidencias
-         * de servicios asociados a sus viajes.
-         */
-        if ($this->hasRole($user, 'DELIVERY_PROVIDER')) {
+        if ($this->hasRole(
+            $user,
+            'DELIVERY_PROVIDER'
+        )) {
             return $query->whereHas(
                 'shipment.deliveryService.trip.deliveryProvider',
-                fn (Builder $providerQuery): Builder =>
+                fn (
+                    Builder $providerQuery
+                ): Builder =>
                     $providerQuery->where(
                         'user_id',
                         $user->id
@@ -200,14 +222,15 @@ class IncidentController extends Controller
             );
         }
 
-        /*
-         * El repartidor solamente puede consultar incidencias
-         * de envíos incluidos en sus rutas.
-         */
-        if ($this->hasRole($user, 'COURIER')) {
+        if ($this->hasRole(
+            $user,
+            'COURIER'
+        )) {
             return $query->whereHas(
                 'shipment.routeShipments.route.courier',
-                fn (Builder $courierQuery): Builder =>
+                fn (
+                    Builder $courierQuery
+                ): Builder =>
                     $courierQuery->where(
                         'user_id',
                         $user->id
@@ -215,28 +238,22 @@ class IncidentController extends Controller
             );
         }
 
-        /*
-         * Si el usuario no pertenece a un rol admitido,
-         * la consulta no devuelve resultados.
-         */
         return $query->whereRaw('1 = 0');
     }
 
-    /**
-     * Comprobar un rol específico.
-     */
     private function hasRole(
         User $user,
         string $role
     ): bool {
         return $user->role()
-            ->where('role_name', $role)
+            ->where(
+                'role_name',
+                $role
+            )
             ->exists();
     }
 
     /**
-     * Comprobar si el usuario tiene alguno de los roles.
-     *
      * @param array<int, string> $roles
      */
     private function hasAnyRole(
@@ -244,7 +261,10 @@ class IncidentController extends Controller
         array $roles
     ): bool {
         return $user->role()
-            ->whereIn('role_name', $roles)
+            ->whereIn(
+                'role_name',
+                $roles
+            )
             ->exists();
     }
 }

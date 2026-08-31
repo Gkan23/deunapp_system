@@ -38,6 +38,7 @@ use App\Http\Controllers\SupportTicketMessageReadController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\TripTransactionController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -282,6 +283,29 @@ Route::middleware('auth')->group(function (): void {
         )
             ->whereNumber('user')
             ->name('users.show');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Vehicles
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/vehicles',
+            [VehicleController::class, 'index']
+        )->name('vehicles.index');
+
+        Route::post(
+            '/vehicles',
+            [VehicleController::class, 'store']
+        )->name('vehicles.store');
+
+        Route::get(
+            '/vehicles/{vehicle}',
+            [VehicleController::class, 'show']
+        )
+            ->whereNumber('vehicle')
+            ->name('vehicles.show');
 
         /*
         |--------------------------------------------------------------------------

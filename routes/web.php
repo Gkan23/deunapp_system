@@ -30,6 +30,7 @@ use App\Http\Controllers\RechargePackageController;
 use App\Http\Controllers\RouteController;
 use App\Http\Controllers\RouteShipmentController;
 use App\Http\Controllers\ShipmentController;
+use App\Http\Controllers\ShipmentPackageController;
 use App\Http\Controllers\ShipmentStatusHistoryController;
 use App\Http\Controllers\ShipmentTrackingController;
 use App\Http\Controllers\SupportTicketController;
@@ -375,6 +376,13 @@ Route::middleware('auth')->group(function (): void {
         )
             ->whereNumber('shipment')
             ->name('shipments.status-history.index');
+
+        Route::get(
+            '/shipments/{shipment}/packages',
+            [ShipmentPackageController::class, 'index']
+        )
+            ->whereNumber('shipment')
+            ->name('shipments.packages.index');
 
         Route::get(
             '/shipments/{shipment}',

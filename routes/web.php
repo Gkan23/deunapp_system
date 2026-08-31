@@ -30,6 +30,7 @@ use App\Http\Controllers\RechargePackageController;
 use App\Http\Controllers\RouteController;
 use App\Http\Controllers\RouteShipmentController;
 use App\Http\Controllers\ShipmentController;
+use App\Http\Controllers\ShipmentStatusHistoryController;
 use App\Http\Controllers\ShipmentTrackingController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\SupportTicketMessageReadController;
@@ -364,6 +365,16 @@ Route::middleware('auth')->group(function (): void {
         )
             ->whereNumber('shipment')
             ->name('shipments.delivery-proof.show');
+
+        Route::get(
+            '/shipments/{shipment}/status-history',
+            [
+                ShipmentStatusHistoryController::class,
+                'index',
+            ]
+        )
+            ->whereNumber('shipment')
+            ->name('shipments.status-history.index');
 
         Route::get(
             '/shipments/{shipment}',

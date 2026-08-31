@@ -9,10 +9,6 @@ use Illuminate\Support\Facades\Gate;
 
 class StoreRouteRequest extends FormRequest
 {
-    /**
-     * Solamente los roles autorizados por RoutePolicy
-     * pueden intentar crear rutas.
-     */
     public function authorize(): bool
     {
         $user = $this->user();
@@ -37,6 +33,11 @@ class StoreRouteRequest extends FormRequest
                 'required',
                 'integer',
                 'exists:couriers,id',
+            ],
+            'vehicle_id' => [
+                'nullable',
+                'integer',
+                'exists:vehicles,id',
             ],
             'shipment_ids' => [
                 'required',
@@ -70,6 +71,7 @@ class StoreRouteRequest extends FormRequest
     {
         return [
             'courier_id' => 'courier',
+            'vehicle_id' => 'vehicle',
             'shipment_ids' => 'shipments',
             'shipment_ids.*' => 'shipment',
             'route_date' => 'route date',

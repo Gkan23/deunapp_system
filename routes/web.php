@@ -29,6 +29,7 @@ use App\Http\Controllers\RechargeController;
 use App\Http\Controllers\RechargePackageController;
 use App\Http\Controllers\RouteController;
 use App\Http\Controllers\RouteMapController;
+use App\Http\Controllers\RouteMapPageController;
 use App\Http\Controllers\RouteShipmentController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\ShipmentPackageController;
@@ -61,79 +62,56 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('guest')->group(function (): void {
-    /*
-    |--------------------------------------------------------------------------
-    | Customer registration
-    |--------------------------------------------------------------------------
-    */
+Route::middleware('guest')
+    ->group(function (): void {
+        Route::post(
+            '/register',
+            [
+                RegisteredUserController::class,
+                'store',
+            ]
+        )->name('register');
 
-    Route::post(
-        '/register',
-        [
-            RegisteredUserController::class,
-            'store',
-        ]
-    )->name('register');
+        Route::post(
+            '/register/provider',
+            [
+                RegisteredDeliveryProviderController::class,
+                'store',
+            ]
+        )->name('provider.register');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Delivery provider registration
-    |--------------------------------------------------------------------------
-    */
+        Route::post(
+            '/login',
+            [
+                AuthenticatedSessionController::class,
+                'store',
+            ]
+        )->name('login');
 
-    Route::post(
-        '/register/provider',
-        [
-            RegisteredDeliveryProviderController::class,
-            'store',
-        ]
-    )->name('provider.register');
+        Route::post(
+            '/forgot-password',
+            [
+                PasswordResetLinkController::class,
+                'store',
+            ]
+        )->name('password.email');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Login
-    |--------------------------------------------------------------------------
-    */
+        Route::get(
+            '/reset-password/{token}',
+            [
+                NewPasswordController::class,
+                'create',
+            ]
+        )->name('password.reset');
 
-    Route::post(
-        '/login',
-        [
-            AuthenticatedSessionController::class,
-            'store',
-        ]
-    )->name('login');
-
-    /*
-    |--------------------------------------------------------------------------
-    | Password recovery
-    |--------------------------------------------------------------------------
-    */
-
-    Route::post(
-        '/forgot-password',
-        [
-            PasswordResetLinkController::class,
-            'store',
-        ]
-    )->name('password.email');
-
-    Route::get(
-        '/reset-password/{token}',
-        [
-            NewPasswordController::class,
-            'create',
-        ]
-    )->name('password.reset');
-
-    Route::post(
-        '/reset-password',
-        [
-            NewPasswordController::class,
-            'store',
-        ]
-    )->name('password.store');
-});
+        Route::post(
+            '/reset-password',
+            [
+                NewPasswordController::class,
+                'store',
+            ]
+        )->name('password.store');
+    });
 
 /*
 |--------------------------------------------------------------------------
@@ -141,968 +119,982 @@ Route::middleware('guest')->group(function (): void {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function (): void {
-    /*
-    |--------------------------------------------------------------------------
-    | Authentication
-    |--------------------------------------------------------------------------
-    */
+Route::middleware('auth')
+    ->group(function (): void {
+        Route::post(
+            '/logout',
+            [
+                AuthenticatedSessionController::class,
+                'destroy',
+            ]
+        )->name('logout');
 
-    Route::post(
-        '/logout',
-        [
-            AuthenticatedSessionController::class,
-            'destroy',
-        ]
-    )->name('logout');
+        /*
+        |--------------------------------------------------------------------------
+        | Email verification
+        |--------------------------------------------------------------------------
+        */
 
-    /*
-    |--------------------------------------------------------------------------
-    | Email verification
-    |--------------------------------------------------------------------------
-    */
+        Route::get(
+            '/email/verify',
+            EmailVerificationPromptController::class
+        )->name('verification.notice');
 
-    Route::get(
-        '/email/verify',
-        EmailVerificationPromptController::class
-    )->name('verification.notice');
+        Route::post(
+            '/email/verification-notification',
+            [
+                EmailVerificationNotificationController::class,
+                'store',
+            ]
+        )
+            ->middleware('throttle:6,1')
+            ->name('verification.send');
 
-    Route::post(
-        '/email/verification-notification',
-        [
-            EmailVerificationNotificationController::class,
-            'store',
-        ]
-    )
-        ->middleware('throttle:6,1')
-        ->name('verification.send');
+        Route::get(
+            '/verify-email/{id}/{hash}',
+            VerifyEmailController::class
+        )
+            ->middleware([
+                'signed',
+                'throttle:6,1',
+            ])
+            ->name('verification.verify');
 
-    Route::get(
-        '/verify-email/{id}/{hash}',
-        VerifyEmailController::class
-    )
-        ->middleware([
-            'signed',
-            'throttle:6,1',
-        ])
-        ->name('verification.verify');
+        /*
+        |--------------------------------------------------------------------------
+        | Current user
+        |--------------------------------------------------------------------------
+        */
 
-    /*
-    |--------------------------------------------------------------------------
-    | Current authenticated user
-    |--------------------------------------------------------------------------
-    */
+        Route::get(
+            '/me',
+            CurrentUserController::class
+        )->name('current-user.show');
 
-    Route::get(
-        '/me',
-        CurrentUserController::class
-    )->name('current-user.show');
-
-    Route::put(
-        '/me/email',
-        [
-            CurrentUserEmailController::class,
-            'update',
-        ]
-    )->name('current-user.email.update');
-
-    Route::put(
-        '/me/password',
-        [
-            CurrentUserPasswordController::class,
-            'update',
-        ]
-    )->name('current-user.password.update');
-
-    Route::patch(
-        '/me/profile',
-        [
-            CurrentCustomerProfileController::class,
-            'update',
-        ]
-    )->name('current-user.profile.update');
-
-    Route::patch(
-        '/me/provider-profile',
-        [
-            CurrentDeliveryProviderProfileController::class,
-            'update',
-        ]
-    )->name(
-        'current-user.provider-profile.update'
-    );
-
-    Route::patch(
-        '/me/courier-profile',
-        [
-            CurrentCourierProfileController::class,
-            'update',
-        ]
-    )->name(
-        'current-user.courier-profile.update'
-    );
-
-    Route::patch(
-        '/me/courier-availability',
-        [
-            CurrentCourierAvailabilityController::class,
-            'update',
-        ]
-    )
-        ->middleware('verified')
-        ->name(
-            'current-user.courier-availability.update'
+        Route::put(
+            '/me/email',
+            [
+                CurrentUserEmailController::class,
+                'update',
+            ]
+        )->name(
+            'current-user.email.update'
         );
 
-    Route::post(
-        '/me/courier-locations',
-        [
-            CurrentCourierLocationController::class,
-            'store',
-        ]
-    )
-        ->middleware([
-            'verified',
-            'throttle:30,1',
-        ])
-        ->name(
-            'current-user.courier-locations.store'
+        Route::put(
+            '/me/password',
+            [
+                CurrentUserPasswordController::class,
+                'update',
+            ]
+        )->name(
+            'current-user.password.update'
         );
 
-    /*
-    |--------------------------------------------------------------------------
-    | Verified operational routes
-    |--------------------------------------------------------------------------
-    */
+        Route::patch(
+            '/me/profile',
+            [
+                CurrentCustomerProfileController::class,
+                'update',
+            ]
+        )->name(
+            'current-user.profile.update'
+        );
 
-    Route::middleware('verified')
-        ->group(function (): void {
-            /*
-            |--------------------------------------------------------------------------
-            | User administration
-            |--------------------------------------------------------------------------
-            */
+        Route::patch(
+            '/me/provider-profile',
+            [
+                CurrentDeliveryProviderProfileController::class,
+                'update',
+            ]
+        )->name(
+            'current-user.provider-profile.update'
+        );
 
-            Route::get(
-                '/users',
-                [
-                    UserController::class,
-                    'index',
-                ]
-            )->name('users.index');
+        Route::patch(
+            '/me/courier-profile',
+            [
+                CurrentCourierProfileController::class,
+                'update',
+            ]
+        )->name(
+            'current-user.courier-profile.update'
+        );
 
-            Route::post(
-                '/users/staff',
-                [
-                    UserController::class,
-                    'storeStaff',
-                ]
-            )->name('users.staff.store');
-
-            Route::patch(
-                '/users/{user}/account-status',
-                [
-                    UserController::class,
-                    'updateAccountStatus',
-                ]
-            )
-                ->whereNumber('user')
-                ->name(
-                    'users.account-status.update'
-                );
-
-            Route::patch(
-                '/users/{user}/role',
-                [
-                    UserController::class,
-                    'updateRole',
-                ]
-            )
-                ->whereNumber('user')
-                ->name('users.role.update');
-
-            Route::get(
-                '/users/{user}',
-                [
-                    UserController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber('user')
-                ->name('users.show');
-
-            /*
-            |--------------------------------------------------------------------------
-            | Couriers
-            |--------------------------------------------------------------------------
-            */
-
-            Route::get(
-                '/couriers',
-                [
-                    CourierController::class,
-                    'index',
-                ]
-            )->name('couriers.index');
-
-            Route::post(
-                '/couriers',
-                [
-                    CourierController::class,
-                    'store',
-                ]
-            )->name('couriers.store');
-
-            Route::patch(
-                '/couriers/{courier}/status',
-                [
-                    CourierController::class,
-                    'updateStatus',
-                ]
-            )
-                ->whereNumber('courier')
-                ->name(
-                    'couriers.status.update'
-                );
-
-            Route::get(
-                '/couriers/{courier}/locations/latest',
-                [
-                    CourierLocationController::class,
-                    'latest',
-                ]
-            )
-                ->whereNumber('courier')
-                ->name(
-                    'couriers.locations.latest'
-                );
-
-            Route::get(
-                '/couriers/{courier}',
-                [
-                    CourierController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber('courier')
-                ->name('couriers.show');
-
-            /*
-            |--------------------------------------------------------------------------
-            | Vehicles
-            |--------------------------------------------------------------------------
-            */
-
-            Route::get(
-                '/vehicles',
-                [
-                    VehicleController::class,
-                    'index',
-                ]
-            )->name('vehicles.index');
-
-            Route::post(
-                '/vehicles',
-                [
-                    VehicleController::class,
-                    'store',
-                ]
-            )->name('vehicles.store');
-
-            Route::patch(
-                '/vehicles/{vehicle}/status',
-                [
-                    VehicleController::class,
-                    'updateStatus',
-                ]
-            )
-                ->whereNumber('vehicle')
-                ->name(
-                    'vehicles.status.update'
-                );
-
-            Route::get(
-                '/vehicles/{vehicle}',
-                [
-                    VehicleController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber('vehicle')
-                ->name('vehicles.show');
-
-            /*
-            |--------------------------------------------------------------------------
-            | Shipments
-            |--------------------------------------------------------------------------
-            */
-
-            Route::get(
-                '/shipments',
-                [
-                    ShipmentController::class,
-                    'index',
-                ]
-            )->name('shipments.index');
-
-            Route::post(
-                '/shipments',
-                [
-                    ShipmentController::class,
-                    'store',
-                ]
-            )->name('shipments.store');
-
-            Route::patch(
-                '/shipments/{shipment}/status',
-                [
-                    ShipmentController::class,
-                    'updateStatus',
-                ]
-            )
-                ->whereNumber('shipment')
-                ->name(
-                    'shipments.status.update'
-                );
-
-            Route::patch(
-                '/shipments/{shipment}/cancel',
-                [
-                    ShipmentController::class,
-                    'cancel',
-                ]
-            )
-                ->whereNumber('shipment')
-                ->name('shipments.cancel');
-
-            Route::get(
-                '/shipments/{shipment}/tracking',
-                [
-                    ShipmentTrackingController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber('shipment')
-                ->name('shipments.tracking');
-
-            Route::get(
-                '/shipments/{shipment}/delivery-proof',
-                [
-                    DeliveryProofController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber('shipment')
-                ->name(
-                    'shipments.delivery-proof.show'
-                );
-
-            Route::get(
-                '/shipments/{shipment}/status-history',
-                [
-                    ShipmentStatusHistoryController::class,
-                    'index',
-                ]
-            )
-                ->whereNumber('shipment')
-                ->name(
-                    'shipments.status-history.index'
-                );
-
-            Route::get(
-                '/shipments/{shipment}/packages',
-                [
-                    ShipmentPackageController::class,
-                    'index',
-                ]
-            )
-                ->whereNumber('shipment')
-                ->name(
-                    'shipments.packages.index'
-                );
-
-            /*
-             * La incidencia se crea dentro de un
-             * envío específico.
-             */
-            Route::post(
-                '/shipments/{shipment}/incidents',
-                [
-                    IncidentController::class,
-                    'store',
-                ]
-            )
-                ->whereNumber('shipment')
-                ->name(
-                    'shipments.incidents.store'
-                );
-
-            Route::get(
-                '/shipments/{shipment}',
-                [
-                    ShipmentController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber('shipment')
-                ->name('shipments.show');
-
-            /*
-            |--------------------------------------------------------------------------
-            | Routes
-            |--------------------------------------------------------------------------
-            */
-
-            Route::get(
-                '/routes',
-                [
-                    RouteController::class,
-                    'index',
-                ]
-            )->name('routes.index');
-
-            Route::post(
-                '/routes',
-                [
-                    RouteController::class,
-                    'store',
-                ]
-            )->name('routes.store');
-
-            Route::patch(
-                '/routes/{route}/activate',
-                [
-                    RouteController::class,
-                    'activate',
-                ]
-            )
-                ->whereNumber('route')
-                ->name('routes.activate');
-
-            Route::patch(
-                '/routes/{route}/complete',
-                [
-                    RouteController::class,
-                    'complete',
-                ]
-            )
-                ->whereNumber('route')
-                ->name('routes.complete');
-
-            Route::patch(
-                '/routes/{route}/cancel',
-                [
-                    RouteController::class,
-                    'cancel',
-                ]
-            )
-                ->whereNumber('route')
-                ->name('routes.cancel');
-
-            /*
-             * Devuelve información geográfica y
-             * GeoJSON para Blade y Mapbox.
-             */
-            Route::get(
-                '/routes/{route}/map',
-                [
-                    RouteMapController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber('route')
-                ->name('routes.map');
-
-            Route::get(
-                '/routes/{route}',
-                [
-                    RouteController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber('route')
-                ->name('routes.show');
-
-            /*
-            |--------------------------------------------------------------------------
-            | Route shipments
-            |--------------------------------------------------------------------------
-            */
-
-            Route::patch(
-                '/route-shipments/{routeShipment}/fail-attempt',
-                [
-                    RouteShipmentController::class,
-                    'failAttempt',
-                ]
-            )
-                ->whereNumber('routeShipment')
-                ->name(
-                    'route-shipments.fail-attempt'
-                );
-
-            /*
-            |--------------------------------------------------------------------------
-            | Delivery services
-            |--------------------------------------------------------------------------
-            */
-
-            Route::get(
-                '/delivery-services',
-                [
-                    DeliveryServiceController::class,
-                    'index',
-                ]
-            )->name(
-                'delivery-services.index'
+        Route::patch(
+            '/me/courier-availability',
+            [
+                CurrentCourierAvailabilityController::class,
+                'update',
+            ]
+        )
+            ->middleware('verified')
+            ->name(
+                'current-user.courier-availability.update'
             );
 
-            Route::patch(
-                '/delivery-services/{deliveryService}/assign',
-                [
-                    DeliveryServiceController::class,
-                    'assign',
-                ]
-            )
-                ->whereNumber(
-                    'deliveryService'
-                )
-                ->name(
-                    'delivery-services.assign'
-                );
-
-            Route::patch(
-                '/delivery-services/{deliveryService}/complete',
-                [
-                    DeliveryServiceController::class,
-                    'complete',
-                ]
-            )
-                ->whereNumber(
-                    'deliveryService'
-                )
-                ->name(
-                    'delivery-services.complete'
-                );
-
-            Route::post(
-                '/delivery-services/{deliveryService}/ratings',
-                [
-                    RatingController::class,
-                    'store',
-                ]
-            )
-                ->whereNumber(
-                    'deliveryService'
-                )
-                ->name(
-                    'delivery-services.ratings.store'
-                );
-
-            Route::get(
-                '/delivery-services/{deliveryService}',
-                [
-                    DeliveryServiceController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber(
-                    'deliveryService'
-                )
-                ->name(
-                    'delivery-services.show'
-                );
-
-            /*
-            |--------------------------------------------------------------------------
-            | Payments
-            |--------------------------------------------------------------------------
-            */
-
-            Route::get(
-                '/payments',
-                [
-                    PaymentController::class,
-                    'index',
-                ]
-            )->name('payments.index');
-
-            Route::patch(
-                '/payments/{payment}/confirm',
-                [
-                    PaymentController::class,
-                    'confirm',
-                ]
-            )
-                ->whereNumber('payment')
-                ->name('payments.confirm');
-
-            Route::patch(
-                '/payments/{payment}/refund',
-                [
-                    PaymentController::class,
-                    'refund',
-                ]
-            )
-                ->whereNumber('payment')
-                ->name('payments.refund');
-
-            Route::get(
-                '/payments/{payment}',
-                [
-                    PaymentController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber('payment')
-                ->name('payments.show');
-
-            /*
-            |--------------------------------------------------------------------------
-            | Ratings
-            |--------------------------------------------------------------------------
-            */
-
-            Route::get(
-                '/ratings',
-                [
-                    RatingController::class,
-                    'index',
-                ]
-            )->name('ratings.index');
-
-            Route::get(
-                '/ratings/{rating}',
-                [
-                    RatingController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber('rating')
-                ->name('ratings.show');
-
-            /*
-            |--------------------------------------------------------------------------
-            | Application notifications
-            |--------------------------------------------------------------------------
-            */
-
-            Route::get(
-                '/notifications',
-                [
-                    AppNotificationController::class,
-                    'index',
-                ]
-            )->name('notifications.index');
-
-            Route::patch(
-                '/notifications/read-all',
-                [
-                    AppNotificationController::class,
-                    'markAllAsRead',
-                ]
-            )->name(
-                'notifications.read-all'
+        Route::post(
+            '/me/courier-locations',
+            [
+                CurrentCourierLocationController::class,
+                'store',
+            ]
+        )
+            ->middleware([
+                'verified',
+                'throttle:30,1',
+            ])
+            ->name(
+                'current-user.courier-locations.store'
             );
 
-            Route::patch(
-                '/notifications/{appNotification}/read',
-                [
-                    AppNotificationController::class,
-                    'markAsRead',
-                ]
-            )
-                ->whereNumber(
-                    'appNotification'
+        /*
+        |--------------------------------------------------------------------------
+        | Verified operational routes
+        |--------------------------------------------------------------------------
+        */
+
+        Route::middleware('verified')
+            ->group(function (): void {
+                /*
+                |--------------------------------------------------------------------------
+                | Users
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/users',
+                    [
+                        UserController::class,
+                        'index',
+                    ]
+                )->name('users.index');
+
+                Route::post(
+                    '/users/staff',
+                    [
+                        UserController::class,
+                        'storeStaff',
+                    ]
+                )->name('users.staff.store');
+
+                Route::patch(
+                    '/users/{user}/account-status',
+                    [
+                        UserController::class,
+                        'updateAccountStatus',
+                    ]
                 )
-                ->name(
-                    'notifications.read'
-                );
+                    ->whereNumber('user')
+                    ->name(
+                        'users.account-status.update'
+                    );
 
-            Route::get(
-                '/notifications/{appNotification}',
-                [
-                    AppNotificationController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber(
-                    'appNotification'
+                Route::patch(
+                    '/users/{user}/role',
+                    [
+                        UserController::class,
+                        'updateRole',
+                    ]
                 )
-                ->name(
-                    'notifications.show'
-                );
+                    ->whereNumber('user')
+                    ->name(
+                        'users.role.update'
+                    );
 
-            /*
-            |--------------------------------------------------------------------------
-            | Incidents
-            |--------------------------------------------------------------------------
-            */
-
-            Route::get(
-                '/incidents',
-                [
-                    IncidentController::class,
-                    'index',
-                ]
-            )->name('incidents.index');
-
-            Route::patch(
-                '/incidents/{incident}/status',
-                [
-                    IncidentController::class,
-                    'updateStatus',
-                ]
-            )
-                ->whereNumber('incident')
-                ->name(
-                    'incidents.status.update'
-                );
-
-            Route::get(
-                '/incidents/{incident}',
-                [
-                    IncidentController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber('incident')
-                ->name('incidents.show');
-
-            /*
-            |--------------------------------------------------------------------------
-            | Support tickets
-            |--------------------------------------------------------------------------
-            */
-
-            Route::get(
-                '/support-tickets',
-                [
-                    SupportTicketController::class,
-                    'index',
-                ]
-            )->name(
-                'support-tickets.index'
-            );
-
-            Route::post(
-                '/support-tickets',
-                [
-                    SupportTicketController::class,
-                    'store',
-                ]
-            )->name(
-                'support-tickets.store'
-            );
-
-            Route::patch(
-                '/support-tickets/{supportTicket}/assign',
-                [
-                    SupportTicketController::class,
-                    'assign',
-                ]
-            )
-                ->whereNumber(
-                    'supportTicket'
+                Route::get(
+                    '/users/{user}',
+                    [
+                        UserController::class,
+                        'show',
+                    ]
                 )
-                ->name(
-                    'support-tickets.assign'
-                );
+                    ->whereNumber('user')
+                    ->name('users.show');
 
-            Route::post(
-                '/support-tickets/{supportTicket}/messages',
-                [
-                    SupportTicketController::class,
-                    'addMessage',
-                ]
-            )
-                ->whereNumber(
-                    'supportTicket'
+                /*
+                |--------------------------------------------------------------------------
+                | Couriers
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/couriers',
+                    [
+                        CourierController::class,
+                        'index',
+                    ]
+                )->name('couriers.index');
+
+                Route::post(
+                    '/couriers',
+                    [
+                        CourierController::class,
+                        'store',
+                    ]
+                )->name('couriers.store');
+
+                Route::patch(
+                    '/couriers/{courier}/status',
+                    [
+                        CourierController::class,
+                        'updateStatus',
+                    ]
                 )
-                ->name(
-                    'support-tickets.messages.store'
-                );
+                    ->whereNumber('courier')
+                    ->name(
+                        'couriers.status.update'
+                    );
 
-            Route::patch(
-                '/support-tickets/{supportTicket}/messages/read',
-                SupportTicketMessageReadController::class
-            )
-                ->whereNumber(
-                    'supportTicket'
+                Route::get(
+                    '/couriers/{courier}/locations/latest',
+                    [
+                        CourierLocationController::class,
+                        'latest',
+                    ]
                 )
-                ->name(
-                    'support-tickets.messages.read'
-                );
+                    ->whereNumber('courier')
+                    ->name(
+                        'couriers.locations.latest'
+                    );
 
-            Route::patch(
-                '/support-tickets/{supportTicket}/status',
-                [
-                    SupportTicketController::class,
-                    'updateStatus',
-                ]
-            )
-                ->whereNumber(
-                    'supportTicket'
+                Route::get(
+                    '/couriers/{courier}',
+                    [
+                        CourierController::class,
+                        'show',
+                    ]
                 )
-                ->name(
-                    'support-tickets.status.update'
-                );
+                    ->whereNumber('courier')
+                    ->name('couriers.show');
 
-            Route::get(
-                '/support-tickets/{supportTicket}',
-                [
-                    SupportTicketController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber(
-                    'supportTicket'
+                /*
+                |--------------------------------------------------------------------------
+                | Vehicles
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/vehicles',
+                    [
+                        VehicleController::class,
+                        'index',
+                    ]
+                )->name('vehicles.index');
+
+                Route::post(
+                    '/vehicles',
+                    [
+                        VehicleController::class,
+                        'store',
+                    ]
+                )->name('vehicles.store');
+
+                Route::patch(
+                    '/vehicles/{vehicle}/status',
+                    [
+                        VehicleController::class,
+                        'updateStatus',
+                    ]
                 )
-                ->name(
-                    'support-tickets.show'
-                );
+                    ->whereNumber('vehicle')
+                    ->name(
+                        'vehicles.status.update'
+                    );
 
-            /*
-            |--------------------------------------------------------------------------
-            | Recharges
-            |--------------------------------------------------------------------------
-            */
-
-            Route::get(
-                '/recharges',
-                [
-                    RechargeController::class,
-                    'index',
-                ]
-            )->name('recharges.index');
-
-            Route::post(
-                '/recharges',
-                [
-                    RechargeController::class,
-                    'store',
-                ]
-            )->name('recharges.store');
-
-            Route::get(
-                '/recharges/{recharge}',
-                [
-                    RechargeController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber('recharge')
-                ->name('recharges.show');
-
-            /*
-            |--------------------------------------------------------------------------
-            | Recharge packages
-            |--------------------------------------------------------------------------
-            */
-
-            Route::get(
-                '/recharge-packages',
-                [
-                    RechargePackageController::class,
-                    'index',
-                ]
-            )->name(
-                'recharge-packages.index'
-            );
-
-            Route::get(
-                '/recharge-packages/{rechargePackage}',
-                [
-                    RechargePackageController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber(
-                    'rechargePackage'
+                Route::get(
+                    '/vehicles/{vehicle}',
+                    [
+                        VehicleController::class,
+                        'show',
+                    ]
                 )
-                ->name(
-                    'recharge-packages.show'
-                );
+                    ->whereNumber('vehicle')
+                    ->name('vehicles.show');
 
-            /*
-            |--------------------------------------------------------------------------
-            | Trip inventory
-            |--------------------------------------------------------------------------
-            */
+                /*
+                |--------------------------------------------------------------------------
+                | Shipments
+                |--------------------------------------------------------------------------
+                */
 
-            Route::get(
-                '/trips',
-                [
-                    TripController::class,
-                    'index',
-                ]
-            )->name('trips.index');
+                Route::get(
+                    '/shipments',
+                    [
+                        ShipmentController::class,
+                        'index',
+                    ]
+                )->name('shipments.index');
 
-            Route::get(
-                '/trips/{trip}',
-                [
-                    TripController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber('trip')
-                ->name('trips.show');
+                Route::post(
+                    '/shipments',
+                    [
+                        ShipmentController::class,
+                        'store',
+                    ]
+                )->name('shipments.store');
 
-            /*
-            |--------------------------------------------------------------------------
-            | Trip transactions
-            |--------------------------------------------------------------------------
-            */
-
-            Route::get(
-                '/trip-transactions',
-                [
-                    TripTransactionController::class,
-                    'index',
-                ]
-            )->name(
-                'trip-transactions.index'
-            );
-
-            Route::get(
-                '/trip-transactions/{tripTransaction}',
-                [
-                    TripTransactionController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber(
-                    'tripTransaction'
+                Route::patch(
+                    '/shipments/{shipment}/status',
+                    [
+                        ShipmentController::class,
+                        'updateStatus',
+                    ]
                 )
-                ->name(
-                    'trip-transactions.show'
+                    ->whereNumber('shipment')
+                    ->name(
+                        'shipments.status.update'
+                    );
+
+                Route::patch(
+                    '/shipments/{shipment}/cancel',
+                    [
+                        ShipmentController::class,
+                        'cancel',
+                    ]
+                )
+                    ->whereNumber('shipment')
+                    ->name('shipments.cancel');
+
+                Route::get(
+                    '/shipments/{shipment}/tracking',
+                    [
+                        ShipmentTrackingController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber('shipment')
+                    ->name('shipments.tracking');
+
+                Route::get(
+                    '/shipments/{shipment}/delivery-proof',
+                    [
+                        DeliveryProofController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber('shipment')
+                    ->name(
+                        'shipments.delivery-proof.show'
+                    );
+
+                Route::get(
+                    '/shipments/{shipment}/status-history',
+                    [
+                        ShipmentStatusHistoryController::class,
+                        'index',
+                    ]
+                )
+                    ->whereNumber('shipment')
+                    ->name(
+                        'shipments.status-history.index'
+                    );
+
+                Route::get(
+                    '/shipments/{shipment}/packages',
+                    [
+                        ShipmentPackageController::class,
+                        'index',
+                    ]
+                )
+                    ->whereNumber('shipment')
+                    ->name(
+                        'shipments.packages.index'
+                    );
+
+                Route::post(
+                    '/shipments/{shipment}/incidents',
+                    [
+                        IncidentController::class,
+                        'store',
+                    ]
+                )
+                    ->whereNumber('shipment')
+                    ->name(
+                        'shipments.incidents.store'
+                    );
+
+                Route::get(
+                    '/shipments/{shipment}',
+                    [
+                        ShipmentController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber('shipment')
+                    ->name('shipments.show');
+
+                /*
+                |--------------------------------------------------------------------------
+                | Routes
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/routes',
+                    [
+                        RouteController::class,
+                        'index',
+                    ]
+                )->name('routes.index');
+
+                Route::post(
+                    '/routes',
+                    [
+                        RouteController::class,
+                        'store',
+                    ]
+                )->name('routes.store');
+
+                Route::patch(
+                    '/routes/{route}/activate',
+                    [
+                        RouteController::class,
+                        'activate',
+                    ]
+                )
+                    ->whereNumber('route')
+                    ->name('routes.activate');
+
+                Route::patch(
+                    '/routes/{route}/complete',
+                    [
+                        RouteController::class,
+                        'complete',
+                    ]
+                )
+                    ->whereNumber('route')
+                    ->name('routes.complete');
+
+                Route::patch(
+                    '/routes/{route}/cancel',
+                    [
+                        RouteController::class,
+                        'cancel',
+                    ]
+                )
+                    ->whereNumber('route')
+                    ->name('routes.cancel');
+
+                /*
+                 * Endpoint JSON y GeoJSON.
+                 */
+                Route::get(
+                    '/routes/{route}/map',
+                    [
+                        RouteMapController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber('route')
+                    ->name('routes.map');
+
+                /*
+                 * Página Blade que utiliza el endpoint
+                 * JSON anterior.
+                 */
+                Route::get(
+                    '/routes/{route}/map/view',
+                    [
+                        RouteMapPageController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber('route')
+                    ->name('routes.map.view');
+
+                Route::get(
+                    '/routes/{route}',
+                    [
+                        RouteController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber('route')
+                    ->name('routes.show');
+
+                /*
+                |--------------------------------------------------------------------------
+                | Route shipments
+                |--------------------------------------------------------------------------
+                */
+
+                Route::patch(
+                    '/route-shipments/{routeShipment}/fail-attempt',
+                    [
+                        RouteShipmentController::class,
+                        'failAttempt',
+                    ]
+                )
+                    ->whereNumber(
+                        'routeShipment'
+                    )
+                    ->name(
+                        'route-shipments.fail-attempt'
+                    );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Delivery services
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/delivery-services',
+                    [
+                        DeliveryServiceController::class,
+                        'index',
+                    ]
+                )->name(
+                    'delivery-services.index'
                 );
 
-            /*
-            |--------------------------------------------------------------------------
-            | Audit logs
-            |--------------------------------------------------------------------------
-            */
+                Route::patch(
+                    '/delivery-services/{deliveryService}/assign',
+                    [
+                        DeliveryServiceController::class,
+                        'assign',
+                    ]
+                )
+                    ->whereNumber(
+                        'deliveryService'
+                    )
+                    ->name(
+                        'delivery-services.assign'
+                    );
 
-            Route::get(
-                '/audit-logs',
-                [
-                    AuditLogController::class,
-                    'index',
-                ]
-            )->name('audit-logs.index');
+                Route::patch(
+                    '/delivery-services/{deliveryService}/complete',
+                    [
+                        DeliveryServiceController::class,
+                        'complete',
+                    ]
+                )
+                    ->whereNumber(
+                        'deliveryService'
+                    )
+                    ->name(
+                        'delivery-services.complete'
+                    );
 
-            Route::get(
-                '/audit-logs/{auditLog}',
-                [
-                    AuditLogController::class,
-                    'show',
-                ]
-            )
-                ->whereNumber('auditLog')
-                ->name('audit-logs.show');
-        });
-});
+                Route::post(
+                    '/delivery-services/{deliveryService}/ratings',
+                    [
+                        RatingController::class,
+                        'store',
+                    ]
+                )
+                    ->whereNumber(
+                        'deliveryService'
+                    )
+                    ->name(
+                        'delivery-services.ratings.store'
+                    );
+
+                Route::get(
+                    '/delivery-services/{deliveryService}',
+                    [
+                        DeliveryServiceController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber(
+                        'deliveryService'
+                    )
+                    ->name(
+                        'delivery-services.show'
+                    );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Payments
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/payments',
+                    [
+                        PaymentController::class,
+                        'index',
+                    ]
+                )->name('payments.index');
+
+                Route::patch(
+                    '/payments/{payment}/confirm',
+                    [
+                        PaymentController::class,
+                        'confirm',
+                    ]
+                )
+                    ->whereNumber('payment')
+                    ->name('payments.confirm');
+
+                Route::patch(
+                    '/payments/{payment}/refund',
+                    [
+                        PaymentController::class,
+                        'refund',
+                    ]
+                )
+                    ->whereNumber('payment')
+                    ->name('payments.refund');
+
+                Route::get(
+                    '/payments/{payment}',
+                    [
+                        PaymentController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber('payment')
+                    ->name('payments.show');
+
+                /*
+                |--------------------------------------------------------------------------
+                | Ratings
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/ratings',
+                    [
+                        RatingController::class,
+                        'index',
+                    ]
+                )->name('ratings.index');
+
+                Route::get(
+                    '/ratings/{rating}',
+                    [
+                        RatingController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber('rating')
+                    ->name('ratings.show');
+
+                /*
+                |--------------------------------------------------------------------------
+                | Notifications
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/notifications',
+                    [
+                        AppNotificationController::class,
+                        'index',
+                    ]
+                )->name('notifications.index');
+
+                Route::patch(
+                    '/notifications/read-all',
+                    [
+                        AppNotificationController::class,
+                        'markAllAsRead',
+                    ]
+                )->name(
+                    'notifications.read-all'
+                );
+
+                Route::patch(
+                    '/notifications/{appNotification}/read',
+                    [
+                        AppNotificationController::class,
+                        'markAsRead',
+                    ]
+                )
+                    ->whereNumber(
+                        'appNotification'
+                    )
+                    ->name(
+                        'notifications.read'
+                    );
+
+                Route::get(
+                    '/notifications/{appNotification}',
+                    [
+                        AppNotificationController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber(
+                        'appNotification'
+                    )
+                    ->name(
+                        'notifications.show'
+                    );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Incidents
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/incidents',
+                    [
+                        IncidentController::class,
+                        'index',
+                    ]
+                )->name('incidents.index');
+
+                Route::patch(
+                    '/incidents/{incident}/status',
+                    [
+                        IncidentController::class,
+                        'updateStatus',
+                    ]
+                )
+                    ->whereNumber('incident')
+                    ->name(
+                        'incidents.status.update'
+                    );
+
+                Route::get(
+                    '/incidents/{incident}',
+                    [
+                        IncidentController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber('incident')
+                    ->name('incidents.show');
+
+                /*
+                |--------------------------------------------------------------------------
+                | Support tickets
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/support-tickets',
+                    [
+                        SupportTicketController::class,
+                        'index',
+                    ]
+                )->name(
+                    'support-tickets.index'
+                );
+
+                Route::post(
+                    '/support-tickets',
+                    [
+                        SupportTicketController::class,
+                        'store',
+                    ]
+                )->name(
+                    'support-tickets.store'
+                );
+
+                Route::patch(
+                    '/support-tickets/{supportTicket}/assign',
+                    [
+                        SupportTicketController::class,
+                        'assign',
+                    ]
+                )
+                    ->whereNumber(
+                        'supportTicket'
+                    )
+                    ->name(
+                        'support-tickets.assign'
+                    );
+
+                Route::post(
+                    '/support-tickets/{supportTicket}/messages',
+                    [
+                        SupportTicketController::class,
+                        'addMessage',
+                    ]
+                )
+                    ->whereNumber(
+                        'supportTicket'
+                    )
+                    ->name(
+                        'support-tickets.messages.store'
+                    );
+
+                Route::patch(
+                    '/support-tickets/{supportTicket}/messages/read',
+                    SupportTicketMessageReadController::class
+                )
+                    ->whereNumber(
+                        'supportTicket'
+                    )
+                    ->name(
+                        'support-tickets.messages.read'
+                    );
+
+                Route::patch(
+                    '/support-tickets/{supportTicket}/status',
+                    [
+                        SupportTicketController::class,
+                        'updateStatus',
+                    ]
+                )
+                    ->whereNumber(
+                        'supportTicket'
+                    )
+                    ->name(
+                        'support-tickets.status.update'
+                    );
+
+                Route::get(
+                    '/support-tickets/{supportTicket}',
+                    [
+                        SupportTicketController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber(
+                        'supportTicket'
+                    )
+                    ->name(
+                        'support-tickets.show'
+                    );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Recharges
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/recharges',
+                    [
+                        RechargeController::class,
+                        'index',
+                    ]
+                )->name('recharges.index');
+
+                Route::post(
+                    '/recharges',
+                    [
+                        RechargeController::class,
+                        'store',
+                    ]
+                )->name('recharges.store');
+
+                Route::get(
+                    '/recharges/{recharge}',
+                    [
+                        RechargeController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber('recharge')
+                    ->name('recharges.show');
+
+                /*
+                |--------------------------------------------------------------------------
+                | Recharge packages
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/recharge-packages',
+                    [
+                        RechargePackageController::class,
+                        'index',
+                    ]
+                )->name(
+                    'recharge-packages.index'
+                );
+
+                Route::get(
+                    '/recharge-packages/{rechargePackage}',
+                    [
+                        RechargePackageController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber(
+                        'rechargePackage'
+                    )
+                    ->name(
+                        'recharge-packages.show'
+                    );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Trips
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/trips',
+                    [
+                        TripController::class,
+                        'index',
+                    ]
+                )->name('trips.index');
+
+                Route::get(
+                    '/trips/{trip}',
+                    [
+                        TripController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber('trip')
+                    ->name('trips.show');
+
+                /*
+                |--------------------------------------------------------------------------
+                | Trip transactions
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/trip-transactions',
+                    [
+                        TripTransactionController::class,
+                        'index',
+                    ]
+                )->name(
+                    'trip-transactions.index'
+                );
+
+                Route::get(
+                    '/trip-transactions/{tripTransaction}',
+                    [
+                        TripTransactionController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber(
+                        'tripTransaction'
+                    )
+                    ->name(
+                        'trip-transactions.show'
+                    );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Audit logs
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/audit-logs',
+                    [
+                        AuditLogController::class,
+                        'index',
+                    ]
+                )->name('audit-logs.index');
+
+                Route::get(
+                    '/audit-logs/{auditLog}',
+                    [
+                        AuditLogController::class,
+                        'show',
+                    ]
+                )
+                    ->whereNumber('auditLog')
+                    ->name('audit-logs.show');
+            });
+    });
 
 /*
 |--------------------------------------------------------------------------

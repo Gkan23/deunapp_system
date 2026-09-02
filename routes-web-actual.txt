@@ -7,7 +7,6 @@ use App\Http\Controllers\Auth\CurrentUserEmailController;
 use App\Http\Controllers\Auth\CurrentUserPasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
-use App\Http\Controllers\Auth\LoginPageController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredDeliveryProviderController;
@@ -21,7 +20,6 @@ use App\Http\Controllers\CurrentCourierProfileController;
 use App\Http\Controllers\CurrentCustomerProfileController;
 use App\Http\Controllers\CurrentDeliveryProviderProfileController;
 use App\Http\Controllers\CurrentUserController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryProofController;
 use App\Http\Controllers\DeliveryServiceController;
 use App\Http\Controllers\IncidentController;
@@ -81,11 +79,6 @@ Route::middleware('guest')
                 'store',
             ]
         )->name('provider.register');
-
-        Route::get(
-            '/login',
-            LoginPageController::class
-        )->name('login.page');
 
         Route::post(
             '/login',
@@ -263,11 +256,6 @@ Route::middleware('auth')
 
         Route::middleware('verified')
             ->group(function (): void {
-                Route::get(
-                    '/dashboard',
-                    DashboardController::class
-                )->name('dashboard');
-
                 /*
                 |--------------------------------------------------------------------------
                 | Users

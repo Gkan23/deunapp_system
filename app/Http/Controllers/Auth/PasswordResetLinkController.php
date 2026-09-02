@@ -6,20 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Password;
 
 class PasswordResetLinkController extends Controller
 {
     /**
-     * Envía un enlace únicamente si existe una
-     * cuenta activa con el correo proporcionado.
-     *
-     * La respuesta siempre es la misma para evitar
-     * revelar qué correos están registrados.
+     * Send a reset link only when an eligible account exists.
      */
     public function store(
         ForgotPasswordRequest $request
-    ): JsonResponse {
+    ): JsonResponse|RedirectResponse {
         $email = $request->validated('email');
 
         $eligibleUser = User::query()
@@ -39,9 +36,18 @@ class PasswordResetLinkController extends Controller
             ]);
         }
 
-        return response()->json([
-            'message' =>
-                'If an eligible account exists, a password reset link has been sent.',
-        ]);
+        $message =
+            'If an eligible account exists, a password reset link has been sent.';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => $message,
+            ]);
+        }
+
+        return back()->with(
+            'status',
+            'Si existe una cuenta activa con ese correo, recibirás un enlace para restablecer la contraseña.'
+        );
     }
 }

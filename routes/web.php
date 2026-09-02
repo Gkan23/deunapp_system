@@ -7,6 +7,7 @@ use App\Http\Controllers\Auth\CurrentUserEmailController;
 use App\Http\Controllers\Auth\CurrentUserPasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\ForgotPasswordPageController;
 use App\Http\Controllers\Auth\LoginPageController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -130,6 +131,11 @@ Route::middleware('guest')
         | Password recovery
         |--------------------------------------------------------------------------
         */
+
+        Route::get(
+            '/forgot-password',
+            ForgotPasswordPageController::class
+        )->name('password.request');
 
         Route::post(
             '/forgot-password',

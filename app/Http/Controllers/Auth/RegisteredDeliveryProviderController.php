@@ -8,71 +8,90 @@ use App\Services\Auth\RegisterDeliveryProviderService;
 use DomainException;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 
 class RegisteredDeliveryProviderController extends Controller
 {
     /**
-     * Registra un proveedor pendiente de aprobación.
+     * Submit a delivery provider registration.
      */
     public function store(
         RegisterDeliveryProviderRequest $request,
         RegisterDeliveryProviderService $service
-    ): JsonResponse {
+    ): JsonResponse|RedirectResponse {
         try {
             $user = $service->execute(
                 $request->validated()
             );
         } catch (DomainException $exception) {
-            return response()->json([
-                'message' =>
-                    $exception->getMessage(),
-            ], 422);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' =>
+                        $exception->getMessage(),
+                ], 422);
+            }
+
+            return back()
+                ->withInput(
+                    $request->safe()->except([
+                        'password',
+                        'password_confirmation',
+                    ])
+                )
+                ->withErrors([
+                    'registration' =>
+                        $exception->getMessage(),
+                ]);
         }
 
-        /*
-         * Envía la notificación de verificación.
-         * Si el enlace vence antes de la aprobación,
-         * el proveedor podrá solicitar otro después.
-         */
         event(new Registered($user));
 
         $provider = $user->deliveryProvider;
 
-        return response()->json([
-            'message' =>
-                'Delivery provider registration submitted successfully.',
-            'data' => [
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'email_verified_at' =>
-                        $user->email_verified_at,
-                    'email_verified' =>
-                        $user->hasVerifiedEmail(),
-                    'role' =>
-                        $user->role->role_name,
-                    'account_status' =>
-                        $user
-                            ->accountStatus
-                            ->status_name,
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' =>
+                    'Delivery provider registration submitted successfully.',
+                'data' => [
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'email_verified_at' =>
+                            $user->email_verified_at,
+                        'email_verified' =>
+                            $user->hasVerifiedEmail(),
+                        'role' =>
+                            $user->role->role_name,
+                        'account_status' =>
+                            $user
+                                ->accountStatus
+                                ->status_name,
+                    ],
+                    'provider' => [
+                        'id' => $provider->id,
+                        'provider_type' =>
+                            $provider
+                                ->providerType
+                                ->type_name,
+                        'business_name' =>
+                            $provider->business_name,
+                        'identity_number' =>
+                            $provider->identity_number,
+                        'phone' =>
+                            $provider->phone,
+                        'is_active' =>
+                            $provider->is_active,
+                    ],
                 ],
-                'provider' => [
-                    'id' => $provider->id,
-                    'provider_type' =>
-                        $provider
-                            ->providerType
-                            ->type_name,
-                    'business_name' =>
-                        $provider->business_name,
-                    'identity_number' =>
-                        $provider->identity_number,
-                    'phone' =>
-                        $provider->phone,
-                    'is_active' =>
-                        $provider->is_active,
-                ],
-            ],
-        ], 201);
+            ], 201);
+        }
+
+        return redirect()
+            ->route('login.page')
+            ->with(
+                'status',
+                'Solicitud enviada correctamente. Verifica tu correo y espera la aprobación de tu cuenta.'
+            );
     }
 }

@@ -10,6 +10,8 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\LoginPageController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\RegisterCustomerPageController;
+use App\Http\Controllers\Auth\RegisterDeliveryProviderPageController;
 use App\Http\Controllers\Auth\RegisteredDeliveryProviderController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
@@ -66,6 +68,17 @@ Route::get('/', function () {
 
 Route::middleware('guest')
     ->group(function (): void {
+        /*
+        |--------------------------------------------------------------------------
+        | Customer registration
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/register',
+            RegisterCustomerPageController::class
+        )->name('register.page');
+
         Route::post(
             '/register',
             [
@@ -74,6 +87,17 @@ Route::middleware('guest')
             ]
         )->name('register');
 
+        /*
+        |--------------------------------------------------------------------------
+        | Delivery provider registration
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/register/provider',
+            RegisterDeliveryProviderPageController::class
+        )->name('provider.register.page');
+
         Route::post(
             '/register/provider',
             [
@@ -81,6 +105,12 @@ Route::middleware('guest')
                 'store',
             ]
         )->name('provider.register');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Login
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/login',
@@ -94,6 +124,12 @@ Route::middleware('guest')
                 'store',
             ]
         )->name('login');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Password recovery
+        |--------------------------------------------------------------------------
+        */
 
         Route::post(
             '/forgot-password',
@@ -263,6 +299,12 @@ Route::middleware('auth')
 
         Route::middleware('verified')
             ->group(function (): void {
+                /*
+                |--------------------------------------------------------------------------
+                | Dashboard
+                |--------------------------------------------------------------------------
+                */
+
                 Route::get(
                     '/dashboard',
                     DashboardController::class
@@ -589,7 +631,7 @@ Route::middleware('auth')
                     ->name('routes.cancel');
 
                 /*
-                 * Endpoint JSON y GeoJSON.
+                 * Endpoint JSON and GeoJSON.
                  */
                 Route::get(
                     '/routes/{route}/map',
@@ -602,8 +644,7 @@ Route::middleware('auth')
                     ->name('routes.map');
 
                 /*
-                 * Página Blade que utiliza el endpoint
-                 * JSON anterior.
+                 * Blade page that consumes the JSON endpoint.
                  */
                 Route::get(
                     '/routes/{route}/map/view',

@@ -45,6 +45,16 @@
 
                 <a
                     href="{{ route(
+                        'portal.shipments.tracking',
+                        $shipment
+                    ) }}"
+                    class="shipment-show-tracking-link"
+                >
+                    Ver seguimiento
+                </a>
+
+                <a
+                    href="{{ route(
                         'portal.shipments.index'
                     ) }}"
                     class="shipment-show-back-link"
@@ -53,6 +63,15 @@
                 </a>
             </div>
         </header>
+
+        @if (session('status'))
+            <div
+                class="shipment-show-flash"
+                role="status"
+            >
+                {{ session('status') }}
+            </div>
+        @endif
 
         <section class="shipment-show-summary">
             <article>
@@ -126,8 +145,13 @@
                         </span>
 
                         <strong>
-                            {{ $shipment->sender->first_name }}
-                            {{ $shipment->sender->last_name }}
+                            {{ $shipment
+                                ->sender
+                                ->first_name }}
+
+                            {{ $shipment
+                                ->sender
+                                ->last_name }}
                         </strong>
 
                         <span>
@@ -191,9 +215,7 @@
                         Recorrido
                     </p>
 
-                    <h2>
-                        Origen y destino
-                    </h2>
+                    <h2>Origen y destino</h2>
                 </header>
 
                 <div class="shipment-show-address-list">
@@ -277,9 +299,7 @@
                     Cronología
                 </p>
 
-                <h2>
-                    Fechas del envío
-                </h2>
+                <h2>Fechas del envío</h2>
             </header>
 
             <div class="shipment-show-date-grid">
@@ -332,9 +352,7 @@
                     Contenido
                 </p>
 
-                <h2>
-                    Paquetes
-                </h2>
+                <h2>Paquetes</h2>
             </header>
 
             @if ($shipment->packages->isEmpty())
@@ -343,11 +361,15 @@
                 </div>
             @else
                 <div class="shipment-show-package-grid">
-                    @foreach ($shipment->packages as $package)
+                    @foreach (
+                        $shipment->packages
+                        as $package
+                    )
                         <article class="shipment-show-package">
                             <header>
                                 <span>
-                                    Paquete {{ $loop->iteration }}
+                                    Paquete
+                                    {{ $loop->iteration }}
                                 </span>
 
                                 @if ($package->is_fragile)
@@ -370,7 +392,8 @@
                                     <dd>
                                         {{ $package->weight
                                             !== null
-                                                ? $package->weight.' kg'
+                                                ? $package->weight
+                                                    .' kg'
                                                 : 'No indicado' }}
                                     </dd>
                                 </div>
@@ -381,7 +404,8 @@
                                     <dd>
                                         {{ $package->height
                                             !== null
-                                                ? $package->height.' cm'
+                                                ? $package->height
+                                                    .' cm'
                                                 : 'No indicado' }}
                                     </dd>
                                 </div>
@@ -392,7 +416,8 @@
                                     <dd>
                                         {{ $package->width
                                             !== null
-                                                ? $package->width.' cm'
+                                                ? $package->width
+                                                    .' cm'
                                                 : 'No indicado' }}
                                     </dd>
                                 </div>
@@ -403,7 +428,8 @@
                                     <dd>
                                         {{ $package->length
                                             !== null
-                                                ? $package->length.' cm'
+                                                ? $package->length
+                                                    .' cm'
                                                 : 'No indicado' }}
                                     </dd>
                                 </div>
@@ -412,7 +438,8 @@
                                     <dt>Valor</dt>
 
                                     <dd>
-                                        {{ $package->declared_value
+                                        {{ $package
+                                            ->declared_value
                                             !== null
                                                 ? 'C$ '.number_format(
                                                     (float) $package
@@ -436,9 +463,7 @@
                         Servicio
                     </p>
 
-                    <h2>
-                        Servicio de entrega
-                    </h2>
+                    <h2>Servicio de entrega</h2>
                 </header>
 
                 @if ($shipment->deliveryService)
@@ -526,9 +551,7 @@
                         Rutas
                     </p>
 
-                    <h2>
-                        Asignaciones de ruta
-                    </h2>
+                    <h2>Asignaciones de ruta</h2>
                 </header>
 
                 @if ($shipment->routeShipments->isEmpty())
@@ -595,9 +618,7 @@
                     Trazabilidad
                 </p>
 
-                <h2>
-                    Historial de estados
-                </h2>
+                <h2>Historial de estados</h2>
             </header>
 
             @if ($shipment->statusHistory->isEmpty())
@@ -613,8 +634,11 @@
                         as $history
                     )
                         <article>
-                            <span class="shipment-show-history-dot">
-                            </span>
+                            <span
+                                class="
+                                    shipment-show-history-dot
+                                "
+                            ></span>
 
                             <div>
                                 <strong>
@@ -658,9 +682,7 @@
                     Confirmación
                 </p>
 
-                <h2>
-                    Comprobante de entrega
-                </h2>
+                <h2>Comprobante de entrega</h2>
             </header>
 
             @if ($shipment->deliveryProof)
@@ -713,6 +735,7 @@
                                 {{ $shipment
                                     ->deliveryProof
                                     ->latitude }},
+
                                 {{ $shipment
                                     ->deliveryProof
                                     ->longitude }}
@@ -740,9 +763,7 @@
                         Información adicional
                     </p>
 
-                    <h2>
-                        Indicaciones y notas
-                    </h2>
+                    <h2>Indicaciones y notas</h2>
                 </header>
 
                 <div class="shipment-show-notes">

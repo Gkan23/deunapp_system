@@ -48,6 +48,7 @@ use App\Http\Controllers\ShipmentPackageController;
 use App\Http\Controllers\ShipmentShowPageController;
 use App\Http\Controllers\ShipmentStatusHistoryController;
 use App\Http\Controllers\ShipmentTrackingController;
+use App\Http\Controllers\ShipmentTrackingPageController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\SupportTicketMessageReadController;
 use App\Http\Controllers\TripController;
@@ -161,6 +162,12 @@ Route::middleware('auth')
                 'destroy',
             ]
         )->name('logout');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Email verification
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/email/verify',
@@ -472,7 +479,7 @@ Route::middleware('auth')
 
                 /*
                 |--------------------------------------------------------------------------
-                | Shipment portal pages
+                | Shipment portal
                 |--------------------------------------------------------------------------
                 */
 
@@ -501,6 +508,15 @@ Route::middleware('auth')
                 );
 
                 Route::get(
+                    '/portal/shipments/{shipment}/tracking',
+                    ShipmentTrackingPageController::class
+                )
+                    ->whereNumber('shipment')
+                    ->name(
+                        'portal.shipments.tracking'
+                    );
+
+                Route::get(
                     '/portal/shipments/{shipment}',
                     ShipmentShowPageController::class
                 )
@@ -511,7 +527,7 @@ Route::middleware('auth')
 
                 /*
                 |--------------------------------------------------------------------------
-                | Shipment API endpoints
+                | Shipment endpoints
                 |--------------------------------------------------------------------------
                 */
 

@@ -48,15 +48,45 @@
     font-weight: 800;
 }
 
+.shipment-show-tracking-link,
 .shipment-show-back-link {
     padding: 9px 14px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.shipment-show-tracking-link {
+    color: #ffffff;
+    background: #459db0;
+    border: 1px solid #459db0;
+}
+
+.shipment-show-tracking-link:hover {
+    background: #367f8f;
+    border-color: #367f8f;
+}
+
+.shipment-show-back-link {
     color: #4f5f67;
     background: #ffffff;
     border: 1px solid #dfe6e8;
-    border-radius: 10px;
-    font-size: 0.85rem;
+}
+
+.shipment-show-back-link:hover {
+    color: #276b79;
+    border-color: #459db0;
+}
+
+.shipment-show-flash {
+    padding: 13px 16px;
+    color: #276b79;
+    background: #eaf6f8;
+    border: 1px solid #cce8ed;
+    border-radius: 12px;
+    font-size: 0.87rem;
     font-weight: 700;
-    text-decoration: none;
 }
 
 .shipment-show-summary {
@@ -386,5 +416,15 @@
 
     .shipment-show-card {
         padding: 17px;
+    }
+
+    .shipment-show-header-actions {
+        align-items: stretch;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .shipment-show-header-actions > * {
+        text-align: center;
     }
 }

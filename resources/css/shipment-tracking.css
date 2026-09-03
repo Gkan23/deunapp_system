@@ -1,0 +1,355 @@
+.shipment-tracking-page {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.shipment-tracking-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.shipment-tracking-header h1 {
+    margin: 4px 0 8px;
+    color: #29343a;
+    font-size: clamp(1.7rem, 4vw, 2.5rem);
+}
+
+.shipment-tracking-header p {
+    margin: 0;
+    color: #69787f;
+}
+
+.shipment-tracking-eyebrow {
+    margin: 0;
+    color: #459db0 !important;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.shipment-tracking-header-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.shipment-tracking-refresh,
+.shipment-tracking-back-link {
+    padding: 10px 15px;
+    border-radius: 10px;
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 800;
+}
+
+.shipment-tracking-refresh {
+    color: #ffffff;
+    background: #459db0;
+    border: 1px solid #459db0;
+    cursor: pointer;
+}
+
+.shipment-tracking-back-link {
+    color: #4f5f67;
+    background: #ffffff;
+    border: 1px solid #dfe6e8;
+    text-decoration: none;
+}
+
+.shipment-tracking-summary {
+    display: grid;
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+    gap: 13px;
+}
+
+.shipment-tracking-summary article {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid #e2e8ea;
+    border-radius: 14px;
+}
+
+.shipment-tracking-summary span {
+    color: #77858c;
+    font-size: 0.76rem;
+}
+
+.shipment-tracking-summary strong {
+    color: #29343a;
+}
+
+.shipment-tracking-message {
+    padding: 12px 15px;
+    color: #276b79;
+    background: #eaf6f8;
+    border: 1px solid #cce8ed;
+    border-radius: 12px;
+    font-size: 0.85rem;
+}
+
+.shipment-tracking-message-error {
+    color: #963849;
+    background: #fff0f2;
+    border-color: #efc6cd;
+}
+
+.shipment-tracking-content {
+    display: grid;
+    grid-template-columns:
+        minmax(280px, 350px)
+        minmax(0, 1fr);
+    min-height: 620px;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #e2e8ea;
+    border-radius: 20px;
+    box-shadow:
+        0 18px 50px rgba(41, 52, 58, 0.09);
+}
+
+.shipment-tracking-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding: 20px;
+    border-right: 1px solid #e2e8ea;
+}
+
+.shipment-tracking-sidebar h2 {
+    margin: 4px 0 15px;
+    color: #29343a;
+    font-size: 1.1rem;
+}
+
+.shipment-tracking-address-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.shipment-tracking-address-list article {
+    display: flex;
+    gap: 11px;
+}
+
+.shipment-tracking-address-list article > div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.shipment-tracking-address-list span,
+.shipment-tracking-address-list small {
+    color: #708087;
+    font-size: 0.82rem;
+}
+
+.shipment-tracking-address-marker {
+    display: grid;
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    color: #ffffff !important;
+    border-radius: 50%;
+    font-weight: 900;
+    place-items: center;
+}
+
+.shipment-tracking-origin-marker {
+    background: #eb9c45;
+}
+
+.shipment-tracking-destination-marker {
+    background: #c67adb;
+}
+
+.shipment-tracking-route-information dl {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+}
+
+.shipment-tracking-route-information dl div {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 10px;
+    background: #f8fafb;
+    border-radius: 9px;
+}
+
+.shipment-tracking-route-information dt {
+    color: #748188;
+    font-size: 0.77rem;
+}
+
+.shipment-tracking-route-information dd {
+    margin: 0;
+    color: #29343a;
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-align: right;
+}
+
+.shipment-tracking-auto-refresh {
+    padding: 13px;
+    color: #52636b;
+    background: #f5f9fa;
+    border-radius: 11px;
+}
+
+.shipment-tracking-auto-refresh p {
+    margin: 5px 0 0;
+    font-size: 0.8rem;
+}
+
+.shipment-tracking-map-wrapper {
+    position: relative;
+    min-width: 0;
+}
+
+.shipment-tracking-map {
+    width: 100%;
+    height: 620px;
+}
+
+.shipment-tracking-legend {
+    position: absolute;
+    z-index: 2;
+    right: 18px;
+    bottom: 25px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 10px 13px;
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid #dfe5e7;
+    border-radius: 11px;
+    box-shadow:
+        0 8px 24px rgba(41, 52, 58, 0.12);
+}
+
+.shipment-tracking-legend div {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #53636b;
+    font-size: 0.74rem;
+    font-weight: 800;
+}
+
+.shipment-tracking-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.shipment-tracking-legend-courier {
+    background: #459db0;
+}
+
+.shipment-tracking-legend-origin {
+    background: #eb9c45;
+}
+
+.shipment-tracking-legend-destination {
+    background: #c67adb;
+}
+
+.shipment-tracking-marker {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    color: #ffffff;
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    box-shadow:
+        0 4px 12px rgba(30, 42, 48, 0.3);
+    cursor: pointer;
+    font-size: 0.76rem;
+    font-weight: 900;
+    place-items: center;
+}
+
+.shipment-tracking-marker-courier {
+    background: #459db0;
+}
+
+.shipment-tracking-marker-origin {
+    background: #eb9c45;
+}
+
+.shipment-tracking-marker-destination {
+    background: #c67adb;
+}
+
+.shipment-tracking-popup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 150px;
+}
+
+.shipment-tracking-popup p {
+    margin: 0;
+    color: #607078;
+    font-size: 0.78rem;
+}
+
+@media (max-width: 1000px) {
+    .shipment-tracking-summary {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .shipment-tracking-content {
+        grid-template-columns: 1fr;
+    }
+
+    .shipment-tracking-sidebar {
+        border-right: 0;
+        border-bottom: 1px solid #e2e8ea;
+    }
+}
+
+@media (max-width: 650px) {
+    .shipment-tracking-header {
+        flex-direction: column;
+    }
+
+    .shipment-tracking-header-actions {
+        align-items: stretch;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .shipment-tracking-header-actions > * {
+        text-align: center;
+    }
+
+    .shipment-tracking-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .shipment-tracking-map {
+        height: 470px;
+    }
+
+    .shipment-tracking-legend {
+        right: 10px;
+        bottom: 18px;
+        left: 10px;
+        justify-content: center;
+    }
+}

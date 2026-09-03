@@ -11,5 +11,7 @@ import '../css/courier-profile.css';
 import '../css/shipment-index.css';
 import '../css/shipment-show.css';
 import '../css/shipment-create.css';
+import '../css/shipment-tracking.css';
 
 import './route-map';
+import './shipment-tracking';

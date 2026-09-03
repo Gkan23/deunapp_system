@@ -43,6 +43,7 @@ use App\Http\Controllers\RouteShipmentController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\ShipmentIndexPageController;
 use App\Http\Controllers\ShipmentPackageController;
+use App\Http\Controllers\ShipmentShowPageController;
 use App\Http\Controllers\ShipmentStatusHistoryController;
 use App\Http\Controllers\ShipmentTrackingController;
 use App\Http\Controllers\SupportTicketController;
@@ -516,6 +517,16 @@ Route::middleware('auth')
                     ->middleware('verified')
                     ->name(
                         'portal.shipments.index'
+                    );
+
+                Route::get(
+                    '/portal/shipments/{shipment}',
+                    ShipmentShowPageController::class
+                )
+                    ->middleware('verified')
+                    ->whereNumber('shipment')
+                    ->name(
+                        'portal.shipments.show'
                     );
 
                 Route::get(

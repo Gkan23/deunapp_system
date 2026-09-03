@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class DashboardController extends Controller
 {
     /**
-     * Muestra el panel del usuario autenticado.
+     * Muestra el panel principal del usuario autenticado.
      */
     public function __invoke(
         Request $request
@@ -27,8 +27,7 @@ class DashboardController extends Controller
             );
 
         abort_unless(
-            $user->accountStatus?->status_name
-                === 'ACTIVE',
+            $user->accountStatus?->status_name === 'ACTIVE',
             403,
             'The account is not active.'
         );
@@ -38,15 +37,17 @@ class DashboardController extends Controller
         return view('dashboard', [
             'user' => $user,
             'roleName' => $roleName,
-            'roleLabel' =>
-                $this->roleLabel($roleName),
-            'modules' =>
-                $this->modulesFor($roleName),
+            'roleLabel' => $this->roleLabel(
+                $roleName
+            ),
+            'modules' => $this->modulesFor(
+                $roleName
+            ),
         ]);
     }
 
     /**
-     * Devuelve los módulos disponibles según el rol.
+     * Obtiene los módulos disponibles según el rol.
      *
      * @return array<int, array<string, string>>
      */
@@ -78,7 +79,7 @@ class DashboardController extends Controller
                 $this->module(
                     'Notificaciones',
                     'Revisa las novedades de tu cuenta.',
-                    'notifications.index'
+                    'portal.notifications.index'
                 ),
             ],
 
@@ -116,7 +117,7 @@ class DashboardController extends Controller
                 $this->module(
                     'Notificaciones',
                     'Revisa las novedades del proveedor.',
-                    'notifications.index'
+                    'portal.notifications.index'
                 ),
             ],
 
@@ -134,7 +135,7 @@ class DashboardController extends Controller
                 $this->module(
                     'Notificaciones',
                     'Revisa las novedades de tus entregas.',
-                    'notifications.index'
+                    'portal.notifications.index'
                 ),
             ],
 
@@ -162,7 +163,7 @@ class DashboardController extends Controller
                 $this->module(
                     'Notificaciones',
                     'Revisa tus notificaciones.',
-                    'notifications.index'
+                    'portal.notifications.index'
                 ),
             ],
 
@@ -207,6 +208,11 @@ class DashboardController extends Controller
                     'Consulta la trazabilidad del sistema.',
                     'audit-logs.index'
                 ),
+                $this->module(
+                    'Notificaciones',
+                    'Revisa las notificaciones del sistema.',
+                    'portal.notifications.index'
+                ),
             ],
 
             default => [],
@@ -214,7 +220,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Crea la configuración de un módulo.
+     * Construye la información de un módulo.
      *
      * @return array<string, string>
      */
@@ -231,8 +237,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Convierte el nombre interno del rol
-     * en una etiqueta para la interfaz.
+     * Obtiene la etiqueta en español del rol.
      */
     private function roleLabel(
         ?string $roleName

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AppNotificationController;
+use App\Http\Controllers\AppNotificationIndexPageController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\CurrentUserEmailController;
@@ -33,6 +34,7 @@ use App\Http\Controllers\DeliveryProofController;
 use App\Http\Controllers\DeliveryServiceController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PortalAppNotificationController;
 use App\Http\Controllers\PortalShipmentController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\RechargeController;
@@ -875,7 +877,42 @@ Route::middleware('auth')
 
                 /*
                 |--------------------------------------------------------------------------
-                | Notifications
+                | Notification portal
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/portal/notifications',
+                    AppNotificationIndexPageController::class
+                )->name(
+                    'portal.notifications.index'
+                );
+
+                Route::patch(
+                    '/portal/notifications/read-all',
+                    [
+                        PortalAppNotificationController::class,
+                        'markAllAsRead',
+                    ]
+                )->name(
+                    'portal.notifications.read-all'
+                );
+
+                Route::patch(
+                    '/portal/notifications/{appNotification}/read',
+                    [
+                        PortalAppNotificationController::class,
+                        'markAsRead',
+                    ]
+                )
+                    ->whereNumber('appNotification')
+                    ->name(
+                        'portal.notifications.read'
+                    );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Notification endpoints
                 |--------------------------------------------------------------------------
                 */
 

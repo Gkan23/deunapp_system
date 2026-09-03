@@ -1,0 +1,343 @@
+.support-show-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 22px;
+}
+
+.support-show-heading h1 {
+    margin: 0;
+    color: #29343a;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+}
+
+.support-show-heading p:last-child {
+    margin: 7px 0 0;
+    color: #6e7d84;
+}
+
+.support-show-secondary-button,
+.support-show-primary-button,
+.support-show-read-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 10px 16px;
+    border-radius: 11px;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.support-show-secondary-button {
+    color: #37464d;
+    background: #ffffff;
+    border: 1px solid #d9e2e5;
+}
+
+.support-show-primary-button {
+    color: #ffffff;
+    background: #459db0;
+    border: 1px solid #459db0;
+}
+
+.support-show-read-button {
+    color: #276b79;
+    background: #eaf6f8;
+    border: 1px solid #cbe8ed;
+}
+
+.support-show-alert {
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    border: 1px solid;
+    border-radius: 13px;
+}
+
+.support-show-alert ul {
+    margin: 8px 0 0;
+    padding-left: 20px;
+}
+
+.support-show-alert-success {
+    color: #276b79;
+    background: #eaf6f8;
+    border-color: #cbe8ed;
+}
+
+.support-show-alert-error {
+    color: #963746;
+    background: #fff0f2;
+    border-color: #f0c8cf;
+}
+
+.support-show-layout {
+    display: grid;
+    grid-template-columns:
+        minmax(0, 1fr)
+        minmax(270px, 340px);
+    align-items: start;
+    gap: 18px;
+}
+
+.support-show-main,
+.support-show-sidebar {
+    display: grid;
+    gap: 18px;
+}
+
+.support-show-ticket-card,
+.support-show-conversation,
+.support-show-form-card,
+.support-show-action-card {
+    padding: 20px;
+    background: #ffffff;
+    border: 1px solid #e1e7e9;
+    border-radius: 18px;
+    box-shadow:
+        0 10px 30px rgba(38, 51, 58, 0.06);
+}
+
+.support-show-ticket-header,
+.support-show-section-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.support-show-ticket-header {
+    padding-bottom: 16px;
+    border-bottom: 1px solid #edf0f1;
+}
+
+.support-show-ticket-header span:first-child {
+    color: #78868d;
+    font-size: 0.76rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.support-show-ticket-header h2,
+.support-show-section-header h2,
+.support-show-form-card h2,
+.support-show-action-card h2 {
+    margin: 4px 0 0;
+    color: #2b373d;
+}
+
+.support-show-section-header p {
+    margin: 4px 0 0;
+    color: #77858c;
+}
+
+.support-show-status {
+    padding: 6px 10px;
+    color: #59676e;
+    background: #edf1f2;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 900;
+}
+
+.support-show-status-open,
+.support-show-status-in-progress,
+.support-show-status-waiting-customer {
+    color: #276b79;
+    background: #e8f6f8;
+}
+
+.support-show-status-resolved,
+.support-show-status-closed {
+    color: #49733d;
+    background: #edf7e9;
+}
+
+.support-show-information-grid,
+.support-show-participants {
+    display: grid;
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    padding-top: 16px;
+}
+
+.support-show-participants {
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+    padding: 16px;
+    margin-top: 16px;
+    background: #f7f9f9;
+    border-radius: 13px;
+}
+
+.support-show-information-grid div,
+.support-show-participants div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.support-show-information-grid span,
+.support-show-participants span {
+    color: #78868d;
+    font-size: 0.74rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.support-show-information-grid strong,
+.support-show-participants strong {
+    color: #35434a;
+}
+
+.support-show-participants small {
+    color: #77858c;
+}
+
+.support-show-message-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+.support-show-message {
+    max-width: 85%;
+    padding: 14px;
+    background: #f3f6f7;
+    border: 1px solid #e2e8ea;
+    border-radius: 14px 14px 14px 4px;
+}
+
+.support-show-message-own {
+    justify-self: end;
+    color: #ffffff;
+    background: #459db0;
+    border-color: #459db0;
+    border-radius: 14px 14px 4px 14px;
+}
+
+.support-show-message header {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.support-show-message header div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.support-show-message header span,
+.support-show-message time,
+.support-show-message footer {
+    font-size: 0.72rem;
+    opacity: 0.78;
+}
+
+.support-show-message p {
+    margin: 12px 0;
+    white-space: pre-wrap;
+}
+
+.support-show-attachment {
+    display: inline-flex;
+    margin-bottom: 10px;
+    color: inherit;
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.support-show-message footer {
+    text-align: right;
+}
+
+.support-show-empty {
+    padding: 30px;
+    margin-top: 18px;
+    color: #77858c;
+    text-align: center;
+    background: #f7f9f9;
+    border-radius: 13px;
+}
+
+.support-show-form {
+    display: grid;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.support-show-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.support-show-field label {
+    color: #596970;
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.support-show-field input,
+.support-show-field select,
+.support-show-field textarea {
+    width: 100%;
+    padding: 10px 12px;
+    color: #29343a;
+    background: #ffffff;
+    border: 1px solid #d7e0e3;
+    border-radius: 11px;
+    outline: none;
+    resize: vertical;
+}
+
+.support-show-field input,
+.support-show-field select {
+    min-height: 44px;
+}
+
+.support-show-field input:focus,
+.support-show-field select:focus,
+.support-show-field textarea:focus {
+    border-color: #459db0;
+    box-shadow:
+        0 0 0 3px rgba(69, 157, 176, 0.14);
+}
+
+.support-show-field > span {
+    color: #9a3544;
+    font-size: 0.78rem;
+}
+
+@media (max-width: 980px) {
+    .support-show-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .support-show-sidebar {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .support-show-heading,
+    .support-show-ticket-header,
+    .support-show-section-header {
+        flex-direction: column;
+    }
+
+    .support-show-information-grid,
+    .support-show-participants,
+    .support-show-sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .support-show-message {
+        max-width: 100%;
+    }
+}

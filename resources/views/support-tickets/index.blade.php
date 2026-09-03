@@ -47,7 +47,9 @@
 
             <ul>
                 @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
+                    <li>
+                        {{ $error }}
+                    </li>
                 @endforeach
             </ul>
         </div>
@@ -56,20 +58,38 @@
     <section class="support-ticket-summary">
         <article class="support-ticket-summary-card">
             <span>Total</span>
-            <strong>{{ $totalTickets }}</strong>
-            <small>Tickets visibles</small>
+
+            <strong>
+                {{ $totalTickets }}
+            </strong>
+
+            <small>
+                Tickets visibles
+            </small>
         </article>
 
         <article class="support-ticket-summary-card">
             <span>En proceso</span>
-            <strong>{{ $openTickets }}</strong>
-            <small>Requieren seguimiento</small>
+
+            <strong>
+                {{ $openTickets }}
+            </strong>
+
+            <small>
+                Requieren seguimiento
+            </small>
         </article>
 
         <article class="support-ticket-summary-card">
             <span>Finalizados</span>
-            <strong>{{ $closedTickets }}</strong>
-            <small>Resueltos o cerrados</small>
+
+            <strong>
+                {{ $closedTickets }}
+            </strong>
+
+            <small>
+                Resueltos o cerrados
+            </small>
         </article>
     </section>
 
@@ -81,8 +101,9 @@
             ) }}"
             class="support-ticket-filters"
         >
-            <div class="support-ticket-field
-                support-ticket-search-field"
+            <div
+                class="support-ticket-field
+                    support-ticket-search-field"
             >
                 <label for="search">
                     Buscar
@@ -112,10 +133,12 @@
 
                     @foreach ($statuses as $status)
                         <option
-                            value="{{ $status->status_name }}"
+                            value="{{ $status
+                                ->status_name }}"
                             @selected(
                                 $selectedStatus
-                                === $status->status_name
+                                === $status
+                                    ->status_name
                             )
                         >
                             {{ str_replace(
@@ -143,16 +166,19 @@
 
                     @foreach ($categories as $category)
                         <option
-                            value="{{ $category->category_name }}"
+                            value="{{ $category
+                                ->category_name }}"
                             @selected(
                                 $selectedCategory
-                                === $category->category_name
+                                === $category
+                                    ->category_name
                             )
                         >
                             {{ str_replace(
                                 '_',
                                 ' ',
-                                $category->category_name
+                                $category
+                                    ->category_name
                             ) }}
                         </option>
                     @endforeach
@@ -188,7 +214,9 @@
     <section class="support-ticket-results">
         @if ($tickets->isEmpty())
             <div class="support-ticket-empty">
-                <span aria-hidden="true">?</span>
+                <span aria-hidden="true">
+                    ?
+                </span>
 
                 <h2>
                     No se encontraron tickets
@@ -203,8 +231,10 @@
             <div class="support-ticket-list">
                 @foreach ($tickets as $ticket)
                     @php
-                        $statusName = $ticket->status
-                            ?->status_name ?? 'UNKNOWN';
+                        $statusName = $ticket
+                            ->status
+                            ?->status_name
+                            ?? 'UNKNOWN';
 
                         $statusClass = strtolower(
                             str_replace(
@@ -241,13 +271,16 @@
 
                         <div class="support-ticket-card-grid">
                             <div>
-                                <span>Categoría</span>
+                                <span>
+                                    Categoría
+                                </span>
 
                                 <strong>
                                     {{ str_replace(
                                         '_',
                                         ' ',
-                                        $ticket->category
+                                        $ticket
+                                            ->category
                                             ?->category_name
                                             ?? 'Sin categoría'
                                     ) }}
@@ -255,13 +288,16 @@
                             </div>
 
                             <div>
-                                <span>Prioridad</span>
+                                <span>
+                                    Prioridad
+                                </span>
 
                                 <strong>
                                     {{ str_replace(
                                         '_',
                                         ' ',
-                                        $ticket->priority
+                                        $ticket
+                                            ->priority
                                             ?->priority_name
                                             ?? 'Sin prioridad'
                                     ) }}
@@ -269,36 +305,48 @@
                             </div>
 
                             <div>
-                                <span>Mensajes</span>
+                                <span>
+                                    Mensajes
+                                </span>
 
                                 <strong>
-                                    {{ $ticket->messages_count }}
+                                    {{ $ticket
+                                        ->messages_count }}
                                 </strong>
                             </div>
 
                             <div>
-                                <span>Creado</span>
+                                <span>
+                                    Creado
+                                </span>
 
                                 <strong>
-                                    {{ $ticket->created_at
-                                        ?->format('d/m/Y H:i') }}
+                                    {{ $ticket
+                                        ->created_at
+                                        ?->format(
+                                            'd/m/Y H:i'
+                                        ) }}
                                 </strong>
                             </div>
                         </div>
 
                         @if ($roleName !== 'CUSTOMER')
                             <div class="support-ticket-person">
-                                <span>Cliente</span>
+                                <span>
+                                    Cliente
+                                </span>
 
                                 <strong>
-                                    {{ $ticket->customer
+                                    {{ $ticket
+                                        ->customer
                                         ?->user
                                         ?->name
                                         ?? 'No disponible' }}
                                 </strong>
 
                                 <small>
-                                    {{ $ticket->customer
+                                    {{ $ticket
+                                        ->customer
                                         ?->user
                                         ?->email }}
                                 </small>
@@ -306,38 +354,53 @@
                         @endif
 
                         <footer class="support-ticket-card-footer">
-                            <div>
-                                @if ($ticket->shipment)
-                                    <span>
-                                        Envío:
-                                        <strong>
-                                            {{ $ticket->shipment
-                                                ->tracking_code }}
-                                        </strong>
-                                    </span>
-                                @else
-                                    <span>
-                                        Sin envío relacionado
-                                    </span>
-                                @endif
+                            <div
+                                class="support-ticket-card-details"
+                            >
+                                <div>
+                                    @if ($ticket->shipment)
+                                        <span>
+                                            Envío:
+                                            <strong>
+                                                {{ $ticket
+                                                    ->shipment
+                                                    ->tracking_code }}
+                                            </strong>
+                                        </span>
+                                    @else
+                                        <span>
+                                            Sin envío relacionado
+                                        </span>
+                                    @endif
+                                </div>
+
+                                <div>
+                                    @if ($ticket->assignedTo)
+                                        <span>
+                                            Asignado a
+                                            <strong>
+                                                {{ $ticket
+                                                    ->assignedTo
+                                                    ->name }}
+                                            </strong>
+                                        </span>
+                                    @else
+                                        <span>
+                                            Sin asignar
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
 
-                            <div>
-                                @if ($ticket->assignedTo)
-                                    <span>
-                                        Asignado a
-                                        <strong>
-                                            {{ $ticket
-                                                ->assignedTo
-                                                ->name }}
-                                        </strong>
-                                    </span>
-                                @else
-                                    <span>
-                                        Sin asignar
-                                    </span>
-                                @endif
-                            </div>
+                            <a
+                                href="{{ route(
+                                    'portal.support-tickets.show',
+                                    $ticket
+                                ) }}"
+                                class="support-ticket-primary-button"
+                            >
+                                Ver ticket
+                            </a>
                         </footer>
                     </article>
                 @endforeach

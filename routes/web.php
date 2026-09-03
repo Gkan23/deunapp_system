@@ -36,6 +36,7 @@ use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PortalAppNotificationController;
 use App\Http\Controllers\PortalShipmentController;
+use App\Http\Controllers\PortalSupportTicketController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\RechargeController;
 use App\Http\Controllers\RechargePackageController;
@@ -54,6 +55,7 @@ use App\Http\Controllers\ShipmentTrackingPageController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\SupportTicketIndexPageController;
 use App\Http\Controllers\SupportTicketMessageReadController;
+use App\Http\Controllers\SupportTicketShowPageController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\TripTransactionController;
 use App\Http\Controllers\UserController;
@@ -223,7 +225,7 @@ Route::middleware('auth')
 
         /*
         |--------------------------------------------------------------------------
-        | Current user settings and profile
+        | Current user
         |--------------------------------------------------------------------------
         */
 
@@ -1049,6 +1051,73 @@ Route::middleware('auth')
                 )->name(
                     'portal.support-tickets.index'
                 );
+
+                Route::post(
+                    '/portal/support-tickets/{supportTicket}/messages',
+                    [
+                        PortalSupportTicketController::class,
+                        'addMessage',
+                    ]
+                )
+                    ->whereNumber(
+                        'supportTicket'
+                    )
+                    ->name(
+                        'portal.support-tickets.messages.store'
+                    );
+
+                Route::patch(
+                    '/portal/support-tickets/{supportTicket}/messages/read',
+                    [
+                        PortalSupportTicketController::class,
+                        'markMessagesAsRead',
+                    ]
+                )
+                    ->whereNumber(
+                        'supportTicket'
+                    )
+                    ->name(
+                        'portal.support-tickets.messages.read'
+                    );
+
+                Route::patch(
+                    '/portal/support-tickets/{supportTicket}/assign',
+                    [
+                        PortalSupportTicketController::class,
+                        'assign',
+                    ]
+                )
+                    ->whereNumber(
+                        'supportTicket'
+                    )
+                    ->name(
+                        'portal.support-tickets.assign'
+                    );
+
+                Route::patch(
+                    '/portal/support-tickets/{supportTicket}/status',
+                    [
+                        PortalSupportTicketController::class,
+                        'updateStatus',
+                    ]
+                )
+                    ->whereNumber(
+                        'supportTicket'
+                    )
+                    ->name(
+                        'portal.support-tickets.status.update'
+                    );
+
+                Route::get(
+                    '/portal/support-tickets/{supportTicket}',
+                    SupportTicketShowPageController::class
+                )
+                    ->whereNumber(
+                        'supportTicket'
+                    )
+                    ->name(
+                        'portal.support-tickets.show'
+                    );
 
                 /*
                 |--------------------------------------------------------------------------

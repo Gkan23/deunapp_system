@@ -3,9 +3,18 @@
 namespace Tests\Feature\Http\Controllers;
 
 use App\Models\AccountStatus;
+use App\Models\Courier;
 use App\Models\Customer;
+use App\Models\DeliveryProvider;
+use App\Models\DeliveryService;
+use App\Models\Role;
+use App\Models\Route;
+use App\Models\RouteShipment;
+use App\Models\RouteStatus;
 use App\Models\Shipment;
 use App\Models\ShipmentStatus;
+use App\Models\Trip;
+use App\Models\User;
 use Database\Seeders\CatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -38,7 +47,7 @@ class ShipmentIndexPageControllerTest extends TestCase
 
         /*
          * email_verified_at no pertenece a $fillable,
-         * por eso la prueba utiliza forceFill().
+         * por eso debe modificarse con forceFill().
          */
         $user->forceFill([
             'email_verified_at' => null,
@@ -159,9 +168,7 @@ class ShipmentIndexPageControllerTest extends TestCase
             ->assertSee(
                 'No se encontraron envíos'
             )
-            ->assertSee(
-                '0'
-            );
+            ->assertSee('0');
     }
 
     public function test_an_inactive_account_cannot_view_the_page(): void
@@ -188,5 +195,201 @@ class ShipmentIndexPageControllerTest extends TestCase
                 route('portal.shipments.index')
             )
             ->assertForbidden();
+    }
+
+    public function test_a_provider_only_sees_linked_shipments(): void
+    {
+        $provider =
+            DeliveryProvider::factory()->create();
+
+        $linkedShipment =
+            Shipment::factory()->create([
+                'tracking_code' =>
+                    'DUNA-PROVIDER-LINKED',
+            ]);
+
+        $unrelatedShipment =
+            Shipment::factory()->create([
+                'tracking_code' =>
+                    'DUNA-PROVIDER-HIDDEN',
+            ]);
+
+        $this->linkProviderToShipment(
+            $provider,
+            $linkedShipment
+        );
+
+        $this->actingAs($provider->user)
+            ->get(
+                route('portal.shipments.index')
+            )
+            ->assertOk()
+            ->assertSee(
+                $linkedShipment->tracking_code
+            )
+            ->assertDontSee(
+                $unrelatedShipment->tracking_code
+            );
+    }
+
+    public function test_a_courier_only_sees_assigned_shipments(): void
+    {
+        $courier = Courier::factory()->create();
+
+        $assignedShipment =
+            Shipment::factory()->create([
+                'tracking_code' =>
+                    'DUNA-COURIER-ASSIGNED',
+            ]);
+
+        $unassignedShipment =
+            Shipment::factory()->create([
+                'tracking_code' =>
+                    'DUNA-COURIER-HIDDEN',
+            ]);
+
+        $this->assignCourierToShipment(
+            $courier,
+            $assignedShipment
+        );
+
+        $this->actingAs($courier->user)
+            ->get(
+                route('portal.shipments.index')
+            )
+            ->assertOk()
+            ->assertSee(
+                $assignedShipment->tracking_code
+            )
+            ->assertDontSee(
+                $unassignedShipment->tracking_code
+            );
+    }
+
+    public function test_a_support_agent_sees_all_shipments(): void
+    {
+        $supportAgent = $this->userWithRole(
+            'SUPPORT_AGENT'
+        );
+
+        $firstShipment =
+            Shipment::factory()->create([
+                'tracking_code' =>
+                    'DUNA-SUPPORT-FIRST',
+            ]);
+
+        $secondShipment =
+            Shipment::factory()->create([
+                'tracking_code' =>
+                    'DUNA-SUPPORT-SECOND',
+            ]);
+
+        $this->actingAs($supportAgent)
+            ->get(
+                route('portal.shipments.index')
+            )
+            ->assertOk()
+            ->assertSee(
+                $firstShipment->tracking_code
+            )
+            ->assertSee(
+                $secondShipment->tracking_code
+            );
+    }
+
+    public function test_an_administrator_sees_all_shipments(): void
+    {
+        $administrator = $this->userWithRole(
+            'ADMINISTRATOR'
+        );
+
+        $firstShipment =
+            Shipment::factory()->create([
+                'tracking_code' =>
+                    'DUNA-ADMIN-FIRST',
+            ]);
+
+        $secondShipment =
+            Shipment::factory()->create([
+                'tracking_code' =>
+                    'DUNA-ADMIN-SECOND',
+            ]);
+
+        $this->actingAs($administrator)
+            ->get(
+                route('portal.shipments.index')
+            )
+            ->assertOk()
+            ->assertSee(
+                $firstShipment->tracking_code
+            )
+            ->assertSee(
+                $secondShipment->tracking_code
+            );
+    }
+
+    private function linkProviderToShipment(
+        DeliveryProvider $provider,
+        Shipment $shipment
+    ): void {
+        $trip = Trip::factory()->create([
+            'delivery_provider_id' =>
+                $provider->id,
+            'status' => 'USED',
+            'used_at' => now(),
+        ]);
+
+        DeliveryService::factory()->create([
+            'shipment_id' => $shipment->id,
+            'trip_id' => $trip->id,
+            'trip_type_id' =>
+                $trip->trip_type_id,
+            'status' => 'ASSIGNED',
+            'accepted_at' => now(),
+        ]);
+    }
+
+    private function assignCourierToShipment(
+        Courier $courier,
+        Shipment $shipment
+    ): void {
+        $plannedStatus = RouteStatus::query()
+            ->where(
+                'status_name',
+                'PLANNED'
+            )
+            ->firstOrFail();
+
+        $route = Route::query()->create([
+            'courier_id' => $courier->id,
+            'route_status_id' =>
+                $plannedStatus->id,
+            'route_date' => today(),
+            'started_at' => null,
+            'finished_at' => null,
+            'estimated_distance_km' => null,
+        ]);
+
+        RouteShipment::query()->create([
+            'route_id' => $route->id,
+            'shipment_id' => $shipment->id,
+            'delivery_order' => 1,
+            'delivery_status' => 'PENDING',
+        ]);
+    }
+
+    private function userWithRole(
+        string $roleName
+    ): User {
+        $role = Role::query()
+            ->where(
+                'role_name',
+                $roleName
+            )
+            ->firstOrFail();
+
+        return User::factory()->create([
+            'role_id' => $role->id,
+        ]);
     }
 }

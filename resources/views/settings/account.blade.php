@@ -91,6 +91,73 @@
         </div>
     @endif
 
+    @php
+        $profileRouteName = match (
+            $user->role?->role_name
+        ) {
+            'CUSTOMER' =>
+                'current-user.profile.edit',
+            'DELIVERY_PROVIDER' =>
+                'current-user.provider-profile.edit',
+            default => null,
+        };
+
+        $profileTitle = match (
+            $user->role?->role_name
+        ) {
+            'CUSTOMER' =>
+                'Perfil de cliente',
+            'DELIVERY_PROVIDER' =>
+                'Perfil de proveedor',
+            default =>
+                'Perfil operativo',
+        };
+
+        $profileDescription = match (
+            $user->role?->role_name
+        ) {
+            'CUSTOMER' =>
+                'Actualiza tus datos personales y la información utilizada en tus envíos.',
+            'DELIVERY_PROVIDER' =>
+                'Actualiza tus datos y la información de tu servicio de entregas.',
+            default =>
+                'Consulta y actualiza la información de tu perfil.',
+        };
+    @endphp
+
+    @if ($profileRouteName !== null)
+        <section class="account-settings-profile">
+            <article class="account-settings-card">
+                <header>
+                    <div class="account-settings-icon">
+                        ID
+                    </div>
+
+                    <div>
+                        <p class="portal-eyebrow">
+                            Información personal
+                        </p>
+
+                        <h2>
+                            {{ $profileTitle }}
+                        </h2>
+                    </div>
+                </header>
+
+                <p class="account-settings-description">
+                    {{ $profileDescription }}
+                </p>
+
+                <a
+                    href="{{ route($profileRouteName) }}"
+                    class="portal-primary-button"
+                >
+                    Editar perfil
+                </a>
+            </article>
+        </section>
+    @endif
+
     <section class="account-settings-grid">
         <article class="account-settings-card">
             <header>
@@ -215,6 +282,12 @@
                         autocomplete="current-password"
                         required
                     >
+
+                    @error('current_password')
+                        <span class="portal-field-error">
+                            {{ $message }}
+                        </span>
+                    @enderror
                 </div>
 
                 <div class="portal-field">

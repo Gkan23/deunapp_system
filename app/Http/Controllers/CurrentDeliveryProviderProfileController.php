@@ -6,6 +6,7 @@ use App\Http\Requests\UpdateDeliveryProviderProfileRequest;
 use App\Services\Provider\UpdateDeliveryProviderProfileService;
 use DomainException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 
 class CurrentDeliveryProviderProfileController extends Controller
 {
@@ -15,16 +16,35 @@ class CurrentDeliveryProviderProfileController extends Controller
     public function update(
         UpdateDeliveryProviderProfileRequest $request,
         UpdateDeliveryProviderProfileService $service
-    ): JsonResponse {
+    ): JsonResponse|RedirectResponse {
         try {
             $user = $service->execute(
                 $request->user(),
                 $request->validated()
             );
         } catch (DomainException $exception) {
-            return response()->json([
-                'message' => $exception->getMessage(),
-            ], 422);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' =>
+                        $exception->getMessage(),
+                ], 422);
+            }
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'profile' =>
+                        $exception->getMessage(),
+                ]);
+        }
+
+        if (! $request->expectsJson()) {
+            return to_route(
+                'current-user.provider-profile.edit'
+            )->with(
+                'status',
+                'Perfil de proveedor actualizado correctamente.'
+            );
         }
 
         return response()->json([

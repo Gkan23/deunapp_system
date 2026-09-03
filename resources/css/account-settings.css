@@ -1,47 +1,91 @@
 .account-settings-heading {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 28px;
-    margin-bottom: 22px;
+    margin-bottom: 24px;
+}
+
+.account-settings-heading > div:first-child {
+    min-width: 0;
 }
 
 .account-settings-heading h1 {
     margin: 0;
-    font-size: clamp(2rem, 5vw, 3.4rem);
+    color: #29343a;
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 800;
+    line-height: 1.15;
 }
 
 .account-settings-heading > div:first-child > p:last-child {
+    max-width: 650px;
     margin: 8px 0 0;
-    color: #6d7b82;
+    color: #65747c;
+    line-height: 1.6;
 }
 
 .account-settings-user {
     display: flex;
+    flex: 0 1 360px;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
     min-width: 280px;
-    padding: 16px;
-    background: #ffffff;
-    border: 1px solid #e1e7e9;
+    padding: 16px 18px;
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid #e2e8ea;
     border-radius: 16px;
+    box-shadow:
+        0 10px 30px rgba(35, 47, 53, 0.07);
+}
+
+.account-settings-user .portal-user-avatar {
+    display: grid;
+    flex: 0 0 48px;
+    width: 48px;
+    height: 48px;
+    color: #ffffff;
+    background:
+        linear-gradient(
+            135deg,
+            #459db0,
+            #c67adb
+        );
+    border-radius: 50%;
+    font-size: 1.05rem;
+    font-weight: 900;
+    place-items: center;
 }
 
 .account-settings-user > div {
     display: flex;
-    flex-direction: column;
     min-width: 0;
+    flex-direction: column;
+    gap: 2px;
 }
 
+.account-settings-user strong,
 .account-settings-user span,
-.account-settings-user small {
-    color: #6d7b82;
-}
-
 .account-settings-user small {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.account-settings-user strong {
+    color: #29343a;
+    font-size: 0.98rem;
+}
+
+.account-settings-user span {
+    color: #459db0;
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.account-settings-user small {
+    color: #75838a;
+    font-size: 0.78rem;
 }
 
 .account-settings-summary {
@@ -54,101 +98,316 @@
 
 .account-settings-summary article {
     display: flex;
+    min-width: 0;
+    min-height: 90px;
     flex-direction: column;
+    justify-content: center;
     gap: 6px;
-    padding: 17px;
-    background: #ffffff;
-    border: 1px solid #e1e7e9;
-    border-radius: 15px;
+    padding: 17px 18px;
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid #e2e8ea;
+    border-radius: 16px;
+    box-shadow:
+        0 8px 25px rgba(35, 47, 53, 0.05);
 }
 
-.account-settings-summary article > span {
-    color: #6d7b82;
+.account-settings-summary span {
+    color: #7a878e;
     font-size: 0.76rem;
     font-weight: 800;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
 }
 
+.account-settings-summary strong {
+    overflow: hidden;
+    color: #344149;
+    font-size: 0.95rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .account-status-positive {
-    color: #27724f;
+    color: #27816f !important;
 }
 
 .account-status-warning {
-    color: #a46717;
+    color: #b36a22 !important;
+}
+
+.account-settings-profile {
+    margin-bottom: 24px;
+}
+
+.account-settings-profile .account-settings-card {
+    width: 100%;
+}
+
+.account-settings-profile .account-settings-description {
+    max-width: 760px;
+}
+
+.account-settings-profile .portal-primary-button {
+    width: fit-content;
+    text-decoration: none;
 }
 
 .account-settings-grid {
     display: grid;
     grid-template-columns:
         repeat(2, minmax(0, 1fr));
-    gap: 18px;
+    gap: 22px;
+    margin-bottom: 24px;
 }
 
 .account-settings-card {
-    padding: 25px;
-    background: #ffffff;
-    border: 1px solid #e1e7e9;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 20px;
+    padding: 26px;
+    background: rgba(255, 255, 255, 0.97);
+    border: 1px solid #e2e8ea;
     border-radius: 20px;
     box-shadow:
-        0 12px 35px rgba(35, 47, 53, 0.07);
+        0 16px 45px rgba(35, 47, 53, 0.08);
 }
 
 .account-settings-card > header {
     display: flex;
     align-items: center;
-    gap: 13px;
+    gap: 14px;
+}
+
+.account-settings-card > header > div:last-child {
+    min-width: 0;
 }
 
 .account-settings-card h2 {
+    margin: 2px 0 0;
+    color: #2c383e;
+    font-size: 1.22rem;
+    font-weight: 800;
+}
+
+.account-settings-card .portal-eyebrow {
     margin: 0;
 }
 
 .account-settings-icon {
     display: grid;
-    flex: 0 0 44px;
-    width: 44px;
-    height: 44px;
+    flex: 0 0 46px;
+    width: 46px;
+    height: 46px;
     color: #ffffff;
+    background:
+        linear-gradient(
+            135deg,
+            #459db0,
+            #6bb7c6
+        );
+    border-radius: 14px;
+    box-shadow:
+        0 7px 18px rgba(69, 157, 176, 0.22);
+    font-size: 0.92rem;
+    font-weight: 900;
+    place-items: center;
+}
+
+.account-settings-profile .account-settings-icon {
     background:
         linear-gradient(
             135deg,
             #c67adb,
             #459db0
         );
-    border-radius: 14px;
-    font-size: 1.15rem;
-    font-weight: 900;
-    place-items: center;
+    box-shadow:
+        0 7px 18px rgba(198, 122, 219, 0.24);
 }
 
 .account-settings-description {
-    margin: 17px 0 22px;
-    color: #6d7b82;
-    line-height: 1.6;
+    min-height: 44px;
+    margin: 0;
+    color: #68777e;
+    font-size: 0.9rem;
+    line-height: 1.55;
 }
 
-@media (max-width: 900px) {
+.account-settings-card .portal-form {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 17px;
+}
+
+.account-settings-card .portal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.account-settings-card .portal-field label {
+    color: #344149;
+    font-size: 0.86rem;
+    font-weight: 800;
+}
+
+.account-settings-card .portal-field input {
+    width: 100%;
+    min-height: 46px;
+    padding: 10px 13px;
+    color: #29343a;
+    background: #ffffff;
+    border: 1px solid #cfd9dd;
+    border-radius: 11px;
+    font: inherit;
+    outline: none;
+    transition:
+        border-color 150ms ease,
+        box-shadow 150ms ease,
+        background-color 150ms ease;
+}
+
+.account-settings-card .portal-field input:hover {
+    border-color: #aebdc2;
+}
+
+.account-settings-card .portal-field input:focus {
+    background: #ffffff;
+    border-color: #459db0;
+    box-shadow:
+        0 0 0 3px rgba(69, 157, 176, 0.15);
+}
+
+.account-settings-card .portal-field-error {
+    color: #a33446;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.account-settings-card .portal-primary-button {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    padding: 10px 18px;
+    margin-top: auto;
+    color: #ffffff;
+    background:
+        linear-gradient(
+            135deg,
+            #459db0,
+            #3d91a3
+        );
+    border: 1px solid #459db0;
+    border-radius: 11px;
+    box-shadow:
+        0 7px 18px rgba(69, 157, 176, 0.2);
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background-color 150ms ease,
+        box-shadow 150ms ease,
+        transform 150ms ease;
+}
+
+.account-settings-card .portal-primary-button:hover {
+    background:
+        linear-gradient(
+            135deg,
+            #398b9c,
+            #347f8e
+        );
+    box-shadow:
+        0 9px 22px rgba(69, 157, 176, 0.27);
+    transform: translateY(-1px);
+}
+
+.account-settings-card .portal-primary-button:focus-visible {
+    outline: 3px solid rgba(69, 157, 176, 0.28);
+    outline-offset: 3px;
+}
+
+.account-settings-card .portal-primary-button:active {
+    box-shadow:
+        0 4px 12px rgba(69, 157, 176, 0.2);
+    transform: translateY(0);
+}
+
+@media (max-width: 1000px) {
     .account-settings-summary {
         grid-template-columns:
             repeat(2, minmax(0, 1fr));
     }
-
-    .account-settings-grid {
-        grid-template-columns: 1fr;
-    }
 }
 
-@media (max-width: 650px) {
+@media (max-width: 820px) {
     .account-settings-heading {
-        align-items: flex-start;
         flex-direction: column;
     }
 
     .account-settings-user {
         width: 100%;
+        min-width: 0;
+        flex-basis: auto;
+    }
+
+    .account-settings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .account-settings-description {
+        min-height: auto;
+    }
+}
+
+@media (max-width: 560px) {
+    .account-settings-heading {
+        gap: 18px;
     }
 
     .account-settings-summary {
         grid-template-columns: 1fr;
+    }
+
+    .account-settings-summary article {
+        min-height: 78px;
+    }
+
+    .account-settings-card {
+        gap: 18px;
+        padding: 20px;
+        border-radius: 17px;
+    }
+
+    .account-settings-card > header {
+        align-items: flex-start;
+    }
+
+    .account-settings-icon {
+        flex-basis: 42px;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+    }
+
+    .account-settings-card .portal-primary-button,
+    .account-settings-profile .portal-primary-button {
+        width: 100%;
+        align-self: stretch;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .account-settings-card .portal-field input,
+    .account-settings-card .portal-primary-button {
+        transition: none;
     }
 }

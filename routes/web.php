@@ -24,6 +24,7 @@ use App\Http\Controllers\CurrentCourierProfileController;
 use App\Http\Controllers\CurrentCustomerProfileController;
 use App\Http\Controllers\CurrentCustomerProfilePageController;
 use App\Http\Controllers\CurrentDeliveryProviderProfileController;
+use App\Http\Controllers\CurrentDeliveryProviderProfilePageController;
 use App\Http\Controllers\CurrentUserController;
 use App\Http\Controllers\CurrentUserSettingsPageController;
 use App\Http\Controllers\DashboardController;
@@ -227,6 +228,13 @@ Route::middleware('auth')
             CurrentCustomerProfilePageController::class
         )->name(
             'current-user.profile.edit'
+        );
+
+        Route::get(
+            '/settings/provider-profile',
+            CurrentDeliveryProviderProfilePageController::class
+        )->name(
+            'current-user.provider-profile.edit'
         );
 
         Route::get(

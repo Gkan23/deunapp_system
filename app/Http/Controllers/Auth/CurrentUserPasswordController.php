@@ -7,16 +7,17 @@ use App\Http\Requests\Auth\UpdatePasswordRequest;
 use App\Models\AuditLog;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 
 class CurrentUserPasswordController extends Controller
 {
     /**
-     * Actualiza la contraseña del usuario autenticado.
+     * Update the authenticated user's password.
      */
     public function update(
         UpdatePasswordRequest $request
-    ): JsonResponse {
+    ): JsonResponse|RedirectResponse {
         $validated = $request->validated();
 
         DB::transaction(function () use (
@@ -24,29 +25,26 @@ class CurrentUserPasswordController extends Controller
             $validated
         ): void {
             $user = User::query()
-                ->whereKey($request->user()->getKey())
+                ->whereKey(
+                    $request->user()->getKey()
+                )
                 ->lockForUpdate()
                 ->firstOrFail();
 
             $changedAt = now();
 
-            /*
-             * El modelo User tiene el cast "hashed", por lo que
-             * Laravel cifra automáticamente la nueva contraseña.
-             */
             $user->update([
-                'password' => $validated['password'],
+                'password' =>
+                    $validated['password'],
             ]);
 
-            /*
-             * Se registra el evento, pero nunca se almacena
-             * la contraseña ni ningún dato confidencial.
-             */
             AuditLog::query()->create([
-                'performed_by_user_id' => $user->id,
+                'performed_by_user_id' =>
+                    $user->id,
                 'table_name' => 'users',
                 'record_id' => $user->id,
-                'action_type' => 'PASSWORD_CHANGED',
+                'action_type' =>
+                    'PASSWORD_CHANGED',
                 'details' => [
                     'user_id' => $user->id,
                 ],
@@ -54,14 +52,20 @@ class CurrentUserPasswordController extends Controller
             ]);
         }, attempts: 3);
 
-        /*
-         * Se renueva el identificador de sesión después
-         * de modificar una credencial sensible.
-         */
         $request->session()->regenerate();
 
-        return response()->json([
-            'message' => 'Password updated successfully.',
-        ]);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' =>
+                    'Password updated successfully.',
+            ]);
+        }
+
+        return redirect()
+            ->route('current-user.settings')
+            ->with(
+                'status',
+                'Contraseña actualizada correctamente.'
+            );
     }
 }

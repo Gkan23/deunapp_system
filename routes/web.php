@@ -24,6 +24,7 @@ use App\Http\Controllers\CurrentCourierProfileController;
 use App\Http\Controllers\CurrentCustomerProfileController;
 use App\Http\Controllers\CurrentDeliveryProviderProfileController;
 use App\Http\Controllers\CurrentUserController;
+use App\Http\Controllers\CurrentUserSettingsPageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryProofController;
 use App\Http\Controllers\DeliveryServiceController;
@@ -214,6 +215,11 @@ Route::middleware('auth')
         | Current user
         |--------------------------------------------------------------------------
         */
+
+        Route::get(
+            '/settings/account',
+            CurrentUserSettingsPageController::class
+        )->name('current-user.settings');
 
         Route::get(
             '/me',

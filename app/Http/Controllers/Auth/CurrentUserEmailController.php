@@ -7,49 +7,68 @@ use App\Http\Requests\Auth\UpdateEmailRequest;
 use App\Services\Auth\UpdateUserEmailService;
 use DomainException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 
 class CurrentUserEmailController extends Controller
 {
     /**
-     * Cambia el correo del usuario autenticado.
+     * Update the authenticated user's email.
      */
     public function update(
         UpdateEmailRequest $request,
         UpdateUserEmailService $service
-    ): JsonResponse {
+    ): JsonResponse|RedirectResponse {
         try {
             $user = $service->execute(
                 $request->user(),
                 $request->validated('email')
             );
         } catch (DomainException $exception) {
-            return response()->json([
-                'message' => $exception->getMessage(),
-            ], 422);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' =>
+                        $exception->getMessage(),
+                ], 422);
+            }
+
+            return back()
+                ->withInput([
+                    'email' =>
+                        $request->input('email'),
+                ])
+                ->withErrors([
+                    'email' =>
+                        $exception->getMessage(),
+                ]);
         }
 
-        /*
-         * Actualiza el usuario del guard durante
-         * la solicitud actual.
-         */
         Auth::setUser($user);
 
         $request->session()->regenerate();
 
         $user->sendEmailVerificationNotification();
 
-        return response()->json([
-            'message' =>
-                'Email updated successfully. A verification link has been sent.',
-            'data' => [
-                'id' => $user->id,
-                'email' => $user->email,
-                'email_verified' =>
-                    $user->hasVerifiedEmail(),
-                'email_verified_at' =>
-                    $user->email_verified_at,
-            ],
-        ]);
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' =>
+                    'Email updated successfully. A verification link has been sent.',
+                'data' => [
+                    'id' => $user->id,
+                    'email' => $user->email,
+                    'email_verified' =>
+                        $user->hasVerifiedEmail(),
+                    'email_verified_at' =>
+                        $user->email_verified_at,
+                ],
+            ]);
+        }
+
+        return redirect()
+            ->route('verification.notice')
+            ->with(
+                'status',
+                'Correo actualizado correctamente. Revisa el nuevo correo para verificarlo.'
+            );
     }
 }

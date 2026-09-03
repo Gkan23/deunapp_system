@@ -1,0 +1,154 @@
+.account-settings-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+    margin-bottom: 22px;
+}
+
+.account-settings-heading h1 {
+    margin: 0;
+    font-size: clamp(2rem, 5vw, 3.4rem);
+}
+
+.account-settings-heading > div:first-child > p:last-child {
+    margin: 8px 0 0;
+    color: #6d7b82;
+}
+
+.account-settings-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 280px;
+    padding: 16px;
+    background: #ffffff;
+    border: 1px solid #e1e7e9;
+    border-radius: 16px;
+}
+
+.account-settings-user > div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.account-settings-user span,
+.account-settings-user small {
+    color: #6d7b82;
+}
+
+.account-settings-user small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.account-settings-summary {
+    display: grid;
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.account-settings-summary article {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 17px;
+    background: #ffffff;
+    border: 1px solid #e1e7e9;
+    border-radius: 15px;
+}
+
+.account-settings-summary article > span {
+    color: #6d7b82;
+    font-size: 0.76rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.account-status-positive {
+    color: #27724f;
+}
+
+.account-status-warning {
+    color: #a46717;
+}
+
+.account-settings-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.account-settings-card {
+    padding: 25px;
+    background: #ffffff;
+    border: 1px solid #e1e7e9;
+    border-radius: 20px;
+    box-shadow:
+        0 12px 35px rgba(35, 47, 53, 0.07);
+}
+
+.account-settings-card > header {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.account-settings-card h2 {
+    margin: 0;
+}
+
+.account-settings-icon {
+    display: grid;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    color: #ffffff;
+    background:
+        linear-gradient(
+            135deg,
+            #c67adb,
+            #459db0
+        );
+    border-radius: 14px;
+    font-size: 1.15rem;
+    font-weight: 900;
+    place-items: center;
+}
+
+.account-settings-description {
+    margin: 17px 0 22px;
+    color: #6d7b82;
+    line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+    .account-settings-summary {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+    .account-settings-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .account-settings-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .account-settings-user {
+        width: 100%;
+    }
+
+    .account-settings-summary {
+        grid-template-columns: 1fr;
+    }
+}

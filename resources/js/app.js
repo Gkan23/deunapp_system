@@ -10,5 +10,6 @@ import '../css/provider-profile.css';
 import '../css/courier-profile.css';
 import '../css/shipment-index.css';
 import '../css/shipment-show.css';
+import '../css/shipment-create.css';
 
 import './route-map';

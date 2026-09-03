@@ -18,12 +18,28 @@
                 </p>
             </div>
 
-            <a
-                href="{{ route('dashboard') }}"
-                class="shipment-index-back-link"
-            >
-                Volver al panel
-            </a>
+            <div class="shipment-index-header-actions">
+                @can(
+                    'create',
+                    \App\Models\Shipment::class
+                )
+                    <a
+                        href="{{ route(
+                            'portal.shipments.create'
+                        ) }}"
+                        class="shipment-index-create-link"
+                    >
+                        Registrar envío
+                    </a>
+                @endcan
+
+                <a
+                    href="{{ route('dashboard') }}"
+                    class="shipment-index-back-link"
+                >
+                    Volver al panel
+                </a>
+            </div>
         </header>
 
         <section class="shipment-index-toolbar">
@@ -64,7 +80,8 @@
 
                         @foreach ($statuses as $status)
                             <option
-                                value="{{ $status->status_name }}"
+                                value="{{ $status
+                                    ->status_name }}"
                                 @selected(
                                     $selectedStatus
                                     === $status->status_name
@@ -119,7 +136,9 @@
                     DU
                 </span>
 
-                <h2>No se encontraron envíos</h2>
+                <h2>
+                    No se encontraron envíos
+                </h2>
 
                 <p>
                     No hay registros que coincidan con
@@ -139,6 +158,7 @@
                             <th>Destino</th>
                             <th>Solicitud</th>
                             <th>Valor</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
 
@@ -146,13 +166,22 @@
                         @foreach ($shipments as $shipment)
                             <tr>
                                 <td data-label="Seguimiento">
-                                    <strong class="shipment-tracking-code">
-                                        {{ $shipment->tracking_code }}
+                                    <strong
+                                        class="
+                                            shipment-tracking-code
+                                        "
+                                    >
+                                        {{ $shipment
+                                            ->tracking_code }}
                                     </strong>
                                 </td>
 
                                 <td data-label="Estado">
-                                    <span class="shipment-status-badge">
+                                    <span
+                                        class="
+                                            shipment-status-badge
+                                        "
+                                    >
                                         {{ str_replace(
                                             '_',
                                             ' ',
@@ -165,23 +194,37 @@
 
                                 <td data-label="Remitente">
                                     <strong>
-                                        {{ $shipment->sender->first_name }}
-                                        {{ $shipment->sender->last_name }}
+                                        {{ $shipment
+                                            ->sender
+                                            ->first_name }}
+
+                                        {{ $shipment
+                                            ->sender
+                                            ->last_name }}
                                     </strong>
 
                                     <small>
-                                        {{ $shipment->sender->phone }}
+                                        {{ $shipment
+                                            ->sender
+                                            ->phone }}
                                     </small>
                                 </td>
 
                                 <td data-label="Destinatario">
                                     <strong>
-                                        {{ $shipment->recipient->first_name }}
-                                        {{ $shipment->recipient->last_name }}
+                                        {{ $shipment
+                                            ->recipient
+                                            ->first_name }}
+
+                                        {{ $shipment
+                                            ->recipient
+                                            ->last_name }}
                                     </strong>
 
                                     <small>
-                                        {{ $shipment->recipient->phone }}
+                                        {{ $shipment
+                                            ->recipient
+                                            ->phone }}
                                     </small>
                                 </td>
 
@@ -203,15 +246,19 @@
 
                                 <td data-label="Solicitud">
                                     <span>
-                                        {{ $shipment->requested_at
-                                            ?->format('d/m/Y H:i')
+                                        {{ $shipment
+                                            ->requested_at
+                                            ?->format(
+                                                'd/m/Y H:i'
+                                            )
                                             ?? 'Sin fecha' }}
                                     </span>
                                 </td>
 
                                 <td data-label="Valor">
                                     <span>
-                                        {{ $shipment->declared_value
+                                        {{ $shipment
+                                            ->declared_value
                                             !== null
                                                 ? 'C$ '.number_format(
                                                     (float) $shipment
@@ -220,6 +267,20 @@
                                                 )
                                                 : 'No declarado' }}
                                     </span>
+                                </td>
+
+                                <td data-label="Acciones">
+                                    <a
+                                        href="{{ route(
+                                            'portal.shipments.show',
+                                            $shipment
+                                        ) }}"
+                                        class="
+                                            shipment-index-detail-link
+                                        "
+                                    >
+                                        Ver detalle
+                                    </a>
                                 </td>
                             </tr>
                         @endforeach

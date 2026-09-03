@@ -33,6 +33,7 @@ use App\Http\Controllers\DeliveryProofController;
 use App\Http\Controllers\DeliveryServiceController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PortalShipmentController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\RechargeController;
 use App\Http\Controllers\RechargePackageController;
@@ -41,6 +42,7 @@ use App\Http\Controllers\RouteMapController;
 use App\Http\Controllers\RouteMapPageController;
 use App\Http\Controllers\RouteShipmentController;
 use App\Http\Controllers\ShipmentController;
+use App\Http\Controllers\ShipmentCreatePageController;
 use App\Http\Controllers\ShipmentIndexPageController;
 use App\Http\Controllers\ShipmentPackageController;
 use App\Http\Controllers\ShipmentShowPageController;
@@ -75,12 +77,6 @@ Route::get('/', function () {
 
 Route::middleware('guest')
     ->group(function (): void {
-        /*
-        |--------------------------------------------------------------------------
-        | Customer registration
-        |--------------------------------------------------------------------------
-        */
-
         Route::get(
             '/register',
             RegisterCustomerPageController::class
@@ -93,12 +89,6 @@ Route::middleware('guest')
                 'store',
             ]
         )->name('register');
-
-        /*
-        |--------------------------------------------------------------------------
-        | Delivery provider registration
-        |--------------------------------------------------------------------------
-        */
 
         Route::get(
             '/register/provider',
@@ -113,12 +103,6 @@ Route::middleware('guest')
             ]
         )->name('provider.register');
 
-        /*
-        |--------------------------------------------------------------------------
-        | Login
-        |--------------------------------------------------------------------------
-        */
-
         Route::get(
             '/login',
             LoginPageController::class
@@ -131,12 +115,6 @@ Route::middleware('guest')
                 'store',
             ]
         )->name('login');
-
-        /*
-        |--------------------------------------------------------------------------
-        | Password recovery
-        |--------------------------------------------------------------------------
-        */
 
         Route::get(
             '/forgot-password',
@@ -183,12 +161,6 @@ Route::middleware('auth')
                 'destroy',
             ]
         )->name('logout');
-
-        /*
-        |--------------------------------------------------------------------------
-        | Email verification
-        |--------------------------------------------------------------------------
-        */
 
         Route::get(
             '/email/verify',
@@ -337,12 +309,6 @@ Route::middleware('auth')
 
         Route::middleware('verified')
             ->group(function (): void {
-                /*
-                |--------------------------------------------------------------------------
-                | Dashboard
-                |--------------------------------------------------------------------------
-                */
-
                 Route::get(
                     '/dashboard',
                     DashboardController::class
@@ -506,28 +472,48 @@ Route::middleware('auth')
 
                 /*
                 |--------------------------------------------------------------------------
-                | Shipments
+                | Shipment portal pages
                 |--------------------------------------------------------------------------
                 */
 
                 Route::get(
                     '/portal/shipments',
                     ShipmentIndexPageController::class
-                )
-                    ->middleware('verified')
-                    ->name(
-                        'portal.shipments.index'
-                    );
+                )->name(
+                    'portal.shipments.index'
+                );
+
+                Route::get(
+                    '/portal/shipments/create',
+                    ShipmentCreatePageController::class
+                )->name(
+                    'portal.shipments.create'
+                );
+
+                Route::post(
+                    '/portal/shipments',
+                    [
+                        PortalShipmentController::class,
+                        'store',
+                    ]
+                )->name(
+                    'portal.shipments.store'
+                );
 
                 Route::get(
                     '/portal/shipments/{shipment}',
                     ShipmentShowPageController::class
                 )
-                    ->middleware('verified')
                     ->whereNumber('shipment')
                     ->name(
                         'portal.shipments.show'
                     );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Shipment API endpoints
+                |--------------------------------------------------------------------------
+                */
 
                 Route::get(
                     '/shipments',
@@ -687,9 +673,6 @@ Route::middleware('auth')
                     ->whereNumber('route')
                     ->name('routes.cancel');
 
-                /*
-                 * Endpoint JSON and GeoJSON.
-                 */
                 Route::get(
                     '/routes/{route}/map',
                     [
@@ -700,9 +683,6 @@ Route::middleware('auth')
                     ->whereNumber('route')
                     ->name('routes.map');
 
-                /*
-                 * Blade page that consumes the JSON endpoint.
-                 */
                 Route::get(
                     '/routes/{route}/map/view',
                     [
@@ -722,12 +702,6 @@ Route::middleware('auth')
                 )
                     ->whereNumber('route')
                     ->name('routes.show');
-
-                /*
-                |--------------------------------------------------------------------------
-                | Route shipments
-                |--------------------------------------------------------------------------
-                */
 
                 Route::patch(
                     '/route-shipments/{routeShipment}/fail-attempt',

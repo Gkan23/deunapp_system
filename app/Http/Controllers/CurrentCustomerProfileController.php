@@ -6,6 +6,7 @@ use App\Http\Requests\UpdateCustomerProfileRequest;
 use App\Services\Customer\UpdateCustomerProfileService;
 use DomainException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 
 class CurrentCustomerProfileController extends Controller
 {
@@ -15,16 +16,34 @@ class CurrentCustomerProfileController extends Controller
     public function update(
         UpdateCustomerProfileRequest $request,
         UpdateCustomerProfileService $service
-    ): JsonResponse {
+    ): JsonResponse|RedirectResponse {
         try {
             $user = $service->execute(
                 $request->user(),
                 $request->validated()
             );
         } catch (DomainException $exception) {
-            return response()->json([
-                'message' => $exception->getMessage(),
-            ], 422);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $exception->getMessage(),
+                ], 422);
+            }
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'profile' =>
+                        $exception->getMessage(),
+                ]);
+        }
+
+        if (! $request->expectsJson()) {
+            return to_route(
+                'current-user.profile.edit'
+            )->with(
+                'status',
+                'Perfil actualizado correctamente.'
+            );
         }
 
         return response()->json([

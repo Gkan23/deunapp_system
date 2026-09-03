@@ -156,3 +156,41 @@
         grid-template-columns: 1fr;
     }
 }
+
+.registration-login-options {
+    padding-top: 22px;
+    margin-top: 24px;
+    border-top: 1px solid #e1e7e9;
+    text-align: center;
+}
+
+.registration-login-options > p {
+    margin: 0 0 14px;
+    color: #6d7b82;
+    font-size: 0.9rem;
+}
+
+.registration-login-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.registration-login-actions a {
+    display: block;
+    padding: 11px 14px;
+    border-radius: 11px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.registration-login-primary {
+    color: #ffffff;
+    background: #c67adb;
+}
+
+.registration-login-secondary {
+    color: #347d8d;
+    background: #edf7f9;
+    border: 1px solid #cbe5ea;
+}

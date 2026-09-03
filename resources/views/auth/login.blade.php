@@ -152,6 +152,12 @@
                         @enderror
                     </div>
 
+                    <div class="password-login-action">
+                        <a href="{{ route('password.request') }}">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
+
                     <label class="portal-checkbox">
                         <input
                             name="remember"
@@ -172,6 +178,28 @@
                         Iniciar sesión
                     </button>
                 </form>
+
+                <div class="registration-login-options">
+                    <p>
+                        ¿Todavía no tienes una cuenta?
+                    </p>
+
+                    <div class="registration-login-actions">
+                        <a
+                            href="{{ route('register.page') }}"
+                            class="registration-login-primary"
+                        >
+                            Crear cuenta de cliente
+                        </a>
+
+                        <a
+                            href="{{ route('provider.register.page') }}"
+                            class="registration-login-secondary"
+                        >
+                            Registrarme como proveedor
+                        </a>
+                    </div>
+                </div>
             </div>
         </section>
     </main>

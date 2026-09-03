@@ -13,6 +13,7 @@ import '../css/shipment-show.css';
 import '../css/shipment-create.css';
 import '../css/shipment-tracking.css';
 import '../css/notification-index.css';
+import '../css/support-ticket-index.css';
 
 import './route-map';
 import './shipment-tracking';

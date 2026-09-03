@@ -52,6 +52,7 @@ use App\Http\Controllers\ShipmentStatusHistoryController;
 use App\Http\Controllers\ShipmentTrackingController;
 use App\Http\Controllers\ShipmentTrackingPageController;
 use App\Http\Controllers\SupportTicketController;
+use App\Http\Controllers\SupportTicketIndexPageController;
 use App\Http\Controllers\SupportTicketMessageReadController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\TripTransactionController;
@@ -80,6 +81,12 @@ Route::get('/', function () {
 
 Route::middleware('guest')
     ->group(function (): void {
+        /*
+        |--------------------------------------------------------------------------
+        | Customer registration
+        |--------------------------------------------------------------------------
+        */
+
         Route::get(
             '/register',
             RegisterCustomerPageController::class
@@ -92,6 +99,12 @@ Route::middleware('guest')
                 'store',
             ]
         )->name('register');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delivery provider registration
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/register/provider',
@@ -106,6 +119,12 @@ Route::middleware('guest')
             ]
         )->name('provider.register');
 
+        /*
+        |--------------------------------------------------------------------------
+        | Login
+        |--------------------------------------------------------------------------
+        */
+
         Route::get(
             '/login',
             LoginPageController::class
@@ -118,6 +137,12 @@ Route::middleware('guest')
                 'store',
             ]
         )->name('login');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Password recovery
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/forgot-password',
@@ -198,7 +223,7 @@ Route::middleware('auth')
 
         /*
         |--------------------------------------------------------------------------
-        | Current user
+        | Current user settings and profile
         |--------------------------------------------------------------------------
         */
 
@@ -318,6 +343,12 @@ Route::middleware('auth')
 
         Route::middleware('verified')
             ->group(function (): void {
+                /*
+                |--------------------------------------------------------------------------
+                | Dashboard
+                |--------------------------------------------------------------------------
+                */
+
                 Route::get(
                     '/dashboard',
                     DashboardController::class
@@ -529,7 +560,7 @@ Route::middleware('auth')
 
                 /*
                 |--------------------------------------------------------------------------
-                | Shipment endpoints
+                | Shipment JSON endpoints
                 |--------------------------------------------------------------------------
                 */
 
@@ -721,6 +752,12 @@ Route::middleware('auth')
                     ->whereNumber('route')
                     ->name('routes.show');
 
+                /*
+                |--------------------------------------------------------------------------
+                | Route shipments
+                |--------------------------------------------------------------------------
+                */
+
                 Route::patch(
                     '/route-shipments/{routeShipment}/fail-attempt',
                     [
@@ -905,14 +942,16 @@ Route::middleware('auth')
                         'markAsRead',
                     ]
                 )
-                    ->whereNumber('appNotification')
+                    ->whereNumber(
+                        'appNotification'
+                    )
                     ->name(
                         'portal.notifications.read'
                     );
 
                 /*
                 |--------------------------------------------------------------------------
-                | Notification endpoints
+                | Notification JSON endpoints
                 |--------------------------------------------------------------------------
                 */
 
@@ -1000,7 +1039,20 @@ Route::middleware('auth')
 
                 /*
                 |--------------------------------------------------------------------------
-                | Support tickets
+                | Support ticket portal
+                |--------------------------------------------------------------------------
+                */
+
+                Route::get(
+                    '/portal/support-tickets',
+                    SupportTicketIndexPageController::class
+                )->name(
+                    'portal.support-tickets.index'
+                );
+
+                /*
+                |--------------------------------------------------------------------------
+                | Support ticket JSON endpoints
                 |--------------------------------------------------------------------------
                 */
 

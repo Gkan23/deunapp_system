@@ -27,7 +27,8 @@ class DashboardController extends Controller
             );
 
         abort_unless(
-            $user->accountStatus?->status_name === 'ACTIVE',
+            $user->accountStatus?->status_name
+                === 'ACTIVE',
             403,
             'The account is not active.'
         );
@@ -47,7 +48,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Obtiene los módulos disponibles según el rol.
+     * Obtiene los módulos disponibles para cada rol.
      *
      * @return array<int, array<string, string>>
      */
@@ -74,7 +75,7 @@ class DashboardController extends Controller
                 $this->module(
                     'Tickets de soporte',
                     'Solicita ayuda y consulta tus tickets.',
-                    'support-tickets.index'
+                    'portal.support-tickets.index'
                 ),
                 $this->module(
                     'Notificaciones',
@@ -142,8 +143,8 @@ class DashboardController extends Controller
             'SUPPORT_AGENT' => [
                 $this->module(
                     'Tickets de soporte',
-                    'Atiende solicitudes de los clientes.',
-                    'support-tickets.index'
+                    'Atiende las solicitudes de los clientes.',
+                    'portal.support-tickets.index'
                 ),
                 $this->module(
                     'Incidentes',
@@ -196,7 +197,7 @@ class DashboardController extends Controller
                 $this->module(
                     'Tickets de soporte',
                     'Administra los tickets de soporte.',
-                    'support-tickets.index'
+                    'portal.support-tickets.index'
                 ),
                 $this->module(
                     'Incidentes',
@@ -237,7 +238,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Obtiene la etiqueta en español del rol.
+     * Devuelve la etiqueta visible correspondiente al rol.
      */
     private function roleLabel(
         ?string $roleName

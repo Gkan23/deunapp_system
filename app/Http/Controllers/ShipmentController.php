@@ -10,8 +10,8 @@ use App\Models\ShipmentStatus;
 use App\Models\User;
 use App\Services\Shipment\CreateShipmentService;
 use App\Services\Shipment\UpdateShipmentStatusService;
+use App\Services\Shipment\VisibleShipmentsQuery;
 use DomainException;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -22,8 +22,10 @@ class ShipmentController extends Controller
     /**
      * Muestra los envíos visibles para el usuario.
      */
-    public function index(Request $request): JsonResponse
-    {
+    public function index(
+        Request $request,
+        VisibleShipmentsQuery $visibleShipments
+    ): JsonResponse {
         /** @var User $user */
         $user = $request->user();
 
@@ -32,14 +34,8 @@ class ShipmentController extends Controller
             Shipment::class
         );
 
-        /*
-         * Shipment solamente contiene las relaciones
-         * customer y shipmentStatus utilizadas aquí.
-         *
-         * No se incluye shipmentType porque esa relación
-         * no existe en el modelo Shipment.
-         */
-        $shipments = $this->visibleShipmentsFor($user)
+        $shipments = $visibleShipments
+            ->for($user)
             ->with([
                 'customer',
                 'shipmentStatus',
@@ -71,7 +67,8 @@ class ShipmentController extends Controller
         );
 
         return response()->json([
-            'message' => 'Shipment created successfully.',
+            'message' =>
+                'Shipment created successfully.',
             'shipment' => $shipment,
         ], Response::HTTP_CREATED);
     }
@@ -91,10 +88,6 @@ class ShipmentController extends Controller
             $shipment
         );
 
-        /*
-         * Solamente se cargan relaciones que realmente
-         * existen en el modelo Shipment.
-         */
         $shipment->load([
             'customer',
             'shipmentStatus',
@@ -115,10 +108,6 @@ class ShipmentController extends Controller
     ): JsonResponse {
         $validated = $request->validated();
 
-        /*
-         * UpdateShipmentStatusRequest ya comprobó que
-         * el estado recibido existe en la base de datos.
-         */
         $newStatus = ShipmentStatus::query()
             ->findOrFail(
                 $validated['shipment_status_id']
@@ -132,12 +121,9 @@ class ShipmentController extends Controller
                 $validated['comment'] ?? null
             );
         } catch (DomainException $exception) {
-            /*
-             * Las transiciones inválidas son errores de
-             * dominio y responden con HTTP 422.
-             */
             return response()->json([
-                'message' => $exception->getMessage(),
+                'message' =>
+                    $exception->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -158,12 +144,11 @@ class ShipmentController extends Controller
     ): JsonResponse {
         $validated = $request->validated();
 
-        /*
-         * Como este endpoint representa una cancelación,
-         * el estado CANCELLED se obtiene del catálogo.
-         */
         $cancelledStatus = ShipmentStatus::query()
-            ->where('status_name', 'CANCELLED')
+            ->where(
+                'status_name',
+                'CANCELLED'
+            )
             ->firstOrFail();
 
         try {
@@ -175,7 +160,8 @@ class ShipmentController extends Controller
             );
         } catch (DomainException $exception) {
             return response()->json([
-                'message' => $exception->getMessage(),
+                'message' =>
+                    $exception->getMessage(),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -184,71 +170,5 @@ class ShipmentController extends Controller
                 'Shipment cancelled successfully.',
             'shipment' => $cancelledShipment,
         ]);
-    }
-
-    /**
-     * Construye la consulta de envíos visibles
-     * según el rol del usuario autenticado.
-     */
-    private function visibleShipmentsFor(
-        User $user
-    ): Builder {
-        $query = Shipment::query();
-
-        $roleName = $user->role()
-            ->value('role_name');
-
-        return match ($roleName) {
-            /*
-             * Administración y soporte pueden consultar
-             * todos los envíos.
-             */
-            'ADMINISTRATOR',
-            'SUPPORT_AGENT' => $query,
-
-            /*
-             * El cliente solamente consulta los envíos
-             * asociados con su perfil.
-             */
-            'CUSTOMER' => $query->whereHas(
-                'customer',
-                fn (Builder $customerQuery): Builder =>
-                    $customerQuery->where(
-                        'user_id',
-                        $user->id
-                    )
-            ),
-
-            /*
-             * El proveedor solamente consulta envíos
-             * vinculados con uno de sus viajes.
-             */
-            'DELIVERY_PROVIDER' => $query->whereHas(
-                'deliveryService.trip.deliveryProvider',
-                fn (Builder $providerQuery): Builder =>
-                    $providerQuery->where(
-                        'user_id',
-                        $user->id
-                    )
-            ),
-
-            /*
-             * El repartidor solamente consulta envíos
-             * agregados a una de sus rutas.
-             */
-            'COURIER' => $query->whereHas(
-                'routeShipments.route.courier',
-                fn (Builder $courierQuery): Builder =>
-                    $courierQuery->where(
-                        'user_id',
-                        $user->id
-                    )
-            ),
-
-            /*
-             * Un rol desconocido no recibe registros.
-             */
-            default => $query->whereRaw('1 = 0'),
-        };
     }
 }

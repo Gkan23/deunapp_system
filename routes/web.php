@@ -41,6 +41,7 @@ use App\Http\Controllers\RouteMapController;
 use App\Http\Controllers\RouteMapPageController;
 use App\Http\Controllers\RouteShipmentController;
 use App\Http\Controllers\ShipmentController;
+use App\Http\Controllers\ShipmentIndexPageController;
 use App\Http\Controllers\ShipmentPackageController;
 use App\Http\Controllers\ShipmentStatusHistoryController;
 use App\Http\Controllers\ShipmentTrackingController;
@@ -507,6 +508,15 @@ Route::middleware('auth')
                 | Shipments
                 |--------------------------------------------------------------------------
                 */
+
+                Route::get(
+                    '/portal/shipments',
+                    ShipmentIndexPageController::class
+                )
+                    ->middleware('verified')
+                    ->name(
+                        'portal.shipments.index'
+                    );
 
                 Route::get(
                     '/shipments',

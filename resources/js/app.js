@@ -8,3 +8,4 @@ import './route-map';
 import '../css/customer-profile.css';
 import '../css/provider-profile.css';
 import '../css/courier-profile.css';
+import '../css/shipment-index.css';

@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 class DashboardController extends Controller
 {
     /**
-     * Display the dashboard for the authenticated user.
+     * Muestra el panel del usuario autenticado.
      */
     public function __invoke(
         Request $request
@@ -27,7 +27,8 @@ class DashboardController extends Controller
             );
 
         abort_unless(
-            $user->accountStatus?->status_name === 'ACTIVE',
+            $user->accountStatus?->status_name
+                === 'ACTIVE',
             403,
             'The account is not active.'
         );
@@ -37,12 +38,16 @@ class DashboardController extends Controller
         return view('dashboard', [
             'user' => $user,
             'roleName' => $roleName,
-            'roleLabel' => $this->roleLabel($roleName),
-            'modules' => $this->modulesFor($roleName),
+            'roleLabel' =>
+                $this->roleLabel($roleName),
+            'modules' =>
+                $this->modulesFor($roleName),
         ]);
     }
 
     /**
+     * Devuelve los módulos disponibles según el rol.
+     *
      * @return array<int, array<string, string>>
      */
     private function modulesFor(
@@ -53,7 +58,7 @@ class DashboardController extends Controller
                 $this->module(
                     'Mis envíos',
                     'Consulta tus envíos y su estado actual.',
-                    'shipments.index'
+                    'portal.shipments.index'
                 ),
                 $this->module(
                     'Servicios de entrega',
@@ -180,7 +185,7 @@ class DashboardController extends Controller
                 $this->module(
                     'Envíos',
                     'Supervisa los envíos registrados.',
-                    'shipments.index'
+                    'portal.shipments.index'
                 ),
                 $this->module(
                     'Rutas',
@@ -209,6 +214,8 @@ class DashboardController extends Controller
     }
 
     /**
+     * Crea la configuración de un módulo.
+     *
      * @return array<string, string>
      */
     private function module(
@@ -223,15 +230,22 @@ class DashboardController extends Controller
         ];
     }
 
+    /**
+     * Convierte el nombre interno del rol
+     * en una etiqueta para la interfaz.
+     */
     private function roleLabel(
         ?string $roleName
     ): string {
         return match ($roleName) {
             'CUSTOMER' => 'Cliente',
-            'DELIVERY_PROVIDER' => 'Proveedor de entrega',
+            'DELIVERY_PROVIDER' =>
+                'Proveedor de entrega',
             'COURIER' => 'Repartidor',
-            'SUPPORT_AGENT' => 'Agente de soporte',
-            'ADMINISTRATOR' => 'Administrador',
+            'SUPPORT_AGENT' =>
+                'Agente de soporte',
+            'ADMINISTRATOR' =>
+                'Administrador',
             default => 'Usuario',
         };
     }

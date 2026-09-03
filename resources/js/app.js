@@ -7,3 +7,4 @@ import '../css/account-settings.css';
 import './route-map';
 import '../css/customer-profile.css';
 import '../css/provider-profile.css';
+import '../css/courier-profile.css';

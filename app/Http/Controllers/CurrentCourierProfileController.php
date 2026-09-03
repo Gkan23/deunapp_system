@@ -6,6 +6,7 @@ use App\Http\Requests\UpdateCourierProfileRequest;
 use App\Services\Courier\UpdateCourierProfileService;
 use DomainException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 
 class CurrentCourierProfileController extends Controller
 {
@@ -15,16 +16,35 @@ class CurrentCourierProfileController extends Controller
     public function update(
         UpdateCourierProfileRequest $request,
         UpdateCourierProfileService $service
-    ): JsonResponse {
+    ): JsonResponse|RedirectResponse {
         try {
             $user = $service->execute(
                 $request->user(),
                 $request->validated()
             );
         } catch (DomainException $exception) {
-            return response()->json([
-                'message' => $exception->getMessage(),
-            ], 422);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' =>
+                        $exception->getMessage(),
+                ], 422);
+            }
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'profile' =>
+                        $exception->getMessage(),
+                ]);
+        }
+
+        if (! $request->expectsJson()) {
+            return to_route(
+                'current-user.courier-profile.edit'
+            )->with(
+                'status',
+                'Perfil de repartidor actualizado correctamente.'
+            );
         }
 
         return response()->json([

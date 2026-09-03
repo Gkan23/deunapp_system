@@ -21,6 +21,7 @@ use App\Http\Controllers\CourierLocationController;
 use App\Http\Controllers\CurrentCourierAvailabilityController;
 use App\Http\Controllers\CurrentCourierLocationController;
 use App\Http\Controllers\CurrentCourierProfileController;
+use App\Http\Controllers\CurrentCourierProfilePageController;
 use App\Http\Controllers\CurrentCustomerProfileController;
 use App\Http\Controllers\CurrentCustomerProfilePageController;
 use App\Http\Controllers\CurrentDeliveryProviderProfileController;
@@ -235,6 +236,13 @@ Route::middleware('auth')
             CurrentDeliveryProviderProfilePageController::class
         )->name(
             'current-user.provider-profile.edit'
+        );
+
+        Route::get(
+            '/settings/courier-profile',
+            CurrentCourierProfilePageController::class
+        )->name(
+            'current-user.courier-profile.edit'
         );
 
         Route::get(

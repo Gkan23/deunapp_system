@@ -99,6 +99,8 @@
                 'current-user.profile.edit',
             'DELIVERY_PROVIDER' =>
                 'current-user.provider-profile.edit',
+            'COURIER' =>
+                'current-user.courier-profile.edit',
             default => null,
         };
 
@@ -109,6 +111,8 @@
                 'Perfil de cliente',
             'DELIVERY_PROVIDER' =>
                 'Perfil de proveedor',
+            'COURIER' =>
+                'Perfil de repartidor',
             default =>
                 'Perfil operativo',
         };
@@ -120,6 +124,8 @@
                 'Actualiza tus datos personales y la información utilizada en tus envíos.',
             'DELIVERY_PROVIDER' =>
                 'Actualiza tus datos y la información de tu servicio de entregas.',
+            'COURIER' =>
+                'Actualiza tu nombre y número de licencia de repartidor.',
             default =>
                 'Consulta y actualiza la información de tu perfil.',
         };

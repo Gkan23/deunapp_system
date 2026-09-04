@@ -778,7 +778,7 @@ class PortalRouteCompletionControllerTest extends TestCase
 
         $this->assertSame(
             $before,
-            $this->snapshot($scenario)
+            $this->snapshot($scenario)4
         );
     }
 }

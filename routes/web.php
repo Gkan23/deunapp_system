@@ -34,8 +34,10 @@ use App\Http\Controllers\DeliveryProofController;
 use App\Http\Controllers\DeliveryServiceController;
 use App\Http\Controllers\IncidentController;
 use App\Http\Controllers\IncidentIndexPageController;
+use App\Http\Controllers\IncidentShowPageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PortalAppNotificationController;
+use App\Http\Controllers\PortalIncidentController;
 use App\Http\Controllers\PortalShipmentController;
 use App\Http\Controllers\PortalSupportTicketController;
 use App\Http\Controllers\RatingController;
@@ -724,6 +726,20 @@ Route::middleware('auth')->group(function (): void {
             '/portal/incidents',
             IncidentIndexPageController::class
         )->name('portal.incidents.index');
+
+        Route::patch(
+            '/portal/incidents/{incident}/status',
+            [PortalIncidentController::class, 'updateStatus']
+        )
+            ->whereNumber('incident')
+            ->name('portal.incidents.status.update');
+
+        Route::get(
+            '/portal/incidents/{incident}',
+            IncidentShowPageController::class
+        )
+            ->whereNumber('incident')
+            ->name('portal.incidents.show');
 
         /*
         |--------------------------------------------------------------------------

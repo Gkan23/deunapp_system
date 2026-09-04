@@ -25,6 +25,15 @@
         </a>
     </section>
 
+    @if (session('status'))
+        <div
+            class="incident-index-notice"
+            role="status"
+        >
+            {{ session('status') }}
+        </div>
+    @endif
+
     @if ($errors->any())
         <div
             class="incident-index-alert"
@@ -36,7 +45,9 @@
 
             <ul>
                 @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
+                    <li>
+                        {{ $error }}
+                    </li>
                 @endforeach
             </ul>
         </div>
@@ -49,25 +60,37 @@
         <article class="incident-index-summary-card">
             <span>Total</span>
 
-            <strong>{{ $totalIncidents }}</strong>
+            <strong>
+                {{ $totalIncidents }}
+            </strong>
 
-            <small>Incidentes visibles</small>
+            <small>
+                Incidentes visibles
+            </small>
         </article>
 
         <article class="incident-index-summary-card">
             <span>Pendientes</span>
 
-            <strong>{{ $pendingIncidents }}</strong>
+            <strong>
+                {{ $pendingIncidents }}
+            </strong>
 
-            <small>Abiertos o en revisión</small>
+            <small>
+                Abiertos o en revisión
+            </small>
         </article>
 
         <article class="incident-index-summary-card">
             <span>Finalizados</span>
 
-            <strong>{{ $finishedIncidents }}</strong>
+            <strong>
+                {{ $finishedIncidents }}
+            </strong>
 
-            <small>Resueltos o cerrados</small>
+            <small>
+                Resueltos o cerrados
+            </small>
         </article>
     </section>
 
@@ -99,8 +122,13 @@
                     Estado
                 </label>
 
-                <select id="status" name="status">
-                    <option value="">Todos</option>
+                <select
+                    id="status"
+                    name="status"
+                >
+                    <option value="">
+                        Todos
+                    </option>
 
                     @foreach ($statuses as $status)
                         <option
@@ -125,8 +153,13 @@
                     Tipo
                 </label>
 
-                <select id="type" name="type">
-                    <option value="">Todos</option>
+                <select
+                    id="type"
+                    name="type"
+                >
+                    <option value="">
+                        Todos
+                    </option>
 
                     @foreach ($types as $type)
                         <option
@@ -173,12 +206,17 @@
     <section class="incident-index-results">
         <p class="incident-index-result-count">
             {{ $incidents->total() }}
-            {{ $incidents->total() === 1 ? 'resultado' : 'resultados' }}
+
+            {{ $incidents->total() === 1
+                ? 'resultado'
+                : 'resultados' }}
         </p>
 
         @if ($incidents->isEmpty())
             <div class="incident-index-empty">
-                <h2>No se encontraron incidentes</h2>
+                <h2>
+                    No se encontraron incidentes
+                </h2>
 
                 <p>
                     No hay incidentes visibles que coincidan
@@ -194,7 +232,11 @@
                             ?->status_name ?? 'UNKNOWN';
 
                         $statusClass = strtolower(
-                            str_replace('_', '-', $statusName)
+                            str_replace(
+                                '_',
+                                '-',
+                                $statusName
+                            )
                         );
                     @endphp
 
@@ -218,7 +260,11 @@
                             <span
                                 class="incident-index-status incident-index-status-{{ $statusClass }}"
                             >
-                                {{ str_replace('_', ' ', $statusName) }}
+                                {{ str_replace(
+                                    '_',
+                                    ' ',
+                                    $statusName
+                                ) }}
                             </span>
                         </header>
 
@@ -226,7 +272,9 @@
 
                         <dl class="incident-index-details">
                             <div>
-                                <dt>Envío</dt>
+                                <dt>
+                                    Envío
+                                </dt>
 
                                 <dd>
                                     {{ $incident->shipment?->tracking_code
@@ -235,7 +283,9 @@
                             </div>
 
                             <div>
-                                <dt>Reportado por</dt>
+                                <dt>
+                                    Reportado por
+                                </dt>
 
                                 <dd>
                                     {{ $incident->reportedBy?->name
@@ -244,7 +294,9 @@
                             </div>
 
                             <div>
-                                <dt>Fecha del reporte</dt>
+                                <dt>
+                                    Fecha del reporte
+                                </dt>
 
                                 <dd>
                                     {{ $incident->reported_at?->format('d/m/Y H:i')
@@ -252,6 +304,19 @@
                                 </dd>
                             </div>
                         </dl>
+
+                        <footer class="incident-index-card-actions">
+                            <a
+                                href="{{ route(
+                                    'portal.incidents.show',
+                                    $incident
+                                ) }}"
+                                class="incident-index-primary-button"
+                                aria-label="Ver incidente número {{ $incident->id }}"
+                            >
+                                Ver incidente
+                            </a>
+                        </footer>
                     </article>
                 @endforeach
             </div>

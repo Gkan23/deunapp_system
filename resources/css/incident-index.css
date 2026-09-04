@@ -328,3 +328,19 @@
         padding: 18px;
     }
 }
+
+.incident-index-card-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.incident-index-notice {
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    color: #326d49;
+    background: #eaf6ed;
+    border: 1px solid #cfe8d6;
+    border-radius: 14px;
+    line-height: 1.6;
+}

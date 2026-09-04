@@ -1,0 +1,242 @@
+.incident-create-page {
+    width: min(1180px, 100%);
+    margin: 0 auto;
+    color: #29343a;
+}
+
+.incident-create-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.incident-create-eyebrow {
+    margin: 0 0 6px;
+    color: #357b8b;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.incident-create-header h1 {
+    margin: 0;
+    font-size: clamp(1.7rem, 4vw, 2.3rem);
+    font-weight: 800;
+}
+
+.incident-create-header > div > p:last-child {
+    margin: 8px 0 0;
+    color: #65747c;
+    line-height: 1.6;
+}
+
+.incident-create-grid {
+    display: grid;
+    grid-template-columns: minmax(250px, 0.8fr) minmax(0, 1.5fr);
+    align-items: start;
+    gap: 22px;
+}
+
+.incident-create-card {
+    min-width: 0;
+    padding: 26px;
+    background: #ffffff;
+    border: 1px solid #e0e7ea;
+    border-radius: 20px;
+    box-shadow: 0 12px 32px rgba(35, 47, 53, 0.06);
+}
+
+.incident-create-card h2 {
+    margin: 0 0 20px;
+    overflow-wrap: anywhere;
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.incident-create-details {
+    display: grid;
+    gap: 16px;
+    margin: 0 0 24px;
+}
+
+.incident-create-details > div {
+    display: grid;
+    gap: 5px;
+}
+
+.incident-create-details dt {
+    color: #65747c;
+    font-size: 0.84rem;
+}
+
+.incident-create-details dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-weight: 700;
+}
+
+.incident-create-form {
+    display: grid;
+    gap: 22px;
+}
+
+.incident-create-field {
+    display: grid;
+    gap: 8px;
+}
+
+.incident-create-field label {
+    font-size: 0.92rem;
+    font-weight: 700;
+}
+
+.incident-create-field select,
+.incident-create-field textarea {
+    width: 100%;
+    min-width: 0;
+    padding: 12px 14px;
+    color: #29343a;
+    background: #ffffff;
+    border: 1px solid #b9c7ce;
+    border-radius: 11px;
+    font: inherit;
+}
+
+.incident-create-field select {
+    min-height: 46px;
+}
+
+.incident-create-field textarea {
+    min-height: 200px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.incident-create-field textarea::placeholder {
+    color: #68777e;
+}
+
+.incident-create-field select:focus-visible,
+.incident-create-field textarea:focus-visible,
+.incident-create-primary-button:focus-visible,
+.incident-create-secondary-button:focus-visible {
+    outline: 3px solid #459db0;
+    outline-offset: 3px;
+}
+
+.incident-create-field [aria-invalid="true"] {
+    border-color: #b23f51;
+}
+
+.incident-create-help {
+    margin: 0;
+    color: #65747c;
+    font-size: 0.85rem;
+    line-height: 1.65;
+}
+
+.incident-create-field-error {
+    color: #a12f43;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+.incident-create-alert {
+    padding: 18px 22px;
+    margin-bottom: 22px;
+    color: #8f2d40;
+    background: #fff1f3;
+    border: 1px solid #efc7d0;
+    border-radius: 14px;
+    line-height: 1.6;
+}
+
+.incident-create-alert ul {
+    padding-left: 20px;
+    margin: 8px 0 0;
+    list-style: disc;
+}
+
+.incident-create-empty {
+    padding: 18px;
+    color: #52636c;
+    background: #f4f7f8;
+    border: 1px dashed #bdcbd2;
+    border-radius: 12px;
+    line-height: 1.6;
+}
+
+.incident-create-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 6px;
+}
+
+.incident-create-primary-button,
+.incident-create-secondary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 11px 18px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-align: center;
+    text-decoration: none;
+}
+
+.incident-create-primary-button {
+    color: #ffffff;
+    background: #327b8c;
+    border-color: #327b8c;
+}
+
+.incident-create-primary-button:hover {
+    background: #286473;
+    border-color: #286473;
+}
+
+.incident-create-secondary-button {
+    color: #40535d;
+    background: #ffffff;
+    border-color: #c9d5db;
+}
+
+.incident-create-secondary-button:hover {
+    background: #f1f6f7;
+}
+
+@media (max-width: 800px) {
+    .incident-create-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .incident-create-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .incident-create-card {
+        padding: 20px;
+        border-radius: 16px;
+    }
+
+    .incident-create-actions {
+        flex-direction: column;
+    }
+
+    .incident-create-actions > * {
+        width: 100%;
+    }
+}

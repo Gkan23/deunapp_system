@@ -33,6 +33,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryProofController;
 use App\Http\Controllers\DeliveryServiceController;
 use App\Http\Controllers\IncidentController;
+use App\Http\Controllers\IncidentCreatePageController;
 use App\Http\Controllers\IncidentIndexPageController;
 use App\Http\Controllers\IncidentShowPageController;
 use App\Http\Controllers\PaymentController;
@@ -68,7 +69,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Application status
+| Inicio
 |--------------------------------------------------------------------------
 */
 
@@ -81,14 +82,14 @@ Route::get('/', function () {
 
 /*
 |--------------------------------------------------------------------------
-| Guest authentication routes
+| Invitados
 |--------------------------------------------------------------------------
 */
 
 Route::middleware('guest')->group(function (): void {
     /*
     |--------------------------------------------------------------------------
-    | Customer registration
+    | Registro de clientes
     |--------------------------------------------------------------------------
     */
 
@@ -104,7 +105,7 @@ Route::middleware('guest')->group(function (): void {
 
     /*
     |--------------------------------------------------------------------------
-    | Delivery provider registration
+    | Registro de proveedores
     |--------------------------------------------------------------------------
     */
 
@@ -120,7 +121,7 @@ Route::middleware('guest')->group(function (): void {
 
     /*
     |--------------------------------------------------------------------------
-    | Login
+    | Inicio de sesión
     |--------------------------------------------------------------------------
     */
 
@@ -136,7 +137,7 @@ Route::middleware('guest')->group(function (): void {
 
     /*
     |--------------------------------------------------------------------------
-    | Password recovery
+    | Recuperación de contraseña
     |--------------------------------------------------------------------------
     */
 
@@ -163,11 +164,17 @@ Route::middleware('guest')->group(function (): void {
 
 /*
 |--------------------------------------------------------------------------
-| Authenticated routes
+| Usuarios autenticados
 |--------------------------------------------------------------------------
 */
 
 Route::middleware('auth')->group(function (): void {
+    /*
+    |--------------------------------------------------------------------------
+    | Cierre de sesión
+    |--------------------------------------------------------------------------
+    */
+
     Route::post(
         '/logout',
         [AuthenticatedSessionController::class, 'destroy']
@@ -175,7 +182,7 @@ Route::middleware('auth')->group(function (): void {
 
     /*
     |--------------------------------------------------------------------------
-    | Email verification
+    | Verificación del correo
     |--------------------------------------------------------------------------
     */
 
@@ -203,8 +210,12 @@ Route::middleware('auth')->group(function (): void {
 
     /*
     |--------------------------------------------------------------------------
-    | Current user
+    | Configuración de cuenta y páginas de perfil
     |--------------------------------------------------------------------------
+    |
+    | Estas páginas permiten el acceso antes de verificar el correo.
+    | Cada controlador conserva sus comprobaciones de autorización.
+    |
     */
 
     Route::get(
@@ -226,6 +237,12 @@ Route::middleware('auth')->group(function (): void {
         '/settings/courier-profile',
         CurrentCourierProfilePageController::class
     )->name('current-user.courier-profile.edit');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Usuario actual
+    |--------------------------------------------------------------------------
+    */
 
     Route::get(
         '/me',
@@ -257,6 +274,12 @@ Route::middleware('auth')->group(function (): void {
         [CurrentCourierProfileController::class, 'update']
     )->name('current-user.courier-profile.update');
 
+    /*
+    |--------------------------------------------------------------------------
+    | Disponibilidad y ubicación del repartidor
+    |--------------------------------------------------------------------------
+    */
+
     Route::patch(
         '/me/courier-availability',
         [CurrentCourierAvailabilityController::class, 'update']
@@ -276,8 +299,11 @@ Route::middleware('auth')->group(function (): void {
 
     /*
     |--------------------------------------------------------------------------
-    | Verified operational routes
+    | Operaciones con correo verificado
     |--------------------------------------------------------------------------
+    |
+    | Este grupo hereda el middleware auth del grupo superior.
+    |
     */
 
     Route::middleware('verified')->group(function (): void {
@@ -294,7 +320,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Users
+        | Usuarios
         |--------------------------------------------------------------------------
         */
 
@@ -331,7 +357,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Couriers
+        | Repartidores
         |--------------------------------------------------------------------------
         */
 
@@ -368,7 +394,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Vehicles
+        | Vehículos
         |--------------------------------------------------------------------------
         */
 
@@ -398,7 +424,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Shipment portal
+        | Envíos: portal Blade
         |--------------------------------------------------------------------------
         */
 
@@ -424,6 +450,32 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('shipment')
             ->name('portal.shipments.tracking');
 
+        /*
+        |--------------------------------------------------------------------------
+        | Reportar incidentes desde un envío
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/portal/shipments/{shipment}/incidents/create',
+            IncidentCreatePageController::class
+        )
+            ->whereNumber('shipment')
+            ->name('portal.shipments.incidents.create');
+
+        Route::post(
+            '/portal/shipments/{shipment}/incidents',
+            [PortalIncidentController::class, 'store']
+        )
+            ->whereNumber('shipment')
+            ->name('portal.shipments.incidents.store');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Detalle del envío
+        |--------------------------------------------------------------------------
+        */
+
         Route::get(
             '/portal/shipments/{shipment}',
             ShipmentShowPageController::class
@@ -433,7 +485,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Shipment JSON endpoints
+        | Envíos: endpoints JSON
         |--------------------------------------------------------------------------
         */
 
@@ -505,7 +557,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Routes
+        | Rutas de reparto
         |--------------------------------------------------------------------------
         */
 
@@ -563,7 +615,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Route shipments
+        | Envíos asignados a rutas
         |--------------------------------------------------------------------------
         */
 
@@ -576,7 +628,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Delivery services
+        | Servicios de entrega
         |--------------------------------------------------------------------------
         */
 
@@ -615,7 +667,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Payments
+        | Pagos
         |--------------------------------------------------------------------------
         */
 
@@ -647,7 +699,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Ratings
+        | Calificaciones
         |--------------------------------------------------------------------------
         */
 
@@ -665,7 +717,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Notification portal
+        | Notificaciones: portal Blade
         |--------------------------------------------------------------------------
         */
 
@@ -688,7 +740,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Notification JSON endpoints
+        | Notificaciones: endpoints JSON
         |--------------------------------------------------------------------------
         */
 
@@ -718,7 +770,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Incident portal
+        | Incidentes: portal Blade
         |--------------------------------------------------------------------------
         */
 
@@ -743,7 +795,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Incident JSON endpoints
+        | Incidentes: endpoints JSON
         |--------------------------------------------------------------------------
         */
 
@@ -768,7 +820,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Support ticket portal
+        | Tickets de soporte: portal Blade
         |--------------------------------------------------------------------------
         */
 
@@ -824,7 +876,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Support ticket JSON endpoints
+        | Tickets de soporte: endpoints JSON
         |--------------------------------------------------------------------------
         */
 
@@ -875,7 +927,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Recharges
+        | Recargas
         |--------------------------------------------------------------------------
         */
 
@@ -898,7 +950,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Recharge packages
+        | Paquetes de recarga
         |--------------------------------------------------------------------------
         */
 
@@ -916,7 +968,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Trips
+        | Viajes
         |--------------------------------------------------------------------------
         */
 
@@ -934,7 +986,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Trip transactions
+        | Transacciones de viajes
         |--------------------------------------------------------------------------
         */
 
@@ -952,7 +1004,7 @@ Route::middleware('auth')->group(function (): void {
 
         /*
         |--------------------------------------------------------------------------
-        | Audit logs
+        | Auditoría
         |--------------------------------------------------------------------------
         */
 
@@ -972,7 +1024,7 @@ Route::middleware('auth')->group(function (): void {
 
 /*
 |--------------------------------------------------------------------------
-| Optional authentication routes
+| Archivo adicional de autenticación, si existe
 |--------------------------------------------------------------------------
 */
 

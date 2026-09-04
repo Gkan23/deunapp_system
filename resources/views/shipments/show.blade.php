@@ -1,9 +1,6 @@
 @extends('layouts.portal')
 
-@section(
-    'title',
-    $shipment->tracking_code.' | DeUnapp'
-)
+@section('title', $shipment->tracking_code.' | DeUnapp')
 
 @section('content')
     <section class="shipment-show-page">
@@ -13,9 +10,7 @@
                     Detalle del envío
                 </p>
 
-                <h1>
-                    {{ $shipment->tracking_code }}
-                </h1>
+                <h1>{{ $shipment->tracking_code }}</h1>
 
                 <p>
                     Información general, participantes,
@@ -26,20 +21,16 @@
             <div class="shipment-show-header-actions">
                 <span
                     class="shipment-show-status"
-                    data-status="{{
-                        strtolower(
-                            $shipment
-                                ->shipmentStatus
-                                ->status_name
-                        )
-                    }}"
+                    data-status="{{ strtolower(
+                        $shipment->shipmentStatus?->status_name
+                            ?? 'UNKNOWN'
+                    ) }}"
                 >
                     {{ str_replace(
                         '_',
                         ' ',
-                        $shipment
-                            ->shipmentStatus
-                            ->status_name
+                        $shipment->shipmentStatus?->status_name
+                            ?? 'Sin estado'
                     ) }}
                 </span>
 
@@ -53,10 +44,22 @@
                     Ver seguimiento
                 </a>
 
+                @can('create', \App\Models\Incident::class)
+                    @can('view', $shipment)
+                        <a
+                            href="{{ route(
+                                'portal.shipments.incidents.create',
+                                $shipment
+                            ) }}"
+                            class="shipment-show-tracking-link"
+                        >
+                            Reportar incidente
+                        </a>
+                    @endcan
+                @endcan
+
                 <a
-                    href="{{ route(
-                        'portal.shipments.index'
-                    ) }}"
+                    href="{{ route('portal.shipments.index') }}"
                     class="shipment-show-back-link"
                 >
                     Volver a envíos
@@ -78,17 +81,13 @@
                 <span>Cliente</span>
 
                 <strong>
-                    {{ $shipment
-                        ->customer
-                        ->user
-                        ->name }}
+                    {{ $shipment->customer?->user?->name
+                        ?? 'Cliente no disponible' }}
                 </strong>
 
                 <small>
-                    {{ $shipment
-                        ->customer
-                        ->user
-                        ->email }}
+                    {{ $shipment->customer?->user?->email
+                        ?? 'Sin correo registrado' }}
                 </small>
             </article>
 
@@ -96,8 +95,7 @@
                 <span>Solicitado</span>
 
                 <strong>
-                    {{ $shipment->requested_at
-                        ?->format('d/m/Y H:i')
+                    {{ $shipment->requested_at?->format('d/m/Y H:i')
                         ?? 'Sin fecha' }}
                 </strong>
             </article>
@@ -106,14 +104,12 @@
                 <span>Valor declarado</span>
 
                 <strong>
-                    {{ $shipment->declared_value
-                        !== null
-                            ? 'C$ '.number_format(
-                                (float) $shipment
-                                    ->declared_value,
-                                2
-                            )
-                            : 'No declarado' }}
+                    {{ $shipment->declared_value !== null
+                        ? 'C$ '.number_format(
+                            (float) $shipment->declared_value,
+                            2
+                        )
+                        : 'No declarado' }}
                 </strong>
             </article>
 
@@ -133,9 +129,7 @@
                         Participantes
                     </p>
 
-                    <h2>
-                        Remitente y destinatario
-                    </h2>
+                    <h2>Remitente y destinatario</h2>
                 </header>
 
                 <div class="shipment-show-person-grid">
@@ -145,28 +139,22 @@
                         </span>
 
                         <strong>
-                            {{ $shipment
-                                ->sender
-                                ->first_name }}
-
-                            {{ $shipment
-                                ->sender
-                                ->last_name }}
+                            {{ $shipment->sender?->first_name }}
+                            {{ $shipment->sender?->last_name }}
                         </strong>
 
                         <span>
-                            {{ $shipment->sender->phone }}
+                            {{ $shipment->sender?->phone
+                                ?? 'Sin teléfono registrado' }}
                         </span>
 
                         <span>
-                            {{ $shipment->sender->email
+                            {{ $shipment->sender?->email
                                 ?? 'Sin correo registrado' }}
                         </span>
 
                         <span>
-                            {{ $shipment
-                                ->sender
-                                ->identity_number
+                            {{ $shipment->sender?->identity_number
                                 ?? 'Sin identificación' }}
                         </span>
                     </article>
@@ -177,32 +165,22 @@
                         </span>
 
                         <strong>
-                            {{ $shipment
-                                ->recipient
-                                ->first_name }}
-
-                            {{ $shipment
-                                ->recipient
-                                ->last_name }}
+                            {{ $shipment->recipient?->first_name }}
+                            {{ $shipment->recipient?->last_name }}
                         </strong>
 
                         <span>
-                            {{ $shipment
-                                ->recipient
-                                ->phone }}
+                            {{ $shipment->recipient?->phone
+                                ?? 'Sin teléfono registrado' }}
                         </span>
 
                         <span>
-                            {{ $shipment
-                                ->recipient
-                                ->email
+                            {{ $shipment->recipient?->email
                                 ?? 'Sin correo registrado' }}
                         </span>
 
                         <span>
-                            {{ $shipment
-                                ->recipient
-                                ->identity_number
+                            {{ $shipment->recipient?->identity_number
                                 ?? 'Sin identificación' }}
                         </span>
                     </article>
@@ -230,23 +208,17 @@
                             </span>
 
                             <strong>
-                                {{ $shipment
-                                    ->originAddress
-                                    ->address_line }}
+                                {{ $shipment->originAddress?->address_line
+                                    ?? 'Dirección no disponible' }}
                             </strong>
 
                             <span>
-                                {{ $shipment
-                                    ->originAddress
-                                    ->municipality
-                                    ?->municipality_name
+                                {{ $shipment->originAddress?->municipality?->municipality_name
                                     ?? 'Municipio no disponible' }}
                             </span>
 
                             <small>
-                                {{ $shipment
-                                    ->originAddress
-                                    ->reference_note
+                                {{ $shipment->originAddress?->reference_note
                                     ?? 'Sin referencia adicional' }}
                             </small>
                         </div>
@@ -254,10 +226,7 @@
 
                     <article>
                         <span
-                            class="
-                                shipment-show-address-marker
-                                shipment-show-address-marker-destination
-                            "
+                            class="shipment-show-address-marker shipment-show-address-marker-destination"
                         >
                             D
                         </span>
@@ -268,23 +237,17 @@
                             </span>
 
                             <strong>
-                                {{ $shipment
-                                    ->destinationAddress
-                                    ->address_line }}
+                                {{ $shipment->destinationAddress?->address_line
+                                    ?? 'Dirección no disponible' }}
                             </strong>
 
                             <span>
-                                {{ $shipment
-                                    ->destinationAddress
-                                    ->municipality
-                                    ?->municipality_name
+                                {{ $shipment->destinationAddress?->municipality?->municipality_name
                                     ?? 'Municipio no disponible' }}
                             </span>
 
                             <small>
-                                {{ $shipment
-                                    ->destinationAddress
-                                    ->reference_note
+                                {{ $shipment->destinationAddress?->reference_note
                                     ?? 'Sin referencia adicional' }}
                             </small>
                         </div>
@@ -307,8 +270,7 @@
                     <span>Solicitud</span>
 
                     <strong>
-                        {{ $shipment->requested_at
-                            ?->format('d/m/Y H:i')
+                        {{ $shipment->requested_at?->format('d/m/Y H:i')
                             ?? 'Sin fecha' }}
                     </strong>
                 </article>
@@ -317,8 +279,7 @@
                     <span>Programado</span>
 
                     <strong>
-                        {{ $shipment->scheduled_at
-                            ?->format('d/m/Y H:i')
+                        {{ $shipment->scheduled_at?->format('d/m/Y H:i')
                             ?? 'Sin programar' }}
                     </strong>
                 </article>
@@ -327,9 +288,7 @@
                     <span>Entrega estimada</span>
 
                     <strong>
-                        {{ $shipment
-                            ->estimated_delivery_at
-                            ?->format('d/m/Y H:i')
+                        {{ $shipment->estimated_delivery_at?->format('d/m/Y H:i')
                             ?? 'Sin estimación' }}
                     </strong>
                 </article>
@@ -338,8 +297,7 @@
                     <span>Entregado</span>
 
                     <strong>
-                        {{ $shipment->delivered_at
-                            ?->format('d/m/Y H:i')
+                        {{ $shipment->delivered_at?->format('d/m/Y H:i')
                             ?? 'Pendiente' }}
                     </strong>
                 </article>
@@ -361,27 +319,20 @@
                 </div>
             @else
                 <div class="shipment-show-package-grid">
-                    @foreach (
-                        $shipment->packages
-                        as $package
-                    )
+                    @foreach ($shipment->packages as $package)
                         <article class="shipment-show-package">
                             <header>
                                 <span>
-                                    Paquete
-                                    {{ $loop->iteration }}
+                                    Paquete {{ $loop->iteration }}
                                 </span>
 
                                 @if ($package->is_fragile)
-                                    <strong>
-                                        Frágil
-                                    </strong>
+                                    <strong>Frágil</strong>
                                 @endif
                             </header>
 
                             <p>
-                                {{ $package
-                                    ->content_description
+                                {{ $package->content_description
                                     ?? 'Sin descripción' }}
                             </p>
 
@@ -390,11 +341,9 @@
                                     <dt>Peso</dt>
 
                                     <dd>
-                                        {{ $package->weight
-                                            !== null
-                                                ? $package->weight
-                                                    .' kg'
-                                                : 'No indicado' }}
+                                        {{ $package->weight !== null
+                                            ? $package->weight.' kg'
+                                            : 'No indicado' }}
                                     </dd>
                                 </div>
 
@@ -402,11 +351,9 @@
                                     <dt>Alto</dt>
 
                                     <dd>
-                                        {{ $package->height
-                                            !== null
-                                                ? $package->height
-                                                    .' cm'
-                                                : 'No indicado' }}
+                                        {{ $package->height !== null
+                                            ? $package->height.' cm'
+                                            : 'No indicado' }}
                                     </dd>
                                 </div>
 
@@ -414,11 +361,9 @@
                                     <dt>Ancho</dt>
 
                                     <dd>
-                                        {{ $package->width
-                                            !== null
-                                                ? $package->width
-                                                    .' cm'
-                                                : 'No indicado' }}
+                                        {{ $package->width !== null
+                                            ? $package->width.' cm'
+                                            : 'No indicado' }}
                                     </dd>
                                 </div>
 
@@ -426,11 +371,9 @@
                                     <dt>Largo</dt>
 
                                     <dd>
-                                        {{ $package->length
-                                            !== null
-                                                ? $package->length
-                                                    .' cm'
-                                                : 'No indicado' }}
+                                        {{ $package->length !== null
+                                            ? $package->length.' cm'
+                                            : 'No indicado' }}
                                     </dd>
                                 </div>
 
@@ -438,15 +381,12 @@
                                     <dt>Valor</dt>
 
                                     <dd>
-                                        {{ $package
-                                            ->declared_value
-                                            !== null
-                                                ? 'C$ '.number_format(
-                                                    (float) $package
-                                                        ->declared_value,
-                                                    2
-                                                )
-                                                : 'No declarado' }}
+                                        {{ $package->declared_value !== null
+                                            ? 'C$ '.number_format(
+                                                (float) $package->declared_value,
+                                                2
+                                            )
+                                            : 'No declarado' }}
                                     </dd>
                                 </div>
                             </dl>
@@ -475,9 +415,7 @@
                                 {{ str_replace(
                                     '_',
                                     ' ',
-                                    $shipment
-                                        ->deliveryService
-                                        ->status
+                                    $shipment->deliveryService->status
                                 ) }}
                             </dd>
                         </div>
@@ -486,10 +424,7 @@
                             <dt>Tipo de servicio</dt>
 
                             <dd>
-                                {{ $shipment
-                                    ->deliveryService
-                                    ->serviceType
-                                    ?->service_name
+                                {{ $shipment->deliveryService->serviceType?->service_name
                                     ?? 'No asignado' }}
                             </dd>
                         </div>
@@ -498,10 +433,7 @@
                             <dt>Tipo de viaje</dt>
 
                             <dd>
-                                {{ $shipment
-                                    ->deliveryService
-                                    ->tripType
-                                    ?->type_name
+                                {{ $shipment->deliveryService->tripType?->type_name
                                     ?? 'No asignado' }}
                             </dd>
                         </div>
@@ -510,17 +442,12 @@
                             <dt>Tarifa</dt>
 
                             <dd>
-                                {{ $shipment
-                                    ->deliveryService
-                                    ->delivery_fee
-                                    !== null
-                                        ? 'C$ '.number_format(
-                                            (float) $shipment
-                                                ->deliveryService
-                                                ->delivery_fee,
-                                            2
-                                        )
-                                        : 'No calculada' }}
+                                {{ $shipment->deliveryService->delivery_fee !== null
+                                    ? 'C$ '.number_format(
+                                        (float) $shipment->deliveryService->delivery_fee,
+                                        2
+                                    )
+                                    : 'No calculada' }}
                             </dd>
                         </div>
 
@@ -528,11 +455,7 @@
                             <dt>Proveedor</dt>
 
                             <dd>
-                                {{ $shipment
-                                    ->deliveryService
-                                    ->trip
-                                    ?->deliveryProvider
-                                    ?->business_name
+                                {{ $shipment->deliveryService->trip?->deliveryProvider?->business_name
                                     ?? 'No asignado' }}
                             </dd>
                         </div>
@@ -561,20 +484,15 @@
                     </div>
                 @else
                     <div class="shipment-show-route-list">
-                        @foreach (
-                            $shipment->routeShipments
-                            as $routeShipment
-                        )
+                        @foreach ($shipment->routeShipments as $routeShipment)
                             <article>
                                 <strong>
-                                    Ruta
-                                    #{{ $routeShipment->route_id }}
+                                    Ruta #{{ $routeShipment->route_id }}
                                 </strong>
 
                                 <span>
                                     Orden:
-                                    {{ $routeShipment
-                                        ->delivery_order }}
+                                    {{ $routeShipment->delivery_order }}
                                 </span>
 
                                 <span>
@@ -582,27 +500,19 @@
                                     {{ str_replace(
                                         '_',
                                         ' ',
-                                        $routeShipment
-                                            ->delivery_status
+                                        $routeShipment->delivery_status
                                     ) }}
                                 </span>
 
                                 <span>
                                     Ruta:
-                                    {{ $routeShipment
-                                        ->route
-                                        ->routeStatus
-                                        ?->status_name
+                                    {{ $routeShipment->route?->routeStatus?->status_name
                                         ?? 'Sin estado' }}
                                 </span>
 
                                 <span>
                                     Repartidor:
-                                    {{ $routeShipment
-                                        ->route
-                                        ->courier
-                                        ?->user
-                                        ?->name
+                                    {{ $routeShipment->route?->courier?->user?->name
                                         ?? 'No asignado' }}
                                 </span>
                             </article>
@@ -627,17 +537,11 @@
                 </div>
             @else
                 <div class="shipment-show-history">
-                    @foreach (
-                        $shipment
-                            ->statusHistory
-                            ->sortByDesc('changed_at')
-                        as $history
-                    )
+                    @foreach ($shipment->statusHistory->sortByDesc('changed_at') as $history)
                         <article>
                             <span
-                                class="
-                                    shipment-show-history-dot
-                                "
+                                class="shipment-show-history-dot"
+                                aria-hidden="true"
                             ></span>
 
                             <div>
@@ -645,29 +549,23 @@
                                     {{ str_replace(
                                         '_',
                                         ' ',
-                                        $history
-                                            ->shipmentStatus
-                                            ->status_name
+                                        $history->shipmentStatus?->status_name
+                                            ?? 'Sin estado'
                                     ) }}
                                 </strong>
 
                                 <span>
-                                    {{ $history->changed_at
-                                        ?->format('d/m/Y H:i')
+                                    {{ $history->changed_at?->format('d/m/Y H:i')
                                         ?? 'Sin fecha' }}
                                 </span>
 
                                 <small>
-                                    {{ $history
-                                        ->changedBy
-                                        ?->name
+                                    {{ $history->changedBy?->name
                                         ?? 'Sistema' }}
                                 </small>
 
                                 @if ($history->comment)
-                                    <p>
-                                        {{ $history->comment }}
-                                    </p>
+                                    <p>{{ $history->comment }}</p>
                                 @endif
                             </div>
                         </article>
@@ -691,9 +589,7 @@
                         <dt>Recibido por</dt>
 
                         <dd>
-                            {{ $shipment
-                                ->deliveryProof
-                                ->receiver_name }}
+                            {{ $shipment->deliveryProof->receiver_name }}
                         </dd>
                     </div>
 
@@ -701,9 +597,7 @@
                         <dt>Identificación</dt>
 
                         <dd>
-                            {{ $shipment
-                                ->deliveryProof
-                                ->receiver_identity_number
+                            {{ $shipment->deliveryProof->receiver_identity_number
                                 ?? 'No registrada' }}
                         </dd>
                     </div>
@@ -712,10 +606,7 @@
                         <dt>Registrado</dt>
 
                         <dd>
-                            {{ $shipment
-                                ->deliveryProof
-                                ->recorded_at
-                                ?->format('d/m/Y H:i')
+                            {{ $shipment->deliveryProof->recorded_at?->format('d/m/Y H:i')
                                 ?? 'Sin fecha' }}
                         </dd>
                     </div>
@@ -725,20 +616,11 @@
 
                         <dd>
                             @if (
-                                $shipment
-                                    ->deliveryProof
-                                    ->latitude !== null
-                                && $shipment
-                                    ->deliveryProof
-                                    ->longitude !== null
+                                $shipment->deliveryProof->latitude !== null
+                                && $shipment->deliveryProof->longitude !== null
                             )
-                                {{ $shipment
-                                    ->deliveryProof
-                                    ->latitude }},
-
-                                {{ $shipment
-                                    ->deliveryProof
-                                    ->longitude }}
+                                {{ $shipment->deliveryProof->latitude }},
+                                {{ $shipment->deliveryProof->longitude }}
                             @else
                                 No registradas
                             @endif
@@ -753,10 +635,7 @@
             @endif
         </section>
 
-        @if (
-            $shipment->delivery_instructions
-            || $shipment->notes
-        )
+        @if ($shipment->delivery_instructions || $shipment->notes)
             <section class="shipment-show-card">
                 <header>
                     <p class="shipment-show-eyebrow">
@@ -773,8 +652,7 @@
                         </strong>
 
                         <p>
-                            {{ $shipment
-                                ->delivery_instructions
+                            {{ $shipment->delivery_instructions
                                 ?? 'Sin instrucciones' }}
                         </p>
                     </article>
@@ -783,8 +661,7 @@
                         <strong>Notas</strong>
 
                         <p>
-                            {{ $shipment->notes
-                                ?? 'Sin notas' }}
+                            {{ $shipment->notes ?? 'Sin notas' }}
                         </p>
                     </article>
                 </div>

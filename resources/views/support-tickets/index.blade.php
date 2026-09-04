@@ -17,18 +17,28 @@
             </p>
         </div>
 
-        <a
-            href="{{ route('dashboard') }}"
-            class="support-ticket-secondary-button"
-        >
-            Volver al panel
-        </a>
+        <div class="support-ticket-heading-actions">
+            @can('create', \App\Models\SupportTicket::class)
+                <a
+                    href="{{ route('portal.support-tickets.create') }}"
+                    class="support-ticket-primary-button"
+                >
+                    Nuevo ticket
+                </a>
+            @endcan
+
+            <a
+                href="{{ route('dashboard') }}"
+                class="support-ticket-secondary-button"
+            >
+                Volver al panel
+            </a>
+        </div>
     </section>
 
     @if (session('status'))
         <div
-            class="support-ticket-alert
-                support-ticket-alert-success"
+            class="support-ticket-alert support-ticket-alert-success"
             role="status"
         >
             {{ session('status') }}
@@ -37,8 +47,7 @@
 
     @if ($errors->any())
         <div
-            class="support-ticket-alert
-                support-ticket-alert-error"
+            class="support-ticket-alert support-ticket-alert-error"
             role="alert"
         >
             <strong>
@@ -47,9 +56,7 @@
 
             <ul>
                 @foreach ($errors->all() as $error)
-                    <li>
-                        {{ $error }}
-                    </li>
+                    <li>{{ $error }}</li>
                 @endforeach
             </ul>
         </div>
@@ -58,56 +65,33 @@
     <section class="support-ticket-summary">
         <article class="support-ticket-summary-card">
             <span>Total</span>
-
-            <strong>
-                {{ $totalTickets }}
-            </strong>
-
-            <small>
-                Tickets visibles
-            </small>
+            <strong>{{ $totalTickets }}</strong>
+            <small>Tickets visibles</small>
         </article>
 
         <article class="support-ticket-summary-card">
             <span>En proceso</span>
-
-            <strong>
-                {{ $openTickets }}
-            </strong>
-
-            <small>
-                Requieren seguimiento
-            </small>
+            <strong>{{ $openTickets }}</strong>
+            <small>Requieren seguimiento</small>
         </article>
 
         <article class="support-ticket-summary-card">
             <span>Finalizados</span>
-
-            <strong>
-                {{ $closedTickets }}
-            </strong>
-
-            <small>
-                Resueltos o cerrados
-            </small>
+            <strong>{{ $closedTickets }}</strong>
+            <small>Resueltos o cerrados</small>
         </article>
     </section>
 
     <section class="support-ticket-toolbar">
         <form
             method="GET"
-            action="{{ route(
-                'portal.support-tickets.index'
-            ) }}"
+            action="{{ route('portal.support-tickets.index') }}"
             class="support-ticket-filters"
         >
             <div
-                class="support-ticket-field
-                    support-ticket-search-field"
+                class="support-ticket-field support-ticket-search-field"
             >
-                <label for="search">
-                    Buscar
-                </label>
+                <label for="search">Buscar</label>
 
                 <input
                     id="search"
@@ -119,26 +103,17 @@
             </div>
 
             <div class="support-ticket-field">
-                <label for="status">
-                    Estado
-                </label>
+                <label for="status">Estado</label>
 
-                <select
-                    id="status"
-                    name="status"
-                >
-                    <option value="">
-                        Todos
-                    </option>
+                <select id="status" name="status">
+                    <option value="">Todos</option>
 
                     @foreach ($statuses as $status)
                         <option
-                            value="{{ $status
-                                ->status_name }}"
+                            value="{{ $status->status_name }}"
                             @selected(
                                 $selectedStatus
-                                === $status
-                                    ->status_name
+                                === $status->status_name
                             )
                         >
                             {{ str_replace(
@@ -152,33 +127,23 @@
             </div>
 
             <div class="support-ticket-field">
-                <label for="category">
-                    Categoría
-                </label>
+                <label for="category">Categoría</label>
 
-                <select
-                    id="category"
-                    name="category"
-                >
-                    <option value="">
-                        Todas
-                    </option>
+                <select id="category" name="category">
+                    <option value="">Todas</option>
 
                     @foreach ($categories as $category)
                         <option
-                            value="{{ $category
-                                ->category_name }}"
+                            value="{{ $category->category_name }}"
                             @selected(
                                 $selectedCategory
-                                === $category
-                                    ->category_name
+                                === $category->category_name
                             )
                         >
                             {{ str_replace(
                                 '_',
                                 ' ',
-                                $category
-                                    ->category_name
+                                $category->category_name
                             ) }}
                         </option>
                     @endforeach
@@ -199,9 +164,7 @@
                     || $selectedCategory !== ''
                 )
                     <a
-                        href="{{ route(
-                            'portal.support-tickets.index'
-                        ) }}"
+                        href="{{ route('portal.support-tickets.index') }}"
                         class="support-ticket-clear-link"
                     >
                         Limpiar
@@ -214,13 +177,9 @@
     <section class="support-ticket-results">
         @if ($tickets->isEmpty())
             <div class="support-ticket-empty">
-                <span aria-hidden="true">
-                    ?
-                </span>
+                <span aria-hidden="true">?</span>
 
-                <h2>
-                    No se encontraron tickets
-                </h2>
+                <h2>No se encontraron tickets</h2>
 
                 <p>
                     No hay solicitudes que coincidan
@@ -233,15 +192,10 @@
                     @php
                         $statusName = $ticket
                             ->status
-                            ?->status_name
-                            ?? 'UNKNOWN';
+                            ?->status_name ?? 'UNKNOWN';
 
                         $statusClass = strtolower(
-                            str_replace(
-                                '_',
-                                '-',
-                                $statusName
-                            )
+                            str_replace('_', '-', $statusName)
                         );
                     @endphp
 
@@ -252,125 +206,84 @@
                                     Ticket #{{ $ticket->id }}
                                 </span>
 
-                                <h2>
-                                    {{ $ticket->subject }}
-                                </h2>
+                                <h2>{{ $ticket->subject }}</h2>
                             </div>
 
                             <span
-                                class="support-ticket-status
-                                    support-ticket-status-{{ $statusClass }}"
+                                class="support-ticket-status support-ticket-status-{{ $statusClass }}"
                             >
-                                {{ str_replace(
-                                    '_',
-                                    ' ',
-                                    $statusName
-                                ) }}
+                                {{ str_replace('_', ' ', $statusName) }}
                             </span>
                         </header>
 
                         <div class="support-ticket-card-grid">
                             <div>
-                                <span>
-                                    Categoría
-                                </span>
+                                <span>Categoría</span>
 
                                 <strong>
                                     {{ str_replace(
                                         '_',
                                         ' ',
-                                        $ticket
-                                            ->category
-                                            ?->category_name
+                                        $ticket->category?->category_name
                                             ?? 'Sin categoría'
                                     ) }}
                                 </strong>
                             </div>
 
                             <div>
-                                <span>
-                                    Prioridad
-                                </span>
+                                <span>Prioridad</span>
 
                                 <strong>
                                     {{ str_replace(
                                         '_',
                                         ' ',
-                                        $ticket
-                                            ->priority
-                                            ?->priority_name
+                                        $ticket->priority?->priority_name
                                             ?? 'Sin prioridad'
                                     ) }}
                                 </strong>
                             </div>
 
                             <div>
-                                <span>
-                                    Mensajes
-                                </span>
-
-                                <strong>
-                                    {{ $ticket
-                                        ->messages_count }}
-                                </strong>
+                                <span>Mensajes</span>
+                                <strong>{{ $ticket->messages_count }}</strong>
                             </div>
 
                             <div>
-                                <span>
-                                    Creado
-                                </span>
+                                <span>Creado</span>
 
                                 <strong>
-                                    {{ $ticket
-                                        ->created_at
-                                        ?->format(
-                                            'd/m/Y H:i'
-                                        ) }}
+                                    {{ $ticket->created_at?->format('d/m/Y H:i') }}
                                 </strong>
                             </div>
                         </div>
 
                         @if ($roleName !== 'CUSTOMER')
                             <div class="support-ticket-person">
-                                <span>
-                                    Cliente
-                                </span>
+                                <span>Cliente</span>
 
                                 <strong>
-                                    {{ $ticket
-                                        ->customer
-                                        ?->user
-                                        ?->name
+                                    {{ $ticket->customer?->user?->name
                                         ?? 'No disponible' }}
                                 </strong>
 
                                 <small>
-                                    {{ $ticket
-                                        ->customer
-                                        ?->user
-                                        ?->email }}
+                                    {{ $ticket->customer?->user?->email }}
                                 </small>
                             </div>
                         @endif
 
                         <footer class="support-ticket-card-footer">
-                            <div
-                                class="support-ticket-card-details"
-                            >
+                            <div class="support-ticket-card-details">
                                 <div>
                                     @if ($ticket->shipment)
                                         <span>
                                             Envío:
                                             <strong>
-                                                {{ $ticket
-                                                    ->shipment
-                                                    ->tracking_code }}
+                                                {{ $ticket->shipment->tracking_code }}
                                             </strong>
                                         </span>
                                     @else
-                                        <span>
-                                            Sin envío relacionado
-                                        </span>
+                                        <span>Sin envío relacionado</span>
                                     @endif
                                 </div>
 
@@ -379,15 +292,11 @@
                                         <span>
                                             Asignado a
                                             <strong>
-                                                {{ $ticket
-                                                    ->assignedTo
-                                                    ->name }}
+                                                {{ $ticket->assignedTo->name }}
                                             </strong>
                                         </span>
                                     @else
-                                        <span>
-                                            Sin asignar
-                                        </span>
+                                        <span>Sin asignar</span>
                                     @endif
                                 </div>
                             </div>

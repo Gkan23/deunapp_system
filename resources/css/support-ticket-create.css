@@ -1,0 +1,233 @@
+.support-create-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.support-create-heading h1 {
+    margin: 0;
+    color: #29343a;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 800;
+}
+
+.support-create-heading p:not(.portal-eyebrow) {
+    margin: 8px 0 0;
+    color: #687880;
+}
+
+.support-create-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    align-items: start;
+    gap: 24px;
+}
+
+.support-create-card,
+.support-create-help {
+    padding: 24px;
+    background: #ffffff;
+    border: 1px solid #e2e8ea;
+    border-radius: 20px;
+    box-shadow: 0 12px 32px rgba(35, 47, 53, 0.05);
+}
+
+.support-create-card-header {
+    margin-bottom: 24px;
+}
+
+.support-create-card-header h2,
+.support-create-help h2 {
+    margin: 0;
+    color: #29343a;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.support-create-card-header p {
+    margin: 8px 0 0;
+    color: #687880;
+    font-size: 0.9rem;
+}
+
+.support-create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.support-create-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.support-create-field label {
+    color: #35444c;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.support-create-field input,
+.support-create-field select,
+.support-create-field textarea {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px 14px;
+    color: #29343a;
+    background: #ffffff;
+    border: 1px solid #cfdadd;
+    border-radius: 12px;
+    font: inherit;
+}
+
+.support-create-field textarea {
+    min-height: 180px;
+    resize: vertical;
+}
+
+.support-create-field input:focus,
+.support-create-field select:focus,
+.support-create-field textarea:focus {
+    border-color: #459db0;
+    outline: 3px solid rgba(69, 157, 176, 0.18);
+    outline-offset: 1px;
+}
+
+.support-create-field [aria-invalid="true"] {
+    border-color: #b54859;
+}
+
+.support-create-field small {
+    color: #687880;
+    font-size: 0.82rem;
+    line-height: 1.5;
+}
+
+.support-create-field-error {
+    color: #a23347;
+    font-size: 0.85rem;
+}
+
+.support-create-actions,
+.support-ticket-heading-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.support-create-actions {
+    justify-content: flex-end;
+    padding-top: 8px;
+}
+
+.support-create-primary-button,
+.support-create-secondary-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 11px 18px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.support-create-primary-button {
+    color: #ffffff;
+    background: #357f90;
+}
+
+.support-create-primary-button:hover {
+    background: #286775;
+}
+
+.support-create-secondary-button {
+    color: #40545d;
+    background: #ffffff;
+    border-color: #d6e0e3;
+}
+
+.support-create-secondary-button:hover {
+    background: #f3f7f8;
+}
+
+.support-create-primary-button:focus-visible,
+.support-create-secondary-button:focus-visible {
+    outline: 3px solid #459db0;
+    outline-offset: 3px;
+}
+
+.support-create-help {
+    background: #f0f8fa;
+    border-color: #d5e9ed;
+}
+
+.support-create-help ol {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-left: 20px;
+    margin: 18px 0;
+    color: #465e68;
+    list-style: decimal;
+    line-height: 1.6;
+}
+
+.support-create-help p {
+    margin: 0;
+    color: #526d77;
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+.support-create-alert {
+    padding: 16px 20px;
+    margin-bottom: 22px;
+    color: #943548;
+    background: #fff0f3;
+    border: 1px solid #efcad2;
+    border-radius: 14px;
+}
+
+.support-create-alert ul {
+    padding-left: 20px;
+    margin: 10px 0 0;
+    list-style: disc;
+}
+
+@media (max-width: 1000px) {
+    .support-create-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .support-create-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .support-create-card,
+    .support-create-help {
+        padding: 18px;
+    }
+
+    .support-create-actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+    .support-create-actions a,
+    .support-create-actions button {
+        width: 100%;
+    }
+}

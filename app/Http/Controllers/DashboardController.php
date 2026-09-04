@@ -73,6 +73,11 @@ class DashboardController extends Controller
                     'payments.index'
                 ),
                 $this->module(
+                    'Incidentes',
+                    'Consulta los incidentes de tus envíos.',
+                    'portal.incidents.index'
+                ),
+                $this->module(
                     'Tickets de soporte',
                     'Solicita ayuda y consulta tus tickets.',
                     'portal.support-tickets.index'
@@ -99,6 +104,11 @@ class DashboardController extends Controller
                     'Rutas',
                     'Consulta las rutas de entrega.',
                     'routes.index'
+                ),
+                $this->module(
+                    'Incidentes',
+                    'Consulta los incidentes relacionados con tus viajes.',
+                    'portal.incidents.index'
                 ),
                 $this->module(
                     'Recargas',
@@ -131,7 +141,7 @@ class DashboardController extends Controller
                 $this->module(
                     'Incidentes',
                     'Consulta los incidentes relacionados.',
-                    'incidents.index'
+                    'portal.incidents.index'
                 ),
                 $this->module(
                     'Notificaciones',
@@ -148,8 +158,8 @@ class DashboardController extends Controller
                 ),
                 $this->module(
                     'Incidentes',
-                    'Consulta y administra incidentes.',
-                    'incidents.index'
+                    'Consulta los incidentes reportados.',
+                    'portal.incidents.index'
                 ),
                 $this->module(
                     'Usuarios',
@@ -201,8 +211,8 @@ class DashboardController extends Controller
                 ),
                 $this->module(
                     'Incidentes',
-                    'Administra los incidentes reportados.',
-                    'incidents.index'
+                    'Consulta los incidentes reportados.',
+                    'portal.incidents.index'
                 ),
                 $this->module(
                     'Registros de auditoría',
@@ -238,7 +248,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Devuelve la etiqueta visible correspondiente al rol.
+     * Devuelve la etiqueta visible del rol.
      */
     private function roleLabel(
         ?string $roleName
@@ -250,8 +260,7 @@ class DashboardController extends Controller
             'COURIER' => 'Repartidor',
             'SUPPORT_AGENT' =>
                 'Agente de soporte',
-            'ADMINISTRATOR' =>
-                'Administrador',
+            'ADMINISTRATOR' => 'Administrador',
             default => 'Usuario',
         };
     }

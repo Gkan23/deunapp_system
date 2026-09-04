@@ -16,6 +16,7 @@ import '../css/notification-index.css';
 import '../css/support-ticket-index.css';
 import '../css/support-ticket-show.css';
 import '../css/support-ticket-create.css';
+import '../css/incident-index.css';
 
 import './route-map';
 import './shipment-tracking';

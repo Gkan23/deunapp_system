@@ -33,6 +33,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryProofController;
 use App\Http\Controllers\DeliveryServiceController;
 use App\Http\Controllers\IncidentController;
+use App\Http\Controllers\IncidentIndexPageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PortalAppNotificationController;
 use App\Http\Controllers\PortalShipmentController;
@@ -83,7 +84,11 @@ Route::get('/', function () {
 */
 
 Route::middleware('guest')->group(function (): void {
-    // Customer registration
+    /*
+    |--------------------------------------------------------------------------
+    | Customer registration
+    |--------------------------------------------------------------------------
+    */
 
     Route::get(
         '/register',
@@ -95,7 +100,11 @@ Route::middleware('guest')->group(function (): void {
         [RegisteredUserController::class, 'store']
     )->name('register');
 
-    // Delivery provider registration
+    /*
+    |--------------------------------------------------------------------------
+    | Delivery provider registration
+    |--------------------------------------------------------------------------
+    */
 
     Route::get(
         '/register/provider',
@@ -107,7 +116,11 @@ Route::middleware('guest')->group(function (): void {
         [RegisteredDeliveryProviderController::class, 'store']
     )->name('provider.register');
 
-    // Login
+    /*
+    |--------------------------------------------------------------------------
+    | Login
+    |--------------------------------------------------------------------------
+    */
 
     Route::get(
         '/login',
@@ -119,7 +132,11 @@ Route::middleware('guest')->group(function (): void {
         [AuthenticatedSessionController::class, 'store']
     )->name('login');
 
-    // Password recovery
+    /*
+    |--------------------------------------------------------------------------
+    | Password recovery
+    |--------------------------------------------------------------------------
+    */
 
     Route::get(
         '/forgot-password',
@@ -154,7 +171,11 @@ Route::middleware('auth')->group(function (): void {
         [AuthenticatedSessionController::class, 'destroy']
     )->name('logout');
 
-    // Email verification
+    /*
+    |--------------------------------------------------------------------------
+    | Email verification
+    |--------------------------------------------------------------------------
+    */
 
     Route::get(
         '/email/verify',
@@ -172,10 +193,17 @@ Route::middleware('auth')->group(function (): void {
         '/verify-email/{id}/{hash}',
         VerifyEmailController::class
     )
-        ->middleware(['signed', 'throttle:6,1'])
+        ->middleware([
+            'signed',
+            'throttle:6,1',
+        ])
         ->name('verification.verify');
 
-    // Current user
+    /*
+    |--------------------------------------------------------------------------
+    | Current user
+    |--------------------------------------------------------------------------
+    */
 
     Route::get(
         '/settings/account',
@@ -238,7 +266,10 @@ Route::middleware('auth')->group(function (): void {
         '/me/courier-locations',
         [CurrentCourierLocationController::class, 'store']
     )
-        ->middleware(['verified', 'throttle:30,1'])
+        ->middleware([
+            'verified',
+            'throttle:30,1',
+        ])
         ->name('current-user.courier-locations.store');
 
     /*
@@ -248,14 +279,22 @@ Route::middleware('auth')->group(function (): void {
     */
 
     Route::middleware('verified')->group(function (): void {
-        // Dashboard
+        /*
+        |--------------------------------------------------------------------------
+        | Dashboard
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/dashboard',
             DashboardController::class
         )->name('dashboard');
 
-        // Users
+        /*
+        |--------------------------------------------------------------------------
+        | Users
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/users',
@@ -288,7 +327,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('user')
             ->name('users.show');
 
-        // Couriers
+        /*
+        |--------------------------------------------------------------------------
+        | Couriers
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/couriers',
@@ -321,7 +364,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('courier')
             ->name('couriers.show');
 
-        // Vehicles
+        /*
+        |--------------------------------------------------------------------------
+        | Vehicles
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/vehicles',
@@ -347,7 +394,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('vehicle')
             ->name('vehicles.show');
 
-        // Shipment portal
+        /*
+        |--------------------------------------------------------------------------
+        | Shipment portal
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/portal/shipments',
@@ -378,7 +429,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('shipment')
             ->name('portal.shipments.show');
 
-        // Shipment JSON endpoints
+        /*
+        |--------------------------------------------------------------------------
+        | Shipment JSON endpoints
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/shipments',
@@ -446,7 +501,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('shipment')
             ->name('shipments.show');
 
-        // Routes
+        /*
+        |--------------------------------------------------------------------------
+        | Routes
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/routes',
@@ -500,7 +559,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('route')
             ->name('routes.show');
 
-        // Route shipments
+        /*
+        |--------------------------------------------------------------------------
+        | Route shipments
+        |--------------------------------------------------------------------------
+        */
 
         Route::patch(
             '/route-shipments/{routeShipment}/fail-attempt',
@@ -509,7 +572,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('routeShipment')
             ->name('route-shipments.fail-attempt');
 
-        // Delivery services
+        /*
+        |--------------------------------------------------------------------------
+        | Delivery services
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/delivery-services',
@@ -544,7 +611,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('deliveryService')
             ->name('delivery-services.show');
 
-        // Payments
+        /*
+        |--------------------------------------------------------------------------
+        | Payments
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/payments',
@@ -572,7 +643,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('payment')
             ->name('payments.show');
 
-        // Ratings
+        /*
+        |--------------------------------------------------------------------------
+        | Ratings
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/ratings',
@@ -586,7 +661,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('rating')
             ->name('ratings.show');
 
-        // Notification portal
+        /*
+        |--------------------------------------------------------------------------
+        | Notification portal
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/portal/notifications',
@@ -605,7 +684,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('appNotification')
             ->name('portal.notifications.read');
 
-        // Notification JSON endpoints
+        /*
+        |--------------------------------------------------------------------------
+        | Notification JSON endpoints
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/notifications',
@@ -631,7 +714,22 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('appNotification')
             ->name('notifications.show');
 
-        // Incidents
+        /*
+        |--------------------------------------------------------------------------
+        | Incident portal
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/portal/incidents',
+            IncidentIndexPageController::class
+        )->name('portal.incidents.index');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Incident JSON endpoints
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/incidents',
@@ -708,7 +806,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('supportTicket')
             ->name('portal.support-tickets.show');
 
-        // Support ticket JSON endpoints
+        /*
+        |--------------------------------------------------------------------------
+        | Support ticket JSON endpoints
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/support-tickets',
@@ -755,7 +857,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('supportTicket')
             ->name('support-tickets.show');
 
-        // Recharges
+        /*
+        |--------------------------------------------------------------------------
+        | Recharges
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/recharges',
@@ -774,7 +880,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('recharge')
             ->name('recharges.show');
 
-        // Recharge packages
+        /*
+        |--------------------------------------------------------------------------
+        | Recharge packages
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/recharge-packages',
@@ -788,7 +898,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('rechargePackage')
             ->name('recharge-packages.show');
 
-        // Trips
+        /*
+        |--------------------------------------------------------------------------
+        | Trips
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/trips',
@@ -802,7 +916,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('trip')
             ->name('trips.show');
 
-        // Trip transactions
+        /*
+        |--------------------------------------------------------------------------
+        | Trip transactions
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/trip-transactions',
@@ -816,7 +934,11 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('tripTransaction')
             ->name('trip-transactions.show');
 
-        // Audit logs
+        /*
+        |--------------------------------------------------------------------------
+        | Audit logs
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/audit-logs',

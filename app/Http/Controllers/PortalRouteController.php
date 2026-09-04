@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ActivateRouteRequest;
+use App\Http\Requests\CompleteRouteRequest;
 use App\Models\Route as DeliveryRoute;
 use App\Services\Route\ActivateRouteService;
+use App\Services\Route\CompleteRouteService;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 
@@ -12,9 +14,6 @@ class PortalRouteController extends Controller
 {
     /**
      * Activar una ruta desde el portal Blade.
-     *
-     * ActivateRouteRequest comprueba la autorización.
-     * ActivateRouteService aplica las reglas de negocio.
      */
     public function activate(
         ActivateRouteRequest $request,
@@ -36,6 +35,32 @@ class PortalRouteController extends Controller
             ->with(
                 'status',
                 'La ruta fue activada correctamente.'
+            );
+    }
+
+    /**
+     * Completar una ruta desde el portal Blade.
+     */
+    public function complete(
+        CompleteRouteRequest $request,
+        DeliveryRoute $route,
+        CompleteRouteService $service
+    ): RedirectResponse {
+        try {
+            $service->execute($route);
+        } catch (DomainException $exception) {
+            return redirect()
+                ->route('portal.routes.show', $route)
+                ->withErrors([
+                    'completion' => $exception->getMessage(),
+                ]);
+        }
+
+        return redirect()
+            ->route('portal.routes.show', $route)
+            ->with(
+                'status',
+                'La ruta fue completada correctamente.'
             );
     }
 }

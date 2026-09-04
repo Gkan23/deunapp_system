@@ -399,4 +399,74 @@
     }
 }
 
+.route-show-completion {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 22px;
+    margin-bottom: 22px;
+    background: #edf7f0;
+    border: 1px solid #c9e4d1;
+    border-radius: 16px;
+}
+
+.route-show-completion h2 {
+    margin: 0 0 8px;
+    color: #29343a;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.route-show-completion p {
+    max-width: 760px;
+    margin: 6px 0 0;
+    color: #52636c;
+    font-size: 0.9rem;
+    line-height: 1.65;
+}
+
+.route-show-completion-form {
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.route-show-complete-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 17px;
+    color: #ffffff;
+    background: #39794e;
+    border: 1px solid #39794e;
+    border-radius: 10px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.route-show-complete-button:hover {
+    background: #2d623f;
+    border-color: #2d623f;
+}
+
+.route-show-complete-button:focus-visible {
+    outline: 3px solid #459db0;
+    outline-offset: 3px;
+}
+
+@media (max-width: 700px) {
+    .route-show-completion {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .route-show-completion-form button {
+        width: 100%;
+    }
+}
+
 }

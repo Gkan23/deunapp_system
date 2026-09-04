@@ -4,10 +4,14 @@
 
 @section('content')
     @php
-        $routeStatus = $deliveryRoute->routeStatus?->status_name
+        $routeStatus = $deliveryRoute
+            ->routeStatus
+            ?->status_name
             ?? 'UNKNOWN';
 
-        $provider = $deliveryRoute->courier?->deliveryProvider;
+        $provider = $deliveryRoute
+            ->courier
+            ?->deliveryProvider;
     @endphp
 
     <section class="route-show-page">
@@ -17,7 +21,9 @@
                     Detalle de ruta
                 </p>
 
-                <h1>Ruta #{{ $deliveryRoute->id }}</h1>
+                <h1>
+                    Ruta #{{ $deliveryRoute->id }}
+                </h1>
 
                 <p>
                     Consulta la asignación, las fechas
@@ -37,7 +43,9 @@
                 </a>
 
                 <a
-                    href="{{ route('portal.routes.index') }}"
+                    href="{{ route(
+                        'portal.routes.index'
+                    ) }}"
                     class="route-show-secondary-button"
                 >
                     Volver a rutas
@@ -61,6 +69,19 @@
             >
                 <strong>
                     No fue posible activar la ruta.
+                </strong>
+
+                <p>{{ $message }}</p>
+            </div>
+        @enderror
+
+        @error('completion')
+            <div
+                class="route-show-alert"
+                role="alert"
+            >
+                <strong>
+                    No fue posible completar la ruta.
                 </strong>
 
                 <p>{{ $message }}</p>
@@ -113,36 +134,98 @@
             @endif
         @endcan
 
+        @can('complete', $deliveryRoute)
+            @if ($routeStatus === 'ACTIVE')
+                <section
+                    class="route-show-completion"
+                    aria-labelledby="route-completion-title"
+                >
+                    <div>
+                        <h2 id="route-completion-title">
+                            Completar ruta
+                        </h2>
+
+                        <p>
+                            La ruta podrá completarse cuando todas
+                            sus asignaciones estén entregadas o hayan
+                            terminado como intentos fallidos.
+                        </p>
+
+                        <p>
+                            Al completar la ruta, el repartidor volverá
+                            a estar disponible si continúa activo.
+                        </p>
+                    </div>
+
+                    <form
+                        method="POST"
+                        action="{{ route(
+                            'portal.routes.complete',
+                            $deliveryRoute
+                        ) }}"
+                        class="route-show-completion-form"
+                    >
+                        @csrf
+                        @method('PATCH')
+
+                        <button
+                            type="submit"
+                            class="route-show-complete-button"
+                        >
+                            Completar ruta
+                        </button>
+                    </form>
+                </section>
+            @endif
+        @endcan
+
         <section
             class="route-show-summary"
             aria-label="Resumen de asignaciones de la ruta"
         >
             <article>
                 <span>Envíos asignados</span>
-                <strong>{{ $totalShipments }}</strong>
+
+                <strong>
+                    {{ $totalShipments }}
+                </strong>
             </article>
 
             <article>
                 <span>Entregados en esta ruta</span>
-                <strong>{{ $deliveredShipments }}</strong>
+
+                <strong>
+                    {{ $deliveredShipments }}
+                </strong>
             </article>
 
             <article>
                 <span>Asignaciones fallidas</span>
-                <strong>{{ $failedShipments }}</strong>
+
+                <strong>
+                    {{ $failedShipments }}
+                </strong>
             </article>
         </section>
 
         <div class="route-show-grid">
             <section class="route-show-card">
                 <header class="route-show-card-header">
-                    <h2>Información de la ruta</h2>
+                    <h2>
+                        Información de la ruta
+                    </h2>
 
                     <span
                         class="route-show-status"
-                        data-status="{{ strtolower($routeStatus) }}"
+                        data-status="{{ strtolower(
+                            $routeStatus
+                        ) }}"
                     >
-                        {{ str_replace('_', ' ', $routeStatus) }}
+                        {{ str_replace(
+                            '_',
+                            ' ',
+                            $routeStatus
+                        ) }}
                     </span>
                 </header>
 
@@ -151,7 +234,9 @@
                         <dt>Fecha de la ruta</dt>
 
                         <dd>
-                            {{ $deliveryRoute->route_date?->format('d/m/Y')
+                            {{ $deliveryRoute
+                                ->route_date
+                                ?->format('d/m/Y')
                                 ?? 'Sin fecha' }}
                         </dd>
                     </div>
@@ -160,12 +245,15 @@
                         <dt>Distancia estimada</dt>
 
                         <dd>
-                            {{ $deliveryRoute->estimated_distance_km !== null
-                                ? number_format(
-                                    (float) $deliveryRoute->estimated_distance_km,
-                                    2
-                                ).' km'
-                                : 'No estimada' }}
+                            {{ $deliveryRoute
+                                ->estimated_distance_km
+                                !== null
+                                    ? number_format(
+                                        (float) $deliveryRoute
+                                            ->estimated_distance_km,
+                                        2
+                                    ).' km'
+                                    : 'No estimada' }}
                         </dd>
                     </div>
 
@@ -173,7 +261,9 @@
                         <dt>Inicio</dt>
 
                         <dd>
-                            {{ $deliveryRoute->started_at?->format('d/m/Y H:i')
+                            {{ $deliveryRoute
+                                ->started_at
+                                ?->format('d/m/Y H:i')
                                 ?? 'Sin iniciar' }}
                         </dd>
                     </div>
@@ -182,7 +272,9 @@
                         <dt>Finalización</dt>
 
                         <dd>
-                            {{ $deliveryRoute->finished_at?->format('d/m/Y H:i')
+                            {{ $deliveryRoute
+                                ->finished_at
+                                ?->format('d/m/Y H:i')
                                 ?? 'Sin finalizar' }}
                         </dd>
                     </div>
@@ -191,7 +283,10 @@
                         <dt>Repartidor</dt>
 
                         <dd>
-                            {{ $deliveryRoute->courier?->user?->name
+                            {{ $deliveryRoute
+                                ->courier
+                                ?->user
+                                ?->name
                                 ?? 'No disponible' }}
                         </dd>
                     </div>
@@ -201,8 +296,12 @@
 
                         <dd>
                             {{ $provider?->business_name
-                                ?: ($provider?->user?->name
-                                    ?? 'No disponible') }}
+                                ?: (
+                                    $provider
+                                        ?->user
+                                        ?->name
+                                    ?? 'No disponible'
+                                ) }}
                         </dd>
                     </div>
                 </dl>
@@ -210,7 +309,9 @@
 
             <section class="route-show-card">
                 <header class="route-show-card-header">
-                    <h2>Vehículo asignado</h2>
+                    <h2>
+                        Vehículo asignado
+                    </h2>
                 </header>
 
                 @if ($deliveryRoute->vehicle)
@@ -219,7 +320,9 @@
                             <dt>Placa</dt>
 
                             <dd>
-                                {{ $deliveryRoute->vehicle->plate_number }}
+                                {{ $deliveryRoute
+                                    ->vehicle
+                                    ->plate_number }}
                             </dd>
                         </div>
 
@@ -227,7 +330,10 @@
                             <dt>Tipo</dt>
 
                             <dd>
-                                {{ $deliveryRoute->vehicle->vehicleType?->type_name
+                                {{ $deliveryRoute
+                                    ->vehicle
+                                    ->vehicleType
+                                    ?->type_name
                                     ?? 'No disponible' }}
                             </dd>
                         </div>
@@ -236,8 +342,15 @@
                             <dt>Estado del vehículo</dt>
 
                             <dd>
-                                {{ $deliveryRoute->vehicle->vehicleStatus?->status_name
-                                    ?? 'No disponible' }}
+                                {{ str_replace(
+                                    '_',
+                                    ' ',
+                                    $deliveryRoute
+                                        ->vehicle
+                                        ->vehicleStatus
+                                        ?->status_name
+                                        ?? 'No disponible'
+                                ) }}
                             </dd>
                         </div>
 
@@ -245,7 +358,9 @@
                             <dt>Marca</dt>
 
                             <dd>
-                                {{ $deliveryRoute->vehicle->brand
+                                {{ $deliveryRoute
+                                    ->vehicle
+                                    ->brand
                                     ?? 'No indicada' }}
                             </dd>
                         </div>
@@ -254,7 +369,9 @@
                             <dt>Modelo</dt>
 
                             <dd>
-                                {{ $deliveryRoute->vehicle->model
+                                {{ $deliveryRoute
+                                    ->vehicle
+                                    ->model
                                     ?? 'No indicado' }}
                             </dd>
                         </div>
@@ -263,7 +380,9 @@
                             <dt>Color</dt>
 
                             <dd>
-                                {{ $deliveryRoute->vehicle->color
+                                {{ $deliveryRoute
+                                    ->vehicle
+                                    ->color
                                     ?? 'No indicado' }}
                             </dd>
                         </div>
@@ -283,11 +402,14 @@
                         Orden de entrega
                     </p>
 
-                    <h2>Envíos de la ruta</h2>
+                    <h2>
+                        Envíos de la ruta
+                    </h2>
                 </div>
 
                 <span>
                     {{ $totalShipments }}
+
                     {{ $totalShipments === 1
                         ? 'asignación'
                         : 'asignaciones' }}
@@ -302,8 +424,11 @@
                 <ol class="route-show-stop-list">
                     @foreach ($stops as $stop)
                         @php
-                            $assignment = $stop['assignment'];
-                            $shipment = $stop['shipment'];
+                            $assignment =
+                                $stop['assignment'];
+
+                            $shipment =
+                                $stop['shipment'];
                         @endphp
 
                         <li class="route-show-stop">
@@ -312,13 +437,15 @@
                                     class="route-show-order"
                                     aria-label="Posición {{ $assignment->delivery_order }}"
                                 >
-                                    {{ $assignment->delivery_order }}
+                                    {{ $assignment
+                                        ->delivery_order }}
                                 </span>
 
                                 <div class="route-show-stop-title">
                                     @if ($shipment !== null)
                                         <h3>
-                                            {{ $shipment->tracking_code }}
+                                            {{ $shipment
+                                                ->tracking_code }}
                                         </h3>
                                     @else
                                         <h3>
@@ -329,13 +456,15 @@
                                     <span
                                         class="route-show-status"
                                         data-status="{{ strtolower(
-                                            $assignment->delivery_status
+                                            $assignment
+                                                ->delivery_status
                                         ) }}"
                                     >
                                         {{ str_replace(
                                             '_',
                                             ' ',
-                                            $assignment->delivery_status
+                                            $assignment
+                                                ->delivery_status
                                         ) }}
                                     </span>
                                 </div>
@@ -346,13 +475,17 @@
                                     class="route-show-details route-show-stop-details"
                                 >
                                     <div>
-                                        <dt>Estado del envío</dt>
+                                        <dt>
+                                            Estado del envío
+                                        </dt>
 
                                         <dd>
                                             {{ str_replace(
                                                 '_',
                                                 ' ',
-                                                $shipment->shipmentStatus?->status_name
+                                                $shipment
+                                                    ->shipmentStatus
+                                                    ?->status_name
                                                     ?? 'Sin estado'
                                             ) }}
                                         </dd>
@@ -362,7 +495,8 @@
                                         <dt>Paquetes</dt>
 
                                         <dd>
-                                            {{ $shipment->packages_count }}
+                                            {{ $shipment
+                                                ->packages_count }}
                                         </dd>
                                     </div>
 
@@ -371,8 +505,13 @@
 
                                         <dd>
                                             @if ($shipment->recipient)
-                                                {{ $shipment->recipient->first_name }}
-                                                {{ $shipment->recipient->last_name }}
+                                                {{ $shipment
+                                                    ->recipient
+                                                    ->first_name }}
+
+                                                {{ $shipment
+                                                    ->recipient
+                                                    ->last_name }}
                                             @else
                                                 No disponible
                                             @endif
@@ -383,16 +522,22 @@
                                         <dt>Teléfono</dt>
 
                                         <dd>
-                                            {{ $shipment->recipient?->phone
+                                            {{ $shipment
+                                                ->recipient
+                                                ?->phone
                                                 ?? 'No disponible' }}
                                         </dd>
                                     </div>
 
                                     <div>
-                                        <dt>Dirección de entrega</dt>
+                                        <dt>
+                                            Dirección de entrega
+                                        </dt>
 
                                         <dd>
-                                            {{ $shipment->destinationAddress?->address_line
+                                            {{ $shipment
+                                                ->destinationAddress
+                                                ?->address_line
                                                 ?? 'No disponible' }}
                                         </dd>
                                     </div>
@@ -401,7 +546,10 @@
                                         <dt>Municipio</dt>
 
                                         <dd>
-                                            {{ $shipment->destinationAddress?->municipality?->municipality_name
+                                            {{ $shipment
+                                                ->destinationAddress
+                                                ?->municipality
+                                                ?->municipality_name
                                                 ?? 'No disponible' }}
                                         </dd>
                                     </div>

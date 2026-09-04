@@ -39,6 +39,7 @@ use App\Http\Controllers\IncidentShowPageController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PortalAppNotificationController;
 use App\Http\Controllers\PortalIncidentController;
+use App\Http\Controllers\PortalRouteController;
 use App\Http\Controllers\PortalShipmentController;
 use App\Http\Controllers\PortalSupportTicketController;
 use App\Http\Controllers\RatingController;
@@ -526,6 +527,13 @@ Route::middleware('auth')->group(function (): void {
             '/portal/routes',
             RouteIndexPageController::class
         )->name('portal.routes.index');
+
+        Route::patch(
+            '/portal/routes/{route}/activate',
+            [PortalRouteController::class, 'activate']
+        )
+            ->whereNumber('route')
+            ->name('portal.routes.activate');
 
         Route::get(
             '/portal/routes/{route}',

@@ -337,4 +337,66 @@
     .route-show-header-actions > a {
         flex: 1;
     }
+
+    .route-show-alert {
+    padding: 18px 20px;
+    margin-bottom: 22px;
+    color: #8f2d40;
+    background: #fff1f3;
+    border: 1px solid #efc7d0;
+    border-radius: 14px;
+    line-height: 1.6;
+}
+
+.route-show-alert p {
+    margin: 6px 0 0;
+}
+
+.route-show-activation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 22px;
+    margin-bottom: 22px;
+    background: #edf7f9;
+    border: 1px solid #c6e2e8;
+    border-radius: 16px;
+}
+
+.route-show-activation h2 {
+    margin: 0 0 8px;
+    color: #29343a;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.route-show-activation p {
+    max-width: 760px;
+    margin: 6px 0 0;
+    color: #52636c;
+    font-size: 0.9rem;
+    line-height: 1.65;
+}
+
+.route-show-activation-form {
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.route-show-activation-form button {
+    cursor: pointer;
+}
+
+@media (max-width: 700px) {
+    .route-show-activation {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .route-show-activation-form button {
+        width: 100%;
+    }
+}
+
 }

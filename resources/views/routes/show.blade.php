@@ -27,7 +27,10 @@
 
             <div class="route-show-header-actions">
                 <a
-                    href="{{ route('routes.map.view', $deliveryRoute) }}"
+                    href="{{ route(
+                        'routes.map.view',
+                        $deliveryRoute
+                    ) }}"
                     class="route-show-primary-button"
                 >
                     Ver mapa
@@ -43,10 +46,72 @@
         </header>
 
         @if (session('status'))
-            <div class="route-show-notice" role="status">
+            <div
+                class="route-show-notice"
+                role="status"
+            >
                 {{ session('status') }}
             </div>
         @endif
+
+        @error('activation')
+            <div
+                class="route-show-alert"
+                role="alert"
+            >
+                <strong>
+                    No fue posible activar la ruta.
+                </strong>
+
+                <p>{{ $message }}</p>
+            </div>
+        @enderror
+
+        @can('activate', $deliveryRoute)
+            @if ($routeStatus === 'PLANNED')
+                <section
+                    class="route-show-activation"
+                    aria-labelledby="route-activation-title"
+                >
+                    <div>
+                        <h2 id="route-activation-title">
+                            Activar ruta
+                        </h2>
+
+                        <p>
+                            La ruta solo puede activarse en su fecha
+                            programada, con el repartidor disponible
+                            y los envíos preparados.
+                        </p>
+
+                        <p>
+                            Al activarla, las entregas pasarán a estar
+                            en progreso y el repartidor dejará de
+                            estar disponible para nuevas rutas.
+                        </p>
+                    </div>
+
+                    <form
+                        method="POST"
+                        action="{{ route(
+                            'portal.routes.activate',
+                            $deliveryRoute
+                        ) }}"
+                        class="route-show-activation-form"
+                    >
+                        @csrf
+                        @method('PATCH')
+
+                        <button
+                            type="submit"
+                            class="route-show-primary-button"
+                        >
+                            Activar ruta
+                        </button>
+                    </form>
+                </section>
+            @endif
+        @endcan
 
         <section
             class="route-show-summary"
@@ -223,7 +288,9 @@
 
                 <span>
                     {{ $totalShipments }}
-                    {{ $totalShipments === 1 ? 'asignación' : 'asignaciones' }}
+                    {{ $totalShipments === 1
+                        ? 'asignación'
+                        : 'asignaciones' }}
                 </span>
             </header>
 
@@ -250,9 +317,13 @@
 
                                 <div class="route-show-stop-title">
                                     @if ($shipment !== null)
-                                        <h3>{{ $shipment->tracking_code }}</h3>
+                                        <h3>
+                                            {{ $shipment->tracking_code }}
+                                        </h3>
                                     @else
-                                        <h3>Envío con acceso restringido</h3>
+                                        <h3>
+                                            Envío con acceso restringido
+                                        </h3>
                                     @endif
 
                                     <span
@@ -271,7 +342,9 @@
                             </div>
 
                             @if ($shipment !== null)
-                                <dl class="route-show-details route-show-stop-details">
+                                <dl
+                                    class="route-show-details route-show-stop-details"
+                                >
                                     <div>
                                         <dt>Estado del envío</dt>
 

@@ -11,9 +11,8 @@ class DashboardController extends Controller
     /**
      * Muestra el panel principal del usuario autenticado.
      */
-    public function __invoke(
-        Request $request
-    ): View {
+    public function __invoke(Request $request): View
+    {
         $user = User::query()
             ->with([
                 'role',
@@ -27,8 +26,7 @@ class DashboardController extends Controller
             );
 
         abort_unless(
-            $user->accountStatus?->status_name
-                === 'ACTIVE',
+            $user->accountStatus?->status_name === 'ACTIVE',
             403,
             'The account is not active.'
         );
@@ -38,12 +36,8 @@ class DashboardController extends Controller
         return view('dashboard', [
             'user' => $user,
             'roleName' => $roleName,
-            'roleLabel' => $this->roleLabel(
-                $roleName
-            ),
-            'modules' => $this->modulesFor(
-                $roleName
-            ),
+            'roleLabel' => $this->roleLabel($roleName),
+            'modules' => $this->modulesFor($roleName),
         ]);
     }
 
@@ -52,9 +46,8 @@ class DashboardController extends Controller
      *
      * @return array<int, array<string, string>>
      */
-    private function modulesFor(
-        ?string $roleName
-    ): array {
+    private function modulesFor(?string $roleName): array
+    {
         return match ($roleName) {
             'CUSTOMER' => [
                 $this->module(
@@ -103,7 +96,7 @@ class DashboardController extends Controller
                 $this->module(
                     'Rutas',
                     'Consulta las rutas de entrega.',
-                    'routes.index'
+                    'portal.routes.index'
                 ),
                 $this->module(
                     'Incidentes',
@@ -136,7 +129,7 @@ class DashboardController extends Controller
                 $this->module(
                     'Mis rutas',
                     'Consulta tus rutas y abre el mapa.',
-                    'routes.index'
+                    'portal.routes.index'
                 ),
                 $this->module(
                     'Incidentes',
@@ -169,7 +162,7 @@ class DashboardController extends Controller
                 $this->module(
                     'Rutas',
                     'Consulta la operación de las rutas.',
-                    'routes.index'
+                    'portal.routes.index'
                 ),
                 $this->module(
                     'Notificaciones',
@@ -202,7 +195,7 @@ class DashboardController extends Controller
                 $this->module(
                     'Rutas',
                     'Supervisa las rutas de entrega.',
-                    'routes.index'
+                    'portal.routes.index'
                 ),
                 $this->module(
                     'Tickets de soporte',
@@ -250,16 +243,13 @@ class DashboardController extends Controller
     /**
      * Devuelve la etiqueta visible del rol.
      */
-    private function roleLabel(
-        ?string $roleName
-    ): string {
+    private function roleLabel(?string $roleName): string
+    {
         return match ($roleName) {
             'CUSTOMER' => 'Cliente',
-            'DELIVERY_PROVIDER' =>
-                'Proveedor de entrega',
+            'DELIVERY_PROVIDER' => 'Proveedor de entrega',
             'COURIER' => 'Repartidor',
-            'SUPPORT_AGENT' =>
-                'Agente de soporte',
+            'SUPPORT_AGENT' => 'Agente de soporte',
             'ADMINISTRATOR' => 'Administrador',
             default => 'Usuario',
         };

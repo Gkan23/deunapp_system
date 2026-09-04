@@ -19,6 +19,7 @@ import '../css/support-ticket-create.css';
 import '../css/incident-index.css';
 import '../css/incident-show.css';
 import '../css/incident-create.css';
+import '../css/route-index.css';
 
 import './route-map';
 import './shipment-tracking';

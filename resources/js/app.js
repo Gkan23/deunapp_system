@@ -20,6 +20,7 @@ import '../css/incident-index.css';
 import '../css/incident-show.css';
 import '../css/incident-create.css';
 import '../css/route-index.css';
+import '../css/route-show.css';
 
 import './route-map';
 import './shipment-tracking';

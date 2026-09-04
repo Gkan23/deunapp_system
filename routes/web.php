@@ -49,6 +49,7 @@ use App\Http\Controllers\RouteIndexPageController;
 use App\Http\Controllers\RouteMapController;
 use App\Http\Controllers\RouteMapPageController;
 use App\Http\Controllers\RouteShipmentController;
+use App\Http\Controllers\RouteShowPageController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\ShipmentCreatePageController;
 use App\Http\Controllers\ShipmentIndexPageController;
@@ -201,7 +202,7 @@ Route::middleware('auth')->group(function (): void {
     | Configuración y perfiles
     |
     | Estas páginas no requieren el correo verificado.
-    | Sus controladores conservan la autorización correspondiente.
+    | Sus controladores conservan sus autorizaciones.
     */
 
     Route::get(
@@ -518,13 +519,20 @@ Route::middleware('auth')->group(function (): void {
             ->name('shipments.show');
 
         /*
-        | Rutas de reparto: listado Blade
+        | Rutas de reparto: portal Blade
         */
 
         Route::get(
             '/portal/routes',
             RouteIndexPageController::class
         )->name('portal.routes.index');
+
+        Route::get(
+            '/portal/routes/{route}',
+            RouteShowPageController::class
+        )
+            ->whereNumber('route')
+            ->name('portal.routes.show');
 
         /*
         | Rutas de reparto: endpoints JSON y mapa

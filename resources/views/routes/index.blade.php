@@ -17,8 +17,8 @@
                 </h1>
 
                 <p>
-                    Consulta las rutas disponibles para tu cuenta
-                    y abre su mapa de recorrido.
+                    Consulta las rutas disponibles para tu cuenta,
+                    revisa su detalle y abre su mapa de recorrido.
                 </p>
             </div>
 
@@ -31,14 +31,22 @@
         </header>
 
         @if (session('status'))
-            <div class="route-index-notice" role="status">
+            <div
+                class="route-index-notice"
+                role="status"
+            >
                 {{ session('status') }}
             </div>
         @endif
 
         @if ($errors->any())
-            <div class="route-index-alert" role="alert">
-                <strong>Revisa los filtros ingresados.</strong>
+            <div
+                class="route-index-alert"
+                role="alert"
+            >
+                <strong>
+                    Revisa los filtros ingresados.
+                </strong>
 
                 <ul>
                     @foreach ($errors->all() as $error)
@@ -94,8 +102,13 @@
             <div class="route-index-field">
                 <label for="status">Estado</label>
 
-                <select id="status" name="status">
-                    <option value="">Todos los estados</option>
+                <select
+                    id="status"
+                    name="status"
+                >
+                    <option value="">
+                        Todos los estados
+                    </option>
 
                     @foreach ($statuses as $status)
                         <option
@@ -105,7 +118,11 @@
                                     === $status->status_name
                             )
                         >
-                            {{ str_replace('_', ' ', $status->status_name) }}
+                            {{ str_replace(
+                                '_',
+                                ' ',
+                                $status->status_name
+                            ) }}
                         </option>
                     @endforeach
                 </select>
@@ -155,7 +172,9 @@
 
             <span>
                 {{ $routes->total() }}
-                {{ $routes->total() === 1 ? 'resultado' : 'resultados' }}
+                {{ $routes->total() === 1
+                    ? 'resultado'
+                    : 'resultados' }}
             </span>
         </div>
 
@@ -185,7 +204,9 @@
                                     Ruta de entrega
                                 </p>
 
-                                <h3>Ruta #{{ $deliveryRoute->id }}</h3>
+                                <h3>
+                                    Ruta #{{ $deliveryRoute->id }}
+                                </h3>
                             </div>
 
                             <span
@@ -284,6 +305,17 @@
                         </dl>
 
                         <footer class="route-index-card-actions">
+                            <a
+                                href="{{ route(
+                                    'portal.routes.show',
+                                    $deliveryRoute
+                                ) }}"
+                                class="route-index-secondary-button"
+                                aria-label="Ver detalle de la ruta {{ $deliveryRoute->id }}"
+                            >
+                                Ver detalle
+                            </a>
+
                             <a
                                 href="{{ route(
                                     'routes.map.view',

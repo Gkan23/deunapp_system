@@ -1,10 +1,17 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "gkan23/deunapp-system",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
-    "license": "MIT",
+    "description": "Plataforma web para la gestión de envíos, rutas y operaciones logísticas.",
+    "keywords": [
+        "laravel",
+        "logistica",
+        "envios",
+        "rutas",
+        "nicaragua"
+    ],
+    "homepage": "https://github.com/Gkan23/deunapp_system",
+    "license": "proprietary",
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",

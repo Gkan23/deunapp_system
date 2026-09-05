@@ -1,0 +1,606 @@
+.route-map-application {
+    width: min(1400px, 100%);
+    margin: 0 auto;
+    color: var(--portal-text);
+}
+
+/* Encabezado */
+
+.route-map-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 26px;
+    margin-bottom: 24px;
+}
+
+.route-map-header > div:first-child {
+    max-width: 720px;
+}
+
+.route-map-eyebrow {
+    margin: 0 0 7px;
+    color: var(--portal-orange-red);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.route-map-title {
+    margin: 0;
+    color: var(--portal-navy);
+    font-family:
+        "Montserrat",
+        "Poppins",
+        sans-serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: 1.12;
+}
+
+.route-map-subtitle {
+    margin: 10px 0 0;
+    color: var(--portal-muted);
+    font-size: 0.92rem;
+}
+
+.route-map-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.route-map-route-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 11px;
+    color: #475467;
+    background: #f2f4f7;
+    border: 1px solid #e4e7ec;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.route-map-route-status::before {
+    width: 7px;
+    height: 7px;
+    background: currentColor;
+    border-radius: 50%;
+    content: "";
+}
+
+.route-map-route-status[data-status="planned"] {
+    color: #a34a00;
+    background: #fff4e6;
+    border-color: #fed7aa;
+}
+
+.route-map-route-status[data-status="active"] {
+    color: #075985;
+    background: #eaf7ff;
+    border-color: #bae6fd;
+}
+
+.route-map-route-status[data-status="completed"] {
+    color: #087443;
+    background: #ecfdf3;
+    border-color: #a7f3d0;
+}
+
+.route-map-route-status[data-status="cancelled"] {
+    color: #b42332;
+    background: #fff1f2;
+    border-color: #fecdd3;
+}
+
+/* Enlaces */
+
+.route-map-detail-link,
+.route-map-back-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 16px;
+    border: 1px solid transparent;
+    border-radius: 11px;
+    font-size: 0.83rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition:
+        background-color 150ms ease,
+        border-color 150ms ease,
+        box-shadow 150ms ease,
+        transform 150ms ease;
+}
+
+.route-map-detail-link {
+    color: var(--portal-white);
+    background:
+        linear-gradient(
+            135deg,
+            var(--portal-orange),
+            var(--portal-orange-red)
+        );
+    border-color: var(--portal-orange-red);
+    box-shadow: 0 8px 18px rgba(255, 80, 40, 0.18);
+}
+
+.route-map-back-link {
+    color: var(--portal-navy);
+    background: var(--portal-white);
+    border-color: #cbd4df;
+}
+
+.route-map-detail-link:hover,
+.route-map-back-link:hover {
+    transform: translateY(-1px);
+}
+
+.route-map-detail-link:hover {
+    color: var(--portal-white);
+    box-shadow: 0 10px 22px rgba(230, 46, 64, 0.22);
+}
+
+.route-map-back-link:hover {
+    color: var(--portal-navy);
+    background: #f1f4f8;
+    border-color: #aeb9c8;
+}
+
+/* Resumen */
+
+.route-map-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.route-map-summary-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+    min-height: 102px;
+    padding: 20px;
+    overflow: hidden;
+    background: var(--portal-white);
+    border: 1px solid var(--portal-border);
+    border-radius: 16px;
+    box-shadow: 0 9px 28px rgba(0, 35, 86, 0.05);
+}
+
+.route-map-summary-card::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 4px;
+    background: var(--portal-navy);
+    content: "";
+}
+
+.route-map-summary-card:nth-child(2)::before {
+    background: var(--portal-orange);
+}
+
+.route-map-summary-card:nth-child(3)::before {
+    background: var(--portal-orange-red);
+}
+
+.route-map-summary-label {
+    color: var(--portal-muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.route-map-summary-card strong {
+    overflow-wrap: anywhere;
+    color: var(--portal-navy);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.route-map-summary-card > span:last-child:not(
+    .route-map-summary-label
+) {
+    color: var(--portal-muted);
+    font-size: 0.78rem;
+}
+
+/* Contenedor del mapa */
+
+.route-map-content {
+    display: grid;
+    grid-template-columns:
+        minmax(290px, 350px)
+        minmax(0, 1fr);
+    min-height: 650px;
+    overflow: hidden;
+    background: var(--portal-white);
+    border: 1px solid var(--portal-border);
+    border-radius: 20px;
+    box-shadow: 0 16px 45px rgba(0, 35, 86, 0.09);
+}
+
+.route-map-sidebar {
+    max-height: 650px;
+    padding: 21px;
+    overflow-y: auto;
+    background: #fbfcfe;
+    border-right: 1px solid #e2e7ed;
+    scrollbar-color: #bdc6d2 transparent;
+    scrollbar-width: thin;
+}
+
+.route-map-sidebar-header {
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e5e9ef;
+}
+
+.route-map-sidebar-header h2 {
+    margin: 0;
+    color: var(--portal-navy);
+    font-family:
+        "Montserrat",
+        "Poppins",
+        sans-serif;
+    font-size: 1.18rem;
+    font-weight: 700;
+}
+
+.route-map-sidebar-header p {
+    margin: 6px 0 0;
+    color: var(--portal-muted);
+    font-size: 0.82rem;
+}
+
+/* Mensajes */
+
+.route-map-message {
+    padding: 12px 13px;
+    margin: 16px 0;
+    color: #075985;
+    background: #eaf7ff;
+    border: 1px solid #bae6fd;
+    border-radius: 11px;
+    font-size: 0.8rem;
+    line-height: 1.55;
+}
+
+.route-map-message-error {
+    color: var(--portal-danger);
+    background: var(--portal-danger-background);
+    border-color: #fecdd3;
+}
+
+/* Paradas */
+
+.route-map-stop-list {
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.route-map-stop-item {
+    display: grid;
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 11px;
+    padding: 13px;
+    background: var(--portal-white);
+    border: 1px solid #e3e8ee;
+    border-radius: 13px;
+    transition:
+        border-color 150ms ease,
+        box-shadow 150ms ease,
+        transform 150ms ease;
+}
+
+.route-map-stop-item:hover {
+    border-color: rgba(255, 120, 14, 0.4);
+    box-shadow: 0 8px 18px rgba(0, 35, 86, 0.07);
+    transform: translateY(-1px);
+}
+
+.route-map-stop-order {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    color: var(--portal-white);
+    background:
+        linear-gradient(
+            135deg,
+            var(--portal-orange),
+            var(--portal-orange-red)
+        );
+    border-radius: 11px;
+    font-family:
+        "Montserrat",
+        "Poppins",
+        sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    place-items: center;
+}
+
+.route-map-stop-information {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-width: 0;
+}
+
+.route-map-stop-information strong {
+    width: 100%;
+    overflow: hidden;
+    color: var(--portal-text);
+    font-size: 0.8rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.route-map-stop-information > span:not(
+    .route-map-stop-status
+) {
+    width: 100%;
+    overflow: hidden;
+    color: var(--portal-muted);
+    font-size: 0.73rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.route-map-stop-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 7px;
+    color: #475467;
+    background: #f2f4f7;
+    border-radius: 999px;
+    font-size: 0.63rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.route-map-stop-status[data-status="pending"] {
+    color: #a34a00;
+    background: #fff4e6;
+}
+
+.route-map-stop-status[data-status="in_progress"] {
+    color: #075985;
+    background: #eaf7ff;
+}
+
+.route-map-stop-status[data-status="delivered"] {
+    color: #087443;
+    background: #ecfdf3;
+}
+
+.route-map-stop-status[data-status="failed"],
+.route-map-stop-status[data-status="cancelled"] {
+    color: #b42332;
+    background: #fff1f2;
+}
+
+/* Mapa */
+
+.route-map-map-wrapper {
+    position: relative;
+    min-width: 0;
+    min-height: 650px;
+    background: #e9eef4;
+}
+
+.route-map-map {
+    width: 100%;
+    height: 650px;
+}
+
+.route-map-legend {
+    position: absolute;
+    z-index: 2;
+    right: 17px;
+    bottom: 27px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 11px;
+    padding: 10px 13px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #dce3eb;
+    border-radius: 11px;
+    box-shadow: 0 8px 24px rgba(0, 35, 86, 0.15);
+    backdrop-filter: blur(8px);
+}
+
+.route-map-legend div {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--portal-text);
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.route-map-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.route-map-legend-courier {
+    background: var(--portal-navy);
+}
+
+.route-map-legend-origin {
+    background: var(--portal-orange);
+}
+
+.route-map-legend-destination {
+    background: var(--portal-orange-red);
+}
+
+/* Marcadores */
+
+.route-map-marker {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    color: var(--portal-white);
+    border: 3px solid var(--portal-white);
+    border-radius: 50%;
+    box-shadow: 0 5px 14px rgba(0, 35, 86, 0.3);
+    cursor: pointer;
+    font-family:
+        "Montserrat",
+        "Poppins",
+        sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    place-items: center;
+    transition:
+        box-shadow 150ms ease,
+        transform 150ms ease;
+}
+
+.route-map-marker:hover {
+    box-shadow: 0 7px 18px rgba(0, 35, 86, 0.38);
+    transform: scale(1.08);
+}
+
+.route-map-marker-courier {
+    background: var(--portal-navy);
+}
+
+.route-map-marker-origin {
+    background: var(--portal-orange);
+}
+
+.route-map-marker-destination {
+    background: var(--portal-orange-red);
+}
+
+.route-map-popup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 155px;
+    font-family:
+        "Poppins",
+        sans-serif;
+}
+
+.route-map-popup strong {
+    color: var(--portal-navy);
+}
+
+.route-map-popup p {
+    margin: 0;
+    color: var(--portal-muted);
+    font-size: 0.75rem;
+}
+
+/* Responsive */
+
+@media (max-width: 1100px) {
+    .route-map-content {
+        grid-template-columns:
+            minmax(250px, 310px)
+            minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 850px) {
+    .route-map-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .route-map-header-actions {
+        justify-content: flex-start;
+    }
+
+    .route-map-summary {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .route-map-content {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .route-map-sidebar {
+        max-height: 360px;
+        border-right: 0;
+        border-bottom: 1px solid #e2e7ed;
+    }
+
+    .route-map-map-wrapper,
+    .route-map-map {
+        min-height: 520px;
+        height: 520px;
+    }
+}
+
+@media (max-width: 600px) {
+    .route-map-header-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .route-map-route-status {
+        grid-column: 1 / -1;
+    }
+
+    .route-map-sidebar {
+        padding: 17px;
+    }
+
+    .route-map-map-wrapper,
+    .route-map-map {
+        min-height: 440px;
+        height: 440px;
+    }
+
+    .route-map-legend {
+        right: 10px;
+        bottom: 20px;
+        left: 10px;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 420px) {
+    .route-map-header-actions {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .route-map-route-status {
+        grid-column: auto;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .route-map-detail-link,
+    .route-map-back-link,
+    .route-map-stop-item,
+    .route-map-marker {
+        transition: none;
+    }
+}

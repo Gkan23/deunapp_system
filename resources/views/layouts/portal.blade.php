@@ -96,7 +96,10 @@
                 </section>
             @endif
 
-            <nav class="portal-sidebar-navigation">
+            <nav
+                class="portal-sidebar-navigation"
+                aria-label="Módulos del portal"
+            >
                 <p class="portal-sidebar-label">
                     Navegación
                 </p>
@@ -140,11 +143,19 @@
                                 '.'
                             ).'.*';
 
+                        $routeMapIsActive =
+                            $module['route']
+                                === 'portal.routes.index'
+                            && request()->routeIs(
+                                'routes.map.view'
+                            );
+
                         $moduleIsActive =
                             request()->routeIs(
                                 $module['route'],
                                 $modulePattern
-                            );
+                            )
+                            || $routeMapIsActive;
                     @endphp
 
                     <a

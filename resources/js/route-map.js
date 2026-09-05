@@ -8,7 +8,8 @@ const DEFAULT_CENTER = [
 const DEFAULT_ZOOM = 6;
 
 function createMarkerElement(feature) {
-    const element = document.createElement('div');
+    const element =
+        document.createElement('div');
 
     element.classList.add(
         'route-map-marker'
@@ -95,9 +96,14 @@ function createPopupContent(feature) {
         const status =
             document.createElement('p');
 
-        status.textContent = `Estado: ${
-            feature.properties.delivery_status
-        }`;
+        const formattedStatus =
+            String(
+                feature.properties
+                    .delivery_status
+            ).replaceAll('_', ' ');
+
+        status.textContent =
+            `Estado: ${formattedStatus}`;
 
         container.appendChild(status);
     }
@@ -165,8 +171,20 @@ function createStopItem(stop) {
         'route-map-stop-status'
     );
 
+    const deliveryStatus =
+        String(
+            stop.delivery_status
+            ?? 'PENDING'
+        );
+
+    status.dataset.status =
+        deliveryStatus.toLowerCase();
+
     status.textContent =
-        stop.delivery_status;
+        deliveryStatus.replaceAll(
+            '_',
+            ' '
+        );
 
     information.append(
         title,
@@ -183,13 +201,19 @@ function createStopItem(stop) {
 }
 
 function renderStops(stops) {
-    const list = document.getElementById(
-        'route-map-stop-list'
-    );
+    const list =
+        document.getElementById(
+            'route-map-stop-list'
+        );
 
-    const counter = document.getElementById(
-        'route-map-stop-count'
-    );
+    const counter =
+        document.getElementById(
+            'route-map-stop-count'
+        );
+
+    if (list === null || counter === null) {
+        return;
+    }
 
     list.replaceChildren();
 
@@ -215,7 +239,10 @@ function waitForMapLoad(map) {
     });
 }
 
-function createDeliveryGuide(map, features) {
+function createDeliveryGuide(
+    map,
+    features
+) {
     const destinationFeatures =
         features
             .filter(
@@ -268,9 +295,9 @@ function createDeliveryGuide(map, features) {
             'line-cap': 'round',
         },
         paint: {
-            'line-color': '#459db0',
+            'line-color': '#FF5028',
             'line-width': 4,
-            'line-opacity': 0.75,
+            'line-opacity': 0.82,
             'line-dasharray': [
                 2,
                 1.5,
@@ -279,7 +306,10 @@ function createDeliveryGuide(map, features) {
     });
 }
 
-function addMarkers(map, features) {
+function addMarkers(
+    map,
+    features
+) {
     const bounds =
         new mapboxgl.LngLatBounds();
 
@@ -314,11 +344,18 @@ function addMarkers(map, features) {
     }
 }
 
-function showMessage(message, error = false) {
+function showMessage(
+    message,
+    error = false
+) {
     const element =
         document.getElementById(
             'route-map-message'
         );
+
+    if (element === null) {
+        return;
+    }
 
     element.textContent = message;
 
@@ -355,7 +392,16 @@ async function initializeRouteMap() {
 
     if (! token.startsWith('pk.')) {
         showMessage(
-            'El token de Mapbox debe ser un token público que comience con pk.',
+            'El token de Mapbox debe ser público y comenzar con pk.',
+            true
+        );
+
+        return;
+    }
+
+    if (! dataUrl) {
+        showMessage(
+            'No se configuró la dirección de los datos del mapa.',
             true
         );
 
@@ -364,25 +410,27 @@ async function initializeRouteMap() {
 
     mapboxgl.accessToken = token;
 
-    const map = new mapboxgl.Map({
-        container: 'route-map',
-        style:
-            'mapbox://styles/mapbox/streets-v12',
-        center: DEFAULT_CENTER,
-        zoom: DEFAULT_ZOOM,
-    });
-
-    map.addControl(
-        new mapboxgl.NavigationControl(),
-        'top-right'
-    );
-
-    map.addControl(
-        new mapboxgl.FullscreenControl(),
-        'top-right'
-    );
+    let map;
 
     try {
+        map = new mapboxgl.Map({
+            container: 'route-map',
+            style:
+                'mapbox://styles/mapbox/streets-v12',
+            center: DEFAULT_CENTER,
+            zoom: DEFAULT_ZOOM,
+        });
+
+        map.addControl(
+            new mapboxgl.NavigationControl(),
+            'top-right'
+        );
+
+        map.addControl(
+            new mapboxgl.FullscreenControl(),
+            'top-right'
+        );
+
         const response = await fetch(
             dataUrl,
             {
@@ -407,24 +455,42 @@ async function initializeRouteMap() {
 
         const data = payload.data;
 
-        renderStops(data.stops);
+        if (
+            data === null
+            || typeof data !== 'object'
+        ) {
+            throw new Error(
+                'La respuesta del mapa no contiene datos válidos.'
+            );
+        }
+
+        const stops =
+            Array.isArray(data.stops)
+                ? data.stops
+                : [];
+
+        const features =
+            Array.isArray(
+                data.geojson?.features
+            )
+                ? data.geojson.features
+                : [];
+
+        renderStops(stops);
 
         await waitForMapLoad(map);
 
         addMarkers(
             map,
-            data.geojson.features
+            features
         );
 
         createDeliveryGuide(
             map,
-            data.geojson.features
+            features
         );
 
-        if (
-            data.geojson.features.length
-            === 0
-        ) {
+        if (features.length === 0) {
             showMessage(
                 'La ruta todavía no tiene coordenadas disponibles.'
             );
@@ -436,7 +502,10 @@ async function initializeRouteMap() {
             'Mapa cargado correctamente.'
         );
     } catch (error) {
-        console.error(error);
+        console.error(
+            'No fue posible cargar el mapa:',
+            error
+        );
 
         showMessage(
             'No fue posible cargar la información de la ruta.',

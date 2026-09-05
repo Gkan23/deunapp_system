@@ -1,43 +1,66 @@
 @extends('layouts.portal')
 
-@section('title', 'Ruta #'.$deliveryRoute->id.' | DeUnapp')
+@section(
+    'title',
+    'Ruta #'.$deliveryRoute->id.' | DeUnapp'
+)
 
 @section('content')
     @php
-        $routeStatus = $deliveryRoute
-            ->routeStatus
-            ?->status_name
+        $routeStatus =
+            $deliveryRoute
+                ->routeStatus
+                ?->status_name
             ?? 'UNKNOWN';
 
-        $provider = $deliveryRoute
-            ->courier
-            ?->deliveryProvider;
+        $courier =
+            $deliveryRoute->courier;
+
+        $provider =
+            $courier
+                ?->deliveryProvider;
+
+        $vehicle =
+            $deliveryRoute->vehicle;
     @endphp
 
     <section class="route-show-page">
         <header class="route-show-header">
             <div>
                 <p class="route-show-eyebrow">
-                    Detalle de ruta
+                    Operación de entrega
                 </p>
 
                 <h1>
                     Ruta #{{ $deliveryRoute->id }}
                 </h1>
 
-                <p>
-                    Consulta la asignación, las fechas
-                    y el orden de entrega de los envíos.
+                <p class="route-show-subtitle">
+                    Consulta el recorrido, el repartidor,
+                    el vehículo y los envíos asignados.
                 </p>
             </div>
 
             <div class="route-show-header-actions">
+                <span
+                    class="route-show-status"
+                    data-status="{{
+                        strtolower($routeStatus)
+                    }}"
+                >
+                    {{ str_replace(
+                        '_',
+                        ' ',
+                        $routeStatus
+                    ) }}
+                </span>
+
                 <a
                     href="{{ route(
                         'routes.map.view',
                         $deliveryRoute
                     ) }}"
-                    class="route-show-primary-button"
+                    class="route-show-map-link"
                 >
                     Ver mapa
                 </a>
@@ -46,7 +69,7 @@
                     href="{{ route(
                         'portal.routes.index'
                     ) }}"
-                    class="route-show-secondary-button"
+                    class="route-show-back-link"
                 >
                     Volver a rutas
                 </a>
@@ -55,7 +78,7 @@
 
         @if (session('status'))
             <div
-                class="route-show-notice"
+                class="route-show-flash"
                 role="status"
             >
                 {{ session('status') }}
@@ -64,51 +87,64 @@
 
         @error('activation')
             <div
-                class="route-show-alert"
+                class="route-show-alert route-show-alert-error"
                 role="alert"
             >
                 <strong>
                     No fue posible activar la ruta.
                 </strong>
 
-                <p>{{ $message }}</p>
+                <p>
+                    {{ $message }}
+                </p>
             </div>
         @enderror
 
         @error('completion')
             <div
-                class="route-show-alert"
+                class="route-show-alert route-show-alert-error"
                 role="alert"
             >
                 <strong>
                     No fue posible completar la ruta.
                 </strong>
 
-                <p>{{ $message }}</p>
+                <p>
+                    {{ $message }}
+                </p>
+            </div>
+        @enderror
+
+        @error('cancellation')
+            <div
+                class="route-show-alert route-show-alert-error"
+                role="alert"
+            >
+                <strong>
+                    No fue posible cancelar la ruta.
+                </strong>
+
+                <p>
+                    {{ $message }}
+                </p>
             </div>
         @enderror
 
         @can('activate', $deliveryRoute)
             @if ($routeStatus === 'PLANNED')
-                <section
-                    class="route-show-activation"
-                    aria-labelledby="route-activation-title"
-                >
+                <section class="route-show-activation">
                     <div>
-                        <h2 id="route-activation-title">
-                            Activar ruta
-                        </h2>
-
-                        <p>
-                            La ruta solo puede activarse en su fecha
-                            programada, con el repartidor disponible
-                            y los envíos preparados.
+                        <p class="route-show-section-eyebrow">
+                            Inicio de operación
                         </p>
 
+                        <h2>Activar ruta</h2>
+
                         <p>
-                            Al activarla, las entregas pasarán a estar
-                            en progreso y el repartidor dejará de
-                            estar disponible para nuevas rutas.
+                            Al activar la ruta, el repartidor
+                            dejará de aparecer como disponible
+                            y los envíos pasarán a estar en
+                            progreso.
                         </p>
                     </div>
 
@@ -118,14 +154,16 @@
                             'portal.routes.activate',
                             $deliveryRoute
                         ) }}"
-                        class="route-show-activation-form"
+                        onsubmit="return confirm(
+                            '¿Confirmas que deseas activar esta ruta?'
+                        );"
                     >
                         @csrf
                         @method('PATCH')
 
                         <button
                             type="submit"
-                            class="route-show-primary-button"
+                            class="route-show-activate-button"
                         >
                             Activar ruta
                         </button>
@@ -136,24 +174,18 @@
 
         @can('complete', $deliveryRoute)
             @if ($routeStatus === 'ACTIVE')
-                <section
-                    class="route-show-completion"
-                    aria-labelledby="route-completion-title"
-                >
+                <section class="route-show-completion">
                     <div>
-                        <h2 id="route-completion-title">
-                            Completar ruta
-                        </h2>
-
-                        <p>
-                            La ruta podrá completarse cuando todas
-                            sus asignaciones estén entregadas o hayan
-                            terminado como intentos fallidos.
+                        <p class="route-show-section-eyebrow">
+                            Finalización
                         </p>
 
+                        <h2>Completar ruta</h2>
+
                         <p>
-                            Al completar la ruta, el repartidor volverá
-                            a estar disponible si continúa activo.
+                            La ruta solamente podrá completarse
+                            cuando todos sus envíos estén
+                            entregados o marcados como fallidos.
                         </p>
                     </div>
 
@@ -163,7 +195,9 @@
                             'portal.routes.complete',
                             $deliveryRoute
                         ) }}"
-                        class="route-show-completion-form"
+                        onsubmit="return confirm(
+                            '¿Confirmas que deseas completar esta ruta?'
+                        );"
                     >
                         @csrf
                         @method('PATCH')
@@ -179,11 +213,83 @@
             @endif
         @endcan
 
-        <section
-            class="route-show-summary"
-            aria-label="Resumen de asignaciones de la ruta"
-        >
-            <article>
+        @can('cancel', $deliveryRoute)
+            @if (
+                in_array(
+                    $routeStatus,
+                    [
+                        'PLANNED',
+                        'ACTIVE',
+                    ],
+                    true
+                )
+            )
+                <section class="route-show-cancellation">
+                    <div>
+                        <p class="route-show-section-eyebrow">
+                            Cancelación
+                        </p>
+
+                        <h2>Cancelar ruta</h2>
+
+                        <p>
+                            Los envíos pendientes o en progreso
+                            serán devueltos para reprogramación.
+                            También se registrará una incidencia
+                            con el motivo indicado.
+                        </p>
+                    </div>
+
+                    <form
+                        method="POST"
+                        action="{{ route(
+                            'portal.routes.cancel',
+                            $deliveryRoute
+                        ) }}"
+                        class="route-show-cancellation-form"
+                        onsubmit="return confirm(
+                            '¿Confirmas que deseas cancelar esta ruta?'
+                        );"
+                    >
+                        @csrf
+                        @method('PATCH')
+
+                        <div class="route-show-field">
+                            <label for="reason">
+                                Motivo de cancelación
+                            </label>
+
+                            <textarea
+                                id="reason"
+                                name="reason"
+                                rows="4"
+                                maxlength="2000"
+                                placeholder="Explica por qué se cancelará la ruta."
+                                required
+                            >{{ old('reason') }}</textarea>
+
+                            @error('reason')
+                                <span
+                                    class="route-show-field-error"
+                                >
+                                    {{ $message }}
+                                </span>
+                            @enderror
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="route-show-cancel-button"
+                        >
+                            Cancelar ruta
+                        </button>
+                    </form>
+                </section>
+            @endif
+        @endcan
+
+        <section class="route-show-summary">
+            <article class="route-show-summary-card">
                 <span>Envíos asignados</span>
 
                 <strong>
@@ -191,19 +297,41 @@
                 </strong>
             </article>
 
-            <article>
-                <span>Entregados en esta ruta</span>
+            <article class="route-show-summary-card">
+                <span>Entregados</span>
 
                 <strong>
                     {{ $deliveredShipments }}
                 </strong>
             </article>
 
-            <article>
-                <span>Asignaciones fallidas</span>
+            <article class="route-show-summary-card">
+                <span>Fallidos</span>
 
                 <strong>
                     {{ $failedShipments }}
+                </strong>
+            </article>
+
+            <article class="route-show-summary-card">
+                <span>Distancia estimada</span>
+
+                <strong>
+                    @if (
+                        $deliveryRoute
+                            ->estimated_distance_km
+                        !== null
+                    )
+                        {{
+                            number_format(
+                                (float) $deliveryRoute
+                                    ->estimated_distance_km,
+                                2
+                            )
+                        }} km
+                    @else
+                        No estimada
+                    @endif
                 </strong>
             </article>
         </section>
@@ -211,49 +339,46 @@
         <div class="route-show-grid">
             <section class="route-show-card">
                 <header class="route-show-card-header">
-                    <h2>
-                        Información de la ruta
-                    </h2>
+                    <div>
+                        <p class="route-show-section-eyebrow">
+                            Información
+                        </p>
 
-                    <span
-                        class="route-show-status"
-                        data-status="{{ strtolower(
-                            $routeStatus
-                        ) }}"
-                    >
-                        {{ str_replace(
-                            '_',
-                            ' ',
-                            $routeStatus
-                        ) }}
-                    </span>
+                        <h2>Datos de la ruta</h2>
+                    </div>
                 </header>
 
                 <dl class="route-show-details">
                     <div>
-                        <dt>Fecha de la ruta</dt>
+                        <dt>Identificador</dt>
 
                         <dd>
-                            {{ $deliveryRoute
-                                ->route_date
-                                ?->format('d/m/Y')
-                                ?? 'Sin fecha' }}
+                            #{{ $deliveryRoute->id }}
                         </dd>
                     </div>
 
                     <div>
-                        <dt>Distancia estimada</dt>
+                        <dt>Estado</dt>
 
                         <dd>
-                            {{ $deliveryRoute
-                                ->estimated_distance_km
-                                !== null
-                                    ? number_format(
-                                        (float) $deliveryRoute
-                                            ->estimated_distance_km,
-                                        2
-                                    ).' km'
-                                    : 'No estimada' }}
+                            {{ str_replace(
+                                '_',
+                                ' ',
+                                $routeStatus
+                            ) }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Fecha programada</dt>
+
+                        <dd>
+                            {{
+                                $deliveryRoute
+                                    ->route_date
+                                    ?->format('d/m/Y')
+                                ?? 'Sin fecha'
+                            }}
                         </dd>
                     </div>
 
@@ -261,10 +386,14 @@
                         <dt>Inicio</dt>
 
                         <dd>
-                            {{ $deliveryRoute
-                                ->started_at
-                                ?->format('d/m/Y H:i')
-                                ?? 'Sin iniciar' }}
+                            {{
+                                $deliveryRoute
+                                    ->started_at
+                                    ?->format(
+                                        'd/m/Y H:i'
+                                    )
+                                ?? 'Sin iniciar'
+                            }}
                         </dd>
                     </div>
 
@@ -272,36 +401,26 @@
                         <dt>Finalización</dt>
 
                         <dd>
-                            {{ $deliveryRoute
-                                ->finished_at
-                                ?->format('d/m/Y H:i')
-                                ?? 'Sin finalizar' }}
+                            {{
+                                $deliveryRoute
+                                    ->finished_at
+                                    ?->format(
+                                        'd/m/Y H:i'
+                                    )
+                                ?? 'Sin finalizar'
+                            }}
                         </dd>
                     </div>
 
                     <div>
-                        <dt>Repartidor</dt>
+                        <dt>Rol actual</dt>
 
                         <dd>
-                            {{ $deliveryRoute
-                                ->courier
-                                ?->user
-                                ?->name
-                                ?? 'No disponible' }}
-                        </dd>
-                    </div>
-
-                    <div>
-                        <dt>Proveedor</dt>
-
-                        <dd>
-                            {{ $provider?->business_name
-                                ?: (
-                                    $provider
-                                        ?->user
-                                        ?->name
-                                    ?? 'No disponible'
-                                ) }}
+                            {{ str_replace(
+                                '_',
+                                ' ',
+                                $roleName
+                            ) }}
                         </dd>
                     </div>
                 </dl>
@@ -309,20 +428,101 @@
 
             <section class="route-show-card">
                 <header class="route-show-card-header">
-                    <h2>
-                        Vehículo asignado
-                    </h2>
+                    <div>
+                        <p class="route-show-section-eyebrow">
+                            Asignación
+                        </p>
+
+                        <h2>Repartidor y proveedor</h2>
+                    </div>
                 </header>
 
-                @if ($deliveryRoute->vehicle)
+                <dl class="route-show-details">
+                    <div>
+                        <dt>Repartidor</dt>
+
+                        <dd>
+                            {{
+                                $courier
+                                    ?->user
+                                    ?->name
+                                ?? 'No disponible'
+                            }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Correo del repartidor</dt>
+
+                        <dd>
+                            {{
+                                $courier
+                                    ?->user
+                                    ?->email
+                                ?? 'No disponible'
+                            }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Proveedor</dt>
+
+                        <dd>
+                            {{
+                                $provider
+                                    ?->business_name
+                                ?? $provider
+                                    ?->user
+                                    ?->name
+                                ?? 'No disponible'
+                            }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Repartidor activo</dt>
+
+                        <dd>
+                            {{
+                                $courier?->is_active
+                                    ? 'Sí'
+                                    : 'No'
+                            }}
+                        </dd>
+                    </div>
+
+                    <div>
+                        <dt>Disponibilidad</dt>
+
+                        <dd>
+                            {{
+                                $courier?->is_available
+                                    ? 'Disponible'
+                                    : 'No disponible'
+                            }}
+                        </dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="route-show-card">
+                <header class="route-show-card-header">
+                    <div>
+                        <p class="route-show-section-eyebrow">
+                            Transporte
+                        </p>
+
+                        <h2>Vehículo asignado</h2>
+                    </div>
+                </header>
+
+                @if ($vehicle !== null)
                     <dl class="route-show-details">
                         <div>
                             <dt>Placa</dt>
 
                             <dd>
-                                {{ $deliveryRoute
-                                    ->vehicle
-                                    ->plate_number }}
+                                {{ $vehicle->plate_number }}
                             </dd>
                         </div>
 
@@ -330,27 +530,29 @@
                             <dt>Tipo</dt>
 
                             <dd>
-                                {{ $deliveryRoute
-                                    ->vehicle
-                                    ->vehicleType
-                                    ?->type_name
-                                    ?? 'No disponible' }}
+                                {{
+                                    $vehicle
+                                        ->vehicleType
+                                        ?->type_name
+                                    ?? 'No disponible'
+                                }}
                             </dd>
                         </div>
 
                         <div>
-                            <dt>Estado del vehículo</dt>
+                            <dt>Estado</dt>
 
                             <dd>
-                                {{ str_replace(
-                                    '_',
-                                    ' ',
-                                    $deliveryRoute
-                                        ->vehicle
-                                        ->vehicleStatus
-                                        ?->status_name
-                                        ?? 'No disponible'
-                                ) }}
+                                {{
+                                    str_replace(
+                                        '_',
+                                        ' ',
+                                        $vehicle
+                                            ->vehicleStatus
+                                            ?->status_name
+                                        ?? 'UNKNOWN'
+                                    )
+                                }}
                             </dd>
                         </div>
 
@@ -358,10 +560,10 @@
                             <dt>Marca</dt>
 
                             <dd>
-                                {{ $deliveryRoute
-                                    ->vehicle
-                                    ->brand
-                                    ?? 'No indicada' }}
+                                {{
+                                    $vehicle->brand
+                                    ?? 'No registrada'
+                                }}
                             </dd>
                         </div>
 
@@ -369,10 +571,10 @@
                             <dt>Modelo</dt>
 
                             <dd>
-                                {{ $deliveryRoute
-                                    ->vehicle
-                                    ->model
-                                    ?? 'No indicado' }}
+                                {{
+                                    $vehicle->model
+                                    ?? 'No registrado'
+                                }}
                             </dd>
                         </div>
 
@@ -380,198 +582,298 @@
                             <dt>Color</dt>
 
                             <dd>
-                                {{ $deliveryRoute
-                                    ->vehicle
-                                    ->color
-                                    ?? 'No indicado' }}
+                                {{
+                                    $vehicle->color
+                                    ?? 'No registrado'
+                                }}
                             </dd>
                         </div>
                     </dl>
                 @else
                     <div class="route-show-empty">
-                        Sin vehículo asignado.
+                        <strong>
+                            Sin vehículo asignado.
+                        </strong>
+
+                        <p>
+                            Esta ruta puede corresponder a datos
+                            anteriores a la asignación obligatoria
+                            de vehículos.
+                        </p>
                     </div>
                 @endif
             </section>
         </div>
 
-        <section class="route-show-card">
-            <header class="route-show-stops-header">
+        <section class="route-show-stops-section">
+            <header class="route-show-section-header">
                 <div>
-                    <p class="route-show-eyebrow">
-                        Orden de entrega
+                    <p class="route-show-section-eyebrow">
+                        Recorrido
                     </p>
 
-                    <h2>
-                        Envíos de la ruta
-                    </h2>
+                    <h2>Paradas de entrega</h2>
+
+                    <p>
+                        Los envíos aparecen según el orden
+                        establecido para la ruta.
+                    </p>
                 </div>
 
-                <span>
+                <span class="route-show-section-count">
                     {{ $totalShipments }}
 
-                    {{ $totalShipments === 1
-                        ? 'asignación'
-                        : 'asignaciones' }}
+                    {{
+                        $totalShipments === 1
+                            ? 'parada'
+                            : 'paradas'
+                    }}
                 </span>
             </header>
 
             @if ($stops->isEmpty())
                 <div class="route-show-empty">
-                    Esta ruta no tiene envíos asignados.
+                    <strong>
+                        Esta ruta no tiene envíos asignados.
+                    </strong>
+
+                    <p>
+                        Cuando se agreguen envíos, aparecerán
+                        aquí en su orden de entrega.
+                    </p>
                 </div>
             @else
                 <ol class="route-show-stop-list">
                     @foreach ($stops as $stop)
                         @php
-                            $assignment =
-                                $stop['assignment'];
+                            $routeShipment =
+                                data_get(
+                                    $stop,
+                                    'route_shipment'
+                                )
+                                ?? data_get(
+                                    $stop,
+                                    'assignment'
+                                );
+
+                            if (
+                                $routeShipment === null
+                                && is_object($stop)
+                            ) {
+                                $routeShipment = $stop;
+                            }
 
                             $shipment =
-                                $stop['shipment'];
+                                data_get(
+                                    $stop,
+                                    'shipment'
+                                );
+
+                            $deliveryOrder =
+                                $routeShipment
+                                    ?->delivery_order
+                                ?? data_get(
+                                    $stop,
+                                    'delivery_order'
+                                )
+                                ?? $loop->iteration;
+
+                            $deliveryStatus =
+                                $routeShipment
+                                    ?->delivery_status
+                                ?? data_get(
+                                    $stop,
+                                    'delivery_status'
+                                )
+                                ?? 'PENDING';
                         @endphp
 
                         <li class="route-show-stop">
-                            <div class="route-show-stop-heading">
-                                <span
-                                    class="route-show-order"
-                                    aria-label="Posición {{ $assignment->delivery_order }}"
-                                >
-                                    {{ $assignment
-                                        ->delivery_order }}
-                                </span>
-
-                                <div class="route-show-stop-title">
-                                    @if ($shipment !== null)
-                                        <h3>
-                                            {{ $shipment
-                                                ->tracking_code }}
-                                        </h3>
-                                    @else
-                                        <h3>
-                                            Envío con acceso restringido
-                                        </h3>
-                                    @endif
-
-                                    <span
-                                        class="route-show-status"
-                                        data-status="{{ strtolower(
-                                            $assignment
-                                                ->delivery_status
-                                        ) }}"
-                                    >
-                                        {{ str_replace(
-                                            '_',
-                                            ' ',
-                                            $assignment
-                                                ->delivery_status
-                                        ) }}
-                                    </span>
-                                </div>
+                            <div class="route-show-stop-order">
+                                {{ $deliveryOrder }}
                             </div>
 
-                            @if ($shipment !== null)
-                                <dl
-                                    class="route-show-details route-show-stop-details"
-                                >
+                            <div class="route-show-stop-content">
+                                <div class="route-show-stop-heading">
                                     <div>
-                                        <dt>
-                                            Estado del envío
-                                        </dt>
+                                        <span>
+                                            Parada
+                                            {{ $deliveryOrder }}
+                                        </span>
 
-                                        <dd>
-                                            {{ str_replace(
+                                        @if ($shipment !== null)
+                                            <h3>
+                                                {{
+                                                    $shipment
+                                                        ->tracking_code
+                                                }}
+                                            </h3>
+                                        @else
+                                            <h3>
+                                                Envío con acceso restringido
+                                            </h3>
+                                        @endif
+                                    </div>
+
+                                    <span
+                                        class="route-show-delivery-status"
+                                        data-status="{{
+                                            strtolower(
+                                                $deliveryStatus
+                                            )
+                                        }}"
+                                    >
+                                        {{
+                                            str_replace(
                                                 '_',
                                                 ' ',
+                                                $deliveryStatus
+                                            )
+                                        }}
+                                    </span>
+                                </div>
+
+                                @if ($shipment !== null)
+                                    <div class="route-show-stop-grid">
+                                        <div>
+                                            <span>
+                                                Estado del envío
+                                            </span>
+
+                                            <strong>
+                                                {{
+                                                    str_replace(
+                                                        '_',
+                                                        ' ',
+                                                        $shipment
+                                                            ->shipmentStatus
+                                                            ?->status_name
+                                                        ?? 'UNKNOWN'
+                                                    )
+                                                }}
+                                            </strong>
+                                        </div>
+
+                                        <div>
+                                            <span>
+                                                Destinatario
+                                            </span>
+
+                                            <strong>
+                                                {{
+                                                    trim(
+                                                        (
+                                                            $shipment
+                                                                ->recipient
+                                                                ?->first_name
+                                                            ?? ''
+                                                        )
+                                                        .' '.
+                                                        (
+                                                            $shipment
+                                                                ->recipient
+                                                                ?->last_name
+                                                            ?? ''
+                                                        )
+                                                    )
+                                                    ?: 'No disponible'
+                                                }}
+                                            </strong>
+                                        </div>
+
+                                        <div>
+                                            <span>Teléfono</span>
+
+                                            <strong>
+                                                {{
+                                                    $shipment
+                                                        ->recipient
+                                                        ?->phone
+                                                    ?? 'No disponible'
+                                                }}
+                                            </strong>
+                                        </div>
+
+                                        <div>
+                                            <span>Paquetes</span>
+
+                                            <strong>
+                                                {{
+                                                    $shipment
+                                                        ->packages_count
+                                                    ?? 0
+                                                }}
+                                            </strong>
+                                        </div>
+
+                                        <div class="route-show-stop-address">
+                                            <span>
+                                                Dirección de entrega
+                                            </span>
+
+                                            <strong>
+                                                {{
+                                                    $shipment
+                                                        ->destinationAddress
+                                                        ?->address_line
+                                                    ?? 'No disponible'
+                                                }}
+                                            </strong>
+
+                                            @if (
                                                 $shipment
-                                                    ->shipmentStatus
-                                                    ?->status_name
-                                                    ?? 'Sin estado'
-                                            ) }}
-                                        </dd>
-                                    </div>
-
-                                    <div>
-                                        <dt>Paquetes</dt>
-
-                                        <dd>
-                                            {{ $shipment
-                                                ->packages_count }}
-                                        </dd>
-                                    </div>
-
-                                    <div>
-                                        <dt>Destinatario</dt>
-
-                                        <dd>
-                                            @if ($shipment->recipient)
-                                                {{ $shipment
-                                                    ->recipient
-                                                    ->first_name }}
-
-                                                {{ $shipment
-                                                    ->recipient
-                                                    ->last_name }}
-                                            @else
-                                                No disponible
+                                                    ->destinationAddress
+                                                    ?->municipality
+                                                    ?->municipality_name
+                                            )
+                                                <small>
+                                                    {{
+                                                        $shipment
+                                                            ->destinationAddress
+                                                            ->municipality
+                                                            ->municipality_name
+                                                    }}
+                                                </small>
                                             @endif
-                                        </dd>
+                                        </div>
                                     </div>
 
-                                    <div>
-                                        <dt>Teléfono</dt>
+                                    <div class="route-show-stop-actions">
+                                        <a
+                                            href="{{ route(
+                                                'portal.shipments.show',
+                                                $shipment
+                                            ) }}"
+                                            class="route-show-stop-link"
+                                        >
+                                            Ver envío
+                                        </a>
 
-                                        <dd>
-                                            {{ $shipment
-                                                ->recipient
-                                                ?->phone
-                                                ?? 'No disponible' }}
-                                        </dd>
+                                        <a
+                                            href="{{ route(
+                                                'portal.shipments.tracking',
+                                                $shipment
+                                            ) }}"
+                                            class="route-show-stop-secondary-link"
+                                        >
+                                            Ver seguimiento
+                                        </a>
                                     </div>
+                                @else
+                                    <div class="route-show-restricted">
+                                        <strong>
+                                            Información restringida
+                                        </strong>
 
-                                    <div>
-                                        <dt>
-                                            Dirección de entrega
-                                        </dt>
-
-                                        <dd>
-                                            {{ $shipment
-                                                ->destinationAddress
-                                                ?->address_line
-                                                ?? 'No disponible' }}
-                                        </dd>
+                                        <p>
+                                            Puedes consultar la ruta, pero
+                                            no tienes autorización para ver
+                                            los datos personales de este
+                                            envío.
+                                        </p>
                                     </div>
-
-                                    <div>
-                                        <dt>Municipio</dt>
-
-                                        <dd>
-                                            {{ $shipment
-                                                ->destinationAddress
-                                                ?->municipality
-                                                ?->municipality_name
-                                                ?? 'No disponible' }}
-                                        </dd>
-                                    </div>
-                                </dl>
-
-                                <footer class="route-show-stop-actions">
-                                    <a
-                                        href="{{ route(
-                                            'portal.shipments.show',
-                                            $shipment
-                                        ) }}"
-                                        class="route-show-secondary-button"
-                                    >
-                                        Ver envío
-                                    </a>
-                                </footer>
-                            @else
-                                <p class="route-show-restricted">
-                                    Tu cuenta puede consultar esta ruta,
-                                    pero no los datos de este envío.
-                                </p>
-                            @endif
+                                @endif
+                            </div>
                         </li>
                     @endforeach
                 </ol>

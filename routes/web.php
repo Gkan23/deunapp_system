@@ -522,6 +522,13 @@ Route::middleware('auth')->group(function (): void {
             ->whereNumber('route')
             ->name('portal.routes.complete');
 
+        Route::patch(
+            '/portal/routes/{route}/cancel',
+            [PortalRouteController::class, 'cancel']
+        )
+            ->whereNumber('route')
+            ->name('portal.routes.cancel');
+
         Route::get(
             '/portal/routes/{route}',
             RouteShowPageController::class
@@ -586,6 +593,12 @@ Route::middleware('auth')->group(function (): void {
         )
             ->whereNumber('route')
             ->name('routes.show');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Envíos de rutas
+        |--------------------------------------------------------------------------
+        */
 
         Route::patch(
             '/route-shipments/{routeShipment}/fail-attempt',
